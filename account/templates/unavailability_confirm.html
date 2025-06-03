@@ -1,0 +1,36 @@
+<div class="availability_number_box" style="direction:rtl; display: none; position: fixed; backdrop-filter: blur(25px); background: rgba(255, 255, 255, 0.5); left: 0; top: 0; width: 100%; height: 100%; z-index: 9999;">
+    <div style="position: relative; margin: auto; top: 10%; width: 35%; padding: 20px; background: white; border: darkblue solid 5px; border-radius: 15px;">
+        <span class="close_button" style="cursor: pointer; float: left; font-size: 24px;">&times;</span>
+        <div style="direction: rtl; text-align: right; font-weight: bold"> آیا از ناموجود کردن کالای "{{ product.name }}" اطمینان دارید؟</div>
+        <br>
+        <form method="post" action="{% url 'account:make_unavailable' %}">
+            {% csrf_token %}
+            <input minlength="1" name="availability_number" type="hidden" class="confirm-btn">
+            <input type="submit" value="ناموجود کردن کالا">
+        </form>
+    </div>
+</div>
+
+<style>
+    .confirm-btn {
+    background-color: #ff4d4d; /* Red background */
+    color: white; /* White text */
+    font-size: 16px; /* Font size */
+    padding: 10px 20px; /* Padding for button size */
+    border: none; /* Remove border */
+    border-radius: 5px; /* Rounded corners */
+    cursor: pointer; /* Pointer cursor on hover */
+    transition: background-color 0.3s ease, transform 0.2s ease; /* Smooth hover effect */
+}
+
+.confirm-btn:hover {
+    background-color: #ff1a1a; /* Darker red on hover */
+    transform: translateY(-2px); /* Slightly lift the button */
+}
+
+.confirm-btn:active {
+    background-color: #cc0000; /* Even darker red when clicked */
+    transform: translateY(1px); /* Button presses down */
+}
+
+</style>

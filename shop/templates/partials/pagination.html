@@ -1,0 +1,79 @@
+{% load mathfilters %}
+{% load shop_tags %}
+
+<div class="pagination-container">
+    {% if page.has_previous %}
+    <a class="pagination-link pagination-prev" href="?page={{ page.previous_page_number }}">
+        <i class="fas fa-chevron-left"></i>
+    </a>
+    {% else %}
+    <a class="pagination-link pagination-prev disabled">
+        <i class="fas fa-chevron-left"></i>
+    </a>
+    {% endif %}
+
+    {% with current_page=page.number range=page.number|make_range:pages_count %}
+    {% if pages_count > 3 %}
+        {% if current_page > 3 %}
+            <a class="pagination-link" href="?page=1">1</a>
+            <span class="pagination-ellipsis">...</span>
+            <a class="pagination-link" href="?page={{ current_page | sub:1 }}">{{ current_page | sub:1 }}</a>
+            <a class="pagination-link pagination-active" href="?page={{ current_page }}">{{ current_page }}</a>
+
+            {% for i in range %}
+                {% if i == current_page|add:1 %}
+                    <a class="pagination-link" href="?page={{ i }}">{{ i }}</a>
+                {% elif i|to_int|sub:current_page|sub:2 == 0 and i != pages_count|to_str %}
+                    <span class="pagination-ellipsis">...</span>
+                {% endif %}
+            {% endfor %}
+            {% if current_page != pages_count %}
+            <a class="pagination-link" href="?page={{ pages_count }}">{{ pages_count }}</a>
+            {% endif %}
+
+        {% else %}
+            {% if current_page == 1 %}
+                <a class="pagination-link pagination-active" href="#">1</a>
+            {% elif current_page == 2 %}
+                <a class="pagination-link" href="?page=1">1</a>
+                <a class="pagination-link pagination-active" href="#">2</a>
+            {% else %}
+                <a class="pagination-link" href="?page=1">1</a>
+                <a class="pagination-link" href="?page=2">2</a>
+                <a class="pagination-link pagination-active" href="#">3</a>
+            {% endif %}
+
+            {% for i in range %}
+                {% if i == current_page|add:1 %}
+                    <a class="pagination-link" href="?page={{ i }}">{{ i }}</a>
+                {% elif i|to_int|sub:current_page|sub:2 == 0 and i != pages_count|to_str %}
+                    <span class="pagination-ellipsis">...</span>
+                {% endif %}
+            {% endfor %}
+            {% if current_page != pages_count %}
+            <a class="pagination-link" href="?page={{ pages_count }}">{{ pages_count }}</a>
+            {% endif %}
+        {% endif %}
+
+
+    {% else %}
+        {% for i in page.paginator.page_range %}
+            {% if i == current_page %}
+                <a class="pagination-link pagination-active" href="#">{{ i }}</a>
+            {% else %}
+                <a class="pagination-link" href="?page={{ i }}">{{ i }}</a>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    {% if page.has_next %}
+    <a class="pagination-link pagination-next" href="?page={{ page.next_page_number }}">
+        <i class="fas fa-chevron-right"></i>
+    </a>
+    {% else %}
+    <a class="pagination-link pagination-next disabled">
+        <i class="fas fa-chevron-right"></i>
+    </a>
+    {% endif %}
+</div>

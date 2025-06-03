@@ -1,0 +1,66 @@
+{% extends 'parent/base.html' %}
+{% block title %}Profile{% endblock %}
+{% block content %}
+    <div class="header">
+       <h1>پروفایل شما</h1>
+    </div>
+    <div class="container">
+    <div class="big_profile">
+        <div style="background-color: aquamarine;border-radius: 10px; border-bottom: 5px solid;" class="header">سفارشات شما</div>
+        <br>
+        {% if user_orders %}
+            <div class="order_detail">
+            {% for order in user_orders %}
+            <div class="order_item">
+            <a style="color: black; text-decoration: none" href="{% url 'account:order_detail' order.id %}">
+                <div class="unit_price">شماره سفارش: {{ order.id }}</div>
+                <div class="unit_price">نام تحویل گیرنده: {{ order.name }}</div>
+                <div class="unit_price">آدرس تحویل: {{ order.address }}</div>
+                <div class="unit_price">وضعیت سفارش: {{ order.status }}</div>
+            </a>
+            </div>
+
+            <br>
+            {% endfor %}
+            </div>
+        {% else %}
+            <div style="text-align: center; color: red">هیچ سفارشی ثبت نشده است</div>
+        {% endif %}
+    <div style="background-color: aquamarine;border-radius: 10px; border-bottom: 5px solid;" class="header">محصولات ذخیره شده</div>
+    {% for product in saved_products %}
+            <div class="product">
+                <a href="{{ product.get_absolute_url }}"><img style="; height: 50%; border-radius: 10px" src="
+                    {{ product.images.first.image_file.url }}" alt="Not found"></a>
+                <a href="{{ product.get_absolute_url }}"><div style="text-align: center; margin: 5px;">{{ product.name }}</div></a>
+                <hr>
+                <div style="text-align: right; margin: 5px;">موجودی: {{ product.inventory }}</div>
+                {% if product.off != 0 %}
+                    <div style="color: red; text-align: right; direction: rtl; margin: 5px;"><del>{{ product.price }} تومان</del></div>
+                    <div style="text-align: right; direction: rtl; margin: 5px;">{{ product.off_price }} تومان</div>
+                {% else %}
+                    <div style="text-align: right; direction: rtl; margin: 5px;">{{ product.price }} تومان</div>
+                {% endif %}
+            <hr>
+                <div style="text-align: right; direction: rtl; margin: 5px;">{{ product.description | truncatewords:10 }} </div>
+            </div>
+        {% empty %}
+        <div style="margin: 10px; text-align: center; color: red">هیچ محصولی ذخیره نشده است</div>
+        {% endfor %}
+    </div>
+
+    <br>
+    <div class="small_right">
+        <div style=" margin-bottom: 10px">
+            <a style="text-decoration: none" href="{% url 'account:edit_profile' %}">ویرایش پروفایل</a>
+        </div>
+        <div style=" margin-bottom: 10px">
+            <a style="text-decoration: none" href="{% url 'account:password_change' %}">تغییر گذرواژه</a>
+        </div>
+        <div style=" margin-bottom: 10px">
+            <a style="color: black; text-decoration: none" href="{% url 'account:addresses' %}">آدرس ها</a>
+        </div>
+
+    </div>
+    </div>
+
+{% endblock %}

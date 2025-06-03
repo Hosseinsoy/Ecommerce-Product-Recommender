@@ -1,0 +1,106 @@
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <title>PDF Content</title>
+</head>
+<body>
+<div class="invoice_container">
+    <h1>فاکتور خرید</h1>
+    <br>
+    <br>
+    <h2>مشخصات خریدار</h2>
+    <br>
+    <div class="invoice_information">
+        نام خریدار: {{ order.name }}
+    </div>
+    <div class="invoice_information">
+        شماره تلفن: {{ order.phone }}
+    </div>
+
+    <div class="invoice_information">
+        شماره سفارش: {{ order.id }}
+    </div>
+    <div class="invoice_information">
+        آدرس تحویل: {{ order.address }}
+    </div>
+    <br>
+    <br>
+        <table>
+        <tr>
+            <th>ردیف</th>
+            <th>نام کالا</th>
+            <th>تعداد</th>
+            <th>اندازه</th>
+            <th>رنگ</th>
+            <th>قیمت واحد (تومان)</th>
+            <th>قیمت کل (تومان)</th>
+        </tr>
+        {% for item in order.items.all %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ item.product.name }}</td>
+                <td>{{ item.quantity }}</td>
+                {% if item.size %}
+                    <td>{{ item.size }}</td>
+                {% else %}
+                    <td>-</td>
+                {% endif %}
+                {% if item.color %}
+                    <td>{{ item.color }}</td>
+                {% else %}
+                    <td>-</td>
+                {% endif %}
+                <td>{{ item.price }}</td>
+                <td>{{ item.get_cost }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+    <br>
+    <br>
+    <div class="invoice_information">
+        تاریخ خرید: {{ order.created }}
+    </div>
+    <br><br><br>
+    <div style="text-align: left; margin: 15px">
+        امضا
+    </div>
+<br><br><br><br><br><br>
+</div>
+</body>
+</html>
+
+
+<style>
+    .invoice_container {
+        width: max-content;
+        height: max-content;
+        padding: 30px;
+        margin: 30px;
+        border: 5px solid black;
+        border-radius: 15px;
+        direction: rtl;
+    }
+    h1 {
+        text-align: center;
+    }
+    h2 {
+        text-align: right;
+    }
+    .invoice_information {
+        width: 750px;
+        border-bottom: 2px solid black;
+        margin-bottom: 10px;
+        padding-bottom: 5px;
+        font-size: 20px;
+    }
+    table {
+        border: 2px solid black;
+        text-align: center;
+        margin: auto;
+    }
+    tr, th, td {
+        border: 1px solid black;
+        padding: 15px;
+    }
+
+</style>

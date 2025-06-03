@@ -1,0 +1,123 @@
+{% extends 'parent/base.html' %}
+{% block title %}Profile{% endblock %}
+{% block content %}
+    <div class="header">
+       <h1>ویرایش اطلاعات حساب کاربری</h1>
+    </div>
+    <div class="container">
+    <div style="width: 100%; margin-right: 12px; direction: rtl" class="big_detail">
+    <br>
+    <form method="post">
+        {% csrf_token %}
+        {% for field in form %}
+            <p style="direction: rtl"> {{ field.label }}:</p>
+            {{ field }}
+            {% if forloop.counter == 1 %}
+                <a class="change_phone" href="#" style="text-decoration: none; font-size: 14px; color: darkblue;  border: 2px solid black; border-radius: 10px; padding: 5px; background-color: #06ff9f; margin-bottom: 25px; margin-top: 25px">
+                    تغییر شماره تلفن</a>
+            {% endif %}
+        {% endfor %}
+        <br>
+        <br>
+    <br>
+        <input type="submit" value="ویرایش">
+    </form>
+    </div>
+    </div>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script>
+$(document).ready(function () {
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    const csrftoken = getCookie('csrftoken');
+
+    $.ajaxSetup({
+        beforeSend: function (xhr, settings) {
+            if (!/^GET|HEAD|OPTIONS|TRACE$/i.test(settings.type)) {
+                xhr.setRequestHeader("X-CSRFToken", csrftoken);
+            }
+        }
+    });
+
+    // Show the phone input form when "تغییر شماره تلفن" is clicked
+    $('.change_phone').click(function (e) {
+        e.preventDefault();
+        $.ajax({
+            type: 'GET',
+            url: '{% url 'account:change_phone' %}',
+            success: function (data) {
+                $('body').append(data.template);
+                $('.change_phone_box').show();
+            },
+        });
+    });
+
+    // Submit phone number and get verification code form
+    $(document).on('submit', '#change-phone-form', function (e) {
+        e.preventDefault();
+
+        let formData = $(this).serializeArray();
+        formData.push({ name: 'csrfmiddlewaretoken', value: csrftoken });
+
+        $.ajax({
+            type: 'POST',
+            url: '{% url 'account:change_phone' %}',
+            data: formData,
+            success: function (data) {
+                if (data.template) {
+                    $('.change_phone_box').hide();
+                    $('body').append(data.template);
+                    $('.verification-box').show();
+                }
+            },
+            error: function (xhr) {
+                if (xhr.responseJSON) {
+                    $('body').append(xhr.responseJSON.template);
+                    $('.change_phone_box').show();
+                } else {
+                    alert("Error submitting the form.");
+                }
+            }
+        });
+    });
+
+    // Close modal functionality
+    $(document).on('click', '.close_button', function () {
+        $('.change_phone_box').hide();
+    });
+
+    $(document).on('click', '.change_phone_box', function (e) {
+        if ($(e.target).is('.change_phone_box')) {
+            $('.change_phone_box').hide();
+        }
+    });
+        $(document).on('click', '.close_button', function () {
+        $('.verification-box').hide();
+    });
+
+    $(document).on('click', '.verification-box', function (e) {
+        if ($(e.target).is('.verification-box')) {
+            $('.verification-box').hide();
+        }
+    });
+});
+
+
+</script>
+
+{% endblock %}

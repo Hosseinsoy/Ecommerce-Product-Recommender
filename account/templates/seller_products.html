@@ -1,0 +1,102 @@
+{% extends 'parent/base.html' %}
+{% block title %}محصولات شما{% endblock %}
+{% block content %}
+    <div class="header">
+        <h2>محصولات شما</h2>
+    </div>
+    <div class="container">
+    <div class="big_profile">
+    {% for product in products %}
+            <div style="; background-color: ghostwhite; border: 2px solid black; position:relative; height: 390px; width: 230px; margin-left: 18px;" class="product" data-product-id="{{ product.id }}">
+                <a href="{{ product.get_absolute_url }}"><img style="; height: 50%; border-radius: 10px" src="
+                    {{ product.images.first.image_file.url }}" alt="Not found"></a>
+                <a style="text-decoration: none" href="{{ product.get_absolute_url }}"><div style="text-align: center; margin: 5px;">{{ product.name }}</div></a>
+                <hr>
+                {% if product.is_available %}
+                <div style="text-align: right; margin: 5px;">موجودی: {{ product.inventory }}</div>
+                {% if product.off != 0 %}
+                    <div style="color: red; text-align: right; direction: rtl; margin: 5px;"><del>{{ product.price }} تومان</del></div>
+                    <div style="text-align: right; direction: rtl; margin: 5px;">{{ product.off_price }} تومان</div>
+                {% else %}
+                    <div style="text-align: right; direction: rtl; margin: 5px;">{{ product.price }} تومان</div>
+                {% endif %}
+            <hr>
+            {% else %}
+                <div style="border: 5px red solid; border-radius: 5px; padding: 15px; background-color:yellow; color: red; font-weight:bold; text-align: center; margin:12px;">کالا ناموجود است</div>
+                <hr>
+            {% endif %}
+                <div style="text-align: right; direction: rtl; margin: 5px;">{{ product.description | truncatewords:5 }} </div>
+                <div style="position: absolute; bottom:60px; left:0; right:0; border-bottom: 2px solid black"></div>
+                <a style="text-decoration: none; color: black" href="{% url 'account:edit_product' product.id %}">
+                <div style="display: flex; bottom: 0;top: 10px; right: 0; float: right; border: 2px solid orange; border-radius: 8px; background-color: orange; margin: 10px; padding: 10px; width: fit-content; text-align: right; direction: rtl">ویرایش</div>
+                </a>
+                {% if product.is_available %}
+                <a style="text-decoration: none; color: black" href="#">
+                <div id="make_unavailable" style="color: darkred; display: flex; bottom: 0; top: 10px; right: 0; float: right; border: 2px solid #ff0000; border-radius: 8px; background-color:#fbb1b1 ; margin: 10px; padding: 10px; width: fit-content; text-align: right; direction: rtl">ناموجود کردن</div>
+                </a>
+                {% else %}
+                <a style="text-decoration: none; color: black" href="#">
+                <div id="make_available" style="color: darkgreen; display: flex; bottom: 0; top: 10px; right: 0; float: right; border: 2px solid green; border-radius: 8px; background-color: lightgreen; margin: 10px; padding: 10px; width: fit-content; text-align: right; direction: rtl">موجود کردن</div>
+                </a>
+                {% endif %}
+            </div>
+        {% empty %}
+        <div style="margin: 10px; text-align: center; color: red">هیچ محصولی ذخیره نشده است</div>
+        {% endfor %}
+    </div>
+    <div class="small_right" style="width: 12%">
+    <a style="text-decoration: none; color: black; font-weight: bold" href="{% url 'account:add_product' %}">
+    <div style="right: 0; float: right; border: 2px solid black; border-radius: 8px; background-color: chartreuse; margin: 10px; padding: 10px; width: fit-content; text-align: right; direction: rtl">
+        + افزودن محصول</div>
+    </a>
+    </div>
+    </div>
+    
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script>
+    $(document).ready(function (){
+        $(document).on('click', '#make_available', function () {
+            let productId = $(this).closest('.product').data('product-id');
+            $.ajax({
+                type: 'GET',
+                url: '{% url 'account:make_available' %}',
+                data: {'product_id': productId},
+                success: function (data){
+                    $('body').append(data.template);
+                    $('.availability_number_box').show();
+                },
+                error: function (xhr, status, error) {
+                    alert("Something went wrong: " + xhr.responseText);
+                }
+            });
+        });
+        
+        $(document).on('click', '#make_unavailable', function () {
+            console.log('clicked')
+            let productId = $(this).closest('.product').data('product-id');
+            $.ajax({
+                type: 'GET',
+                url: '{% url 'account:make_unavailable' %}',
+                data: {'product_id': productId},
+                success: function (data){
+                    $('body').append(data.template);
+                    $('.availability_number_box').show();
+                },
+                error: function (xhr, status, error) {
+                    alert("Something went wrong: " + xhr.responseText);
+                }
+            });
+        });
+    
+    $(document).on('click', '.close_button', function () {
+        $('.availability_number_box').hide();
+    });
+
+    $(document).on('click', '.availability_number_box', function (e) {
+        if ($(e.target).is('.availability_number_box')) {
+            $('.availability_number_box').hide();
+        }
+    });
+    });
+</script>
+{% endblock %}

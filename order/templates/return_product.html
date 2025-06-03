@@ -1,0 +1,22 @@
+<div style="direction: rtl; text-align: right">
+    <form method="post" action="{% url 'order:return_product' order.id %} " enctype="multipart/form-data">
+        {% csrf_token %}
+        {% for product in products %}
+            <label for="quantity">تعداد مرجوعی ({{ product.product.name }}):</label>
+            <br>
+            <input type="number" name="quantity_{{ forloop.counter }}" min="1" max="{{ product.quantity }}" required>
+            <br>
+            <br>
+            <label for="photo_{{ forloop.counter }}">تصویر ({{ product.product.name }}): </label>
+            <br>
+            <input type="file" name="photo_{{ forloop.counter }}" required>
+            <br>
+            <br>
+            <label for="explanation_{{ forloop.counter }}">توضیحات ({{ product.product.name }}): </label>
+            <br>
+            <textarea name="explanation_{{ forloop.counter }}" required></textarea>
+            <hr>
+        {% endfor %}
+        <input type="submit" value="ثبت مرجوعی">
+    </form>
+</div>

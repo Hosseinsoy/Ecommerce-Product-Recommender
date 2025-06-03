@@ -1,0 +1,104 @@
+{% extends 'parent/base.html' %}
+{% block title %}Profile{% endblock %}
+{% block content %}
+    <div class="header">
+       <h1>پروفایل فروشنده</h1>
+    </div>
+    <div class="container">
+    <div class="big_profile">
+        <div style="background-color: aquamarine;border-radius: 10px; border-bottom: 5px solid;" class="header">آخرین سفارشات خریداری شده از شما</div>
+        <br>
+        {% if recent_sails %}
+            <div class="order_detail">
+            {% for item in recent_sails %}
+            <div style="height: 550px" class="order_item">
+                <div class="unit_price">شماره سفارش: {{ item.order.id }}</div>
+                <div class="unit_price">نام تحویل گیرنده: {{ item.order.name }}</div>
+                <div class="unit_price">آدرس تحویل: {{ item.order.address }}</div>
+                <div class="unit_price">وضعیت سفارش: {{ item.order.status }}</div>
+                <div class="unit_price">کالای خریداری شده: </div>
+            <div style="border-width: 1px" class="product">
+                <a href="{{ item.order.product.get_absolute_url }}"><img style="; height: 50%; border-radius: 10px" src="
+                    {{ item.product.images.first.image_file.url }}" alt="Not found"></a>
+                <a href="{{ item.order.product.get_absolute_url }}"><div style="text-align: center; margin: 5px;">{{ item.product.name }}</div></a>
+                <hr>
+                <div style="text-align: right; margin: 5px;">موجودی: {{ item.product.inventory }}</div>
+                {% if item.size %}
+                    <div style="text-align: right; margin: 5px;">اندازه: {{ item.size }}</div>
+                {% endif %}
+                {% if item.color %}
+                    <div style="text-align: right; margin: 5px;">رنگ: {{ item.color }}</div>
+                {% endif %}
+                {% if item.product.off != 0 %}
+                    <div style="color: red; text-align: right; direction: rtl; margin: 5px;"><del>{{ item.product.price }} تومان</del></div>
+                    <div style="text-align: right; direction: rtl; margin: 5px;">{{ item.product.off_price }} تومان</div>
+                {% else %}
+                    <div style="text-align: right; direction: rtl; margin: 5px;">{{ item.product.price }} تومان</div>
+                {% endif %}
+            <hr>
+                <div style="text-align: right; direction: rtl; margin: 5px;">{{ item.product.description | truncatewords:10 }} </div>
+            </div>
+            </div>
+
+            <br>
+            {% endfor %}
+            </div>
+        {% else %}
+            <div style="text-align: center; color: red">هیچ سفارشی ثبت نشده است</div>
+        {% endif %}
+    <div style="background-color: aquamarine;border-radius: 10px; border-bottom: 5px solid;" class="header">آخرین محصولات شما</div>
+    {% for product in recent_products %}
+            <div class="product">
+                <a href="{{ product.get_absolute_url }}"><img style="; height: 50%; border-radius: 10px" src="
+                    {{ product.images.first.image_file.url }}" alt="Not found"></a>
+                <a href="{{ product.get_absolute_url }}"><div style="text-align: center; margin: 5px;">{{ product.name }}</div></a>
+                <hr>
+                <div style="text-align: right; margin: 5px;">موجودی: {{ product.inventory }}</div>
+                {% if product.off != 0 %}
+                    <div style="color: red; text-align: right; direction: rtl; margin: 5px;"><del>{{ product.price }} تومان</del></div>
+                    <div style="text-align: right; direction: rtl; margin: 5px;">{{ product.off_price }} تومان</div>
+                {% else %}
+                    <div style="text-align: right; direction: rtl; margin: 5px;">{{ product.price }} تومان</div>
+                {% endif %}
+            <hr>
+                <div style="text-align: right; direction: rtl; margin: 5px;">{{ product.description | truncatewords:10 }} </div>
+            </div>
+        {% empty %}
+        <div style="margin: 10px; text-align: center; color: red">هیچ محصولی ذخیره نشده است</div>
+        {% endfor %}
+    </div>
+
+    <br>
+    <div class="small_right">
+        <div style=" margin-bottom: 10px">
+            <a style="text-decoration: none" href="{% url 'account:edit_profile' %}">ویرایش پروفایل</a>
+        </div>
+        <div style=" margin-bottom: 10px">
+            <a style="text-decoration: none" href="{% url 'account:password_change' %}">تغییر گذرواژه</a>
+        </div>
+        <div style=" margin-bottom: 10px">
+            <a style="color: black; text-decoration: none" href="{% url 'account:seller_products' %}">محصولات من</a>
+        </div>
+
+    </div>
+    </div>
+
+<style>
+.order_detail {
+    display: flex;
+    flex-wrap: wrap; /* Allows wrapping if necessary */
+    gap: 10px; /* Adds some space between items */
+}
+
+.order_item {
+    width: calc(45% - 10px); /* Adjust width as needed */
+    min-width: 300px; /* Ensures a minimum width for small screens */
+    box-sizing: border-box;
+    border: 5px solid #000000;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+}
+
+</style>
+{% endblock %}

@@ -1,0 +1,27 @@
+<div class="availability_number_box" style="direction:rtl; display: none; position: fixed; backdrop-filter: blur(25px); background: rgba(255, 255, 255, 0.5); left: 0; top: 0; width: 100%; height: 100%; z-index: 9999;">
+    <div style="position: relative; margin: auto; top: 10%; width: 25%; padding: 20px; background: white; border: darkblue solid 5px; border-radius: 15px;">
+        <span class="close_button" style="cursor: pointer; float: left; font-size: 24px;">&times;</span>
+        <div style="direction: rtl; text-align: right; font-weight: bold">به چه تعداد می خواهید این کالا را موجود کنید؟</div>
+        <br>
+        <form method="post" action="{% url 'account:make_available' %}">
+            {% csrf_token %}
+            <label for="availability_number">تعداد: </label>
+            <input minlength="1" name="availability_number" type="number" id="availability_number">
+            <input type="submit" value="موجود کردن کالا">
+        </form>
+    </div>
+</div>
+
+<style>
+    label {
+    display: inline-block;
+    margin-right: 10px; /* Adds space between the label and input */
+    vertical-align: middle; /* Aligns the label vertically in the middle */
+}
+
+input {
+    display: inline-block;
+    padding: 5px; /* Adds padding for the input field */
+}
+
+</style>

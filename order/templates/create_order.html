@@ -1,0 +1,125 @@
+{% extends 'parent/base.html' %}
+{% block title %}Order information{% endblock %}
+{% block content %}
+    <div class="header">
+       <h1>اطلاعات زیر را برای ثبت سفارش کامل کنید</h1>
+    </div>
+
+    <div class="big_order">
+    <div class="order_information_box">
+        <form method="post">
+            {% csrf_token %}
+            <label for="name">نام تحویل گیرنده:</label>
+            <input type="text" name="name">
+            <br>
+            <br>
+            <label for="phone">شماره تلفن تحویل گیرنده:</label>
+            <input type="text" name="phone">
+            <br>
+            <br>
+            <label for="address">آدرس</label>
+            <select name="address">
+                {% for address in addresses %}
+                    <option name="address {{ forloop.counter }}">{{ address }}</option>
+                    {% empty %}
+                    هیچ آدرسی وجود ندارد
+                {% endfor %}
+            </select>
+            <br>
+            <br>
+            <div id="add_address" style="cursor: pointer; border: 2px solid black; font-size: 14px; font-weight: bold; border-radius: 8px; padding: 10px; margin: auto; width: fit-content;">
+                اضافه کردن آدرس
+            </div>
+
+
+            <br>
+            <div id="add_discount_code" style="cursor: pointer; border: 2px solid black; font-size: 14px; font-weight: bold; border-radius: 8px; padding: 10px; margin: auto; width: fit-content;">
+                کد تخفیف دارید | وارد کنید
+            </div>
+            <div class="unit_price">مبلغ قابل پرداخت: {{ cart.final_price }} تومان</div>
+            {% if discounted_cost %}
+            <div class="unit_price">مبلغ قابل پرداخت پس از تخفیف: {{ discounted_cost }} تومان</div>
+            {% endif %}
+            <br>
+            <input type="submit" value="پرداخت">
+        </form>
+    </div>
+
+
+       <h2>کالاهای سبد خرید</h2>
+
+        <div class="big_order_create">
+            {% for item in cart %}
+            <div class="product_order_create">
+                <a href="{{ item.product.get_absolute_url }}">
+                    <img class="product_image" src="{{ item.product.images.first.image_file.url }}">
+                </a>
+                <div class="product_info">
+                    <a href="{{ item.product.get_absolute_url }}">
+                        <span class="unit_price">{{ item.product.name }}</span>
+                    </a>
+                    <span class="unit_price">قیمت واحد: {{ item.product.off_price }} تومان</span>
+                    <span class="unit_price">موجودی: {{ item.product.inventory }}</span>
+                    <span id="quantity-{{ item.product.id }}" class="quantity">* {{ item.quantity }}</span>
+                    <span id="total-price-{{ item.product.id }}" class="total_price">قیمت *{{ item.quantity }}: {{ item.total }} تومان</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <br>
+
+    <!-- Order Information Box -->
+
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script>
+    $(document).ready(function () {
+    $('#add_address').click(function () {
+        $.ajax({
+            type: 'GET',
+            url: '{% url "account:create_address" %}',
+            success: function (data) {
+                    $('body').append(data.template);
+                    $('.create_address_box').show();
+            },
+        });
+    });
+
+    $(document).on('click', '.close_button', function () {
+        $('.create_address_box').hide();
+    });
+
+    $(document).on('click', '.create_address_box', function (e) {
+        if ($(e.target).is('.create_address_box')) {
+            $('.create_address_box').hide();
+        }
+    });
+        $('#add_discount_code').click(function () {
+        $.ajax({
+            type: 'GET',
+            url: '{% url "shop:add_discount_code" %}',
+            success: function (data) {
+                    $('body').append(data.template);
+                    $('.discount_code_box').show();
+            },
+        });
+    });
+
+    $(document).on('click', '.close_button', function () {
+        $('.discount_code_box').hide();
+    });
+
+    $(document).on('click', '.discount_code_box', function (e) {
+        if ($(e.target).is('.discount_code_box')) {
+            $('.discount_code_box').hide();
+        }
+    });
+});
+
+
+
+</script>
+{% endblock %}

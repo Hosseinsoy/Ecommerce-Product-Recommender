@@ -1,0 +1,11 @@
+<div class="verification-box" style="direction:rtl; display: none; position: fixed; backdrop-filter: blur(25px); background: rgba(255, 255, 255, 0.5); left: 0; top: 0; width: 100%; height: 100%; z-index: 9999;">
+<div style="position: relative; margin: auto; top: 10%; width: 25%; padding: 20px; background: white; border: darkblue solid 5px; border-radius: 15px;">
+<span class="close_button" style="cursor: pointer; float: left; font-size: 24px;">&times;</span>
+<form method="post" id="verification-form" action="{% url 'account:change_phone_code' %}">
+    {% csrf_token %}
+    <p>کد تأیید را وارد کنید:</p>
+    {{ form.code }}
+    <input type="submit" value="تأیید">
+</form>
+</div>
+</div>

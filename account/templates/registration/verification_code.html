@@ -1,0 +1,126 @@
+{% extends 'parent/base.html' %}
+{% block title %}Login{% endblock %}
+{% block content %}
+    <div class="header">
+       <h1>کد تایید را وارد کنید</h1>
+    </div>
+    <div class="container">
+    <div class="big_detail">
+        <div class="login_choice">
+            {% if login %}
+            <form method="post" action="{% url 'account:verification_code' %}">
+            {% else %}
+            <form method="post" action="{% url 'account:register_verification_code' %}">
+            {% endif %}
+                {% csrf_token %}
+                {{ form.as_p }}
+                <input type="submit" value="تایید کد">
+            </form>
+        <div class="countdown">
+            <span id="timer">02:00</span>
+        </div>
+        <div id="expired-box" class="expired-box" style="display: none;">
+            <a style="text-decoration: none" href="{% url 'account:regenerate_verification_code' %}" id="retry-link">ارسال مجدد کد تائید</a>
+        </div>
+        <div style="font-size: 15px" class="expired-box">
+            <a style="text-decoration: none" href="{% url 'account:verification_login' %}" id="retry-link">وارد کردن شماره موبایل جدید</a>
+        </div>
+        </div>
+    </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script>
+document.addEventListener("DOMContentLoaded", function () {
+    let timerDisplay = document.getElementById('timer');
+    let totalTime = 120; // 2 minutes = 120 seconds
+    let expiredBox = document.getElementById('expired-box');
+
+    // Check if there's a flag in sessionStorage for a new login/verification process
+    let isNewLogin = sessionStorage.getItem('isNewLogin');
+    if (isNewLogin) {
+        // New login or verification process, reset countdown
+        localStorage.removeItem('countdownStart');
+        sessionStorage.removeItem('isNewLogin');  // Clear the flag after resetting
+    }
+
+    // Retrieve the countdown start time from localStorage or set it to the current time
+    let startTime = localStorage.getItem('countdownStart');
+    let currentTime = new Date().getTime();
+
+    // If no start time is found, set it to the current time and store it
+    if (!startTime) {
+        startTime = currentTime;
+        localStorage.setItem('countdownStart', startTime);
+    }
+
+    // Calculate how much time has passed
+    let timeElapsed = Math.floor((currentTime - startTime) / 1000);
+    let time = totalTime - timeElapsed;
+
+    // If the countdown has already expired, set time to 0
+    if (time <= 0) {
+        time = 0;
+        timerDisplay.innerHTML = '00:00';
+        clearSessionVerificationCode();  // Call AJAX function to clear session
+        showExpiredBox();
+        localStorage.removeItem('countdownStart');
+    } else {
+        // Display the correct remaining time immediately
+        updateTimerDisplay(time);
+    }
+
+    // Start countdown
+    let countdown = setInterval(function () {
+        if (time <= 0) {
+            clearInterval(countdown);
+            timerDisplay.innerHTML = '00:00';
+            clearSessionVerificationCode();  // Call AJAX function to clear session
+            showExpiredBox();
+            localStorage.removeItem('countdownStart');
+        } else {
+            time--;
+            updateTimerDisplay(time);
+        }
+    }, 1000);
+
+    // Helper function to update the timer display
+    function updateTimerDisplay(time) {
+        let minutes = Math.floor(time / 60);
+        let seconds = time % 60;
+        seconds = seconds < 10 ? '0' + seconds : seconds;
+        timerDisplay.innerHTML = `${minutes}:${seconds}`;
+    }
+
+    // Function to show the expired box with the URL
+    function showExpiredBox() {
+        expiredBox.style.display = 'block';
+    }
+
+    // Function to send an AJAX request to delete the verification code from the session
+    function clearSessionVerificationCode() {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', '/clear-verification-code/', true);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.setRequestHeader('X-CSRFToken', getCSRFToken());  // Django-specific for CSRF protection
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                console.log('Verification code cleared from session');
+            } else {
+                console.error('Error clearing verification code');
+            }
+        };
+        xhr.send();
+    }
+
+    // Helper function to get CSRF token (for Django)
+    function getCSRFToken() {
+        return document.querySelector('[name=csrfmiddlewaretoken]').value;
+    }
+});
+
+
+
+
+
+    </script>
+{% endblock %}

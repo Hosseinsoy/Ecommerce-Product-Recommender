@@ -1,0 +1,26 @@
+<div class="show_return_orders_box" style="direction:rtl; display: none; position: fixed; backdrop-filter: blur(25px); background: rgba(255, 255, 255, 0.5); left: 0; top: 0; width: 100%; height: 100%; z-index: 9999;">
+    <div style="height: 550px; overflow-y:auto; position: relative; margin: auto; top: 10%; width: 50%; padding: 20px; background: white; border: darkblue solid 5px; border-radius: 15px;">
+        <span class="close_button" style="cursor: pointer; float: left; font-size: 24px;">&times;</span>
+        {% for return in orders %}
+            <div>شماره سفارش: {{ return.order.id }}</div>
+            <div>تاریخ ایجاد درخواست: {{ return.created | date }}</div>
+            {% if return.accepted %}
+                <div>وضعیت درخواست: پذیرفته شد</div>
+                <div style="color: green">درخواست مرجوعی شما پذیرفته شد. لطفا کالاهای نام برده را با بسته بندی دریافتی به آدرس زیر پست کنید</div>
+            {% else %}
+                <div>وضعیت درخواست: در حال بررسی</div>
+            {% endif %}
+            <div>کالا های مرجوعی: </div>
+            {% for product in return.return_products.all %}
+                <div>نام محصول: {{ product.product.name }}</div>
+                <div>تعداد: {{ product.quantity }}</div>
+                <div>توضیحات: {{ product.explanation }}</div>
+                <div>تصویر ارسالی: </div>
+                <img style="border-bottom:2px solid black; width: 50%" src="{{ product.photo.url }}">
+            {% endfor %}
+            <hr>
+            {% empty %}
+            <div style="color: red">درخواست مرجوعی برای این سفارش ثبت نشده است</div>
+        {% endfor %}
+    </div>
+</div>

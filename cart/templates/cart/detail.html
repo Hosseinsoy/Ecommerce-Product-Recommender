@@ -1,0 +1,105 @@
+{% extends 'parent/base.html' %}
+{% block title %}Cart{% endblock %}
+{% block content %}
+    <div class="header">
+    <h1>سبد خرید</h1>
+    </div>
+    <div class="big_cart">
+            {% for item in cart %}
+            <div class="item" data-item-id="{{ item.product.id }}">
+                <a href="{{ item.product.product.get_absolute_url }}"> <img class="product_image"
+                                                                    src="{{ item.product.product.images.first.image_file.url }}"></a>
+            <div class="product_info">
+                <a href="{{ item.product.product.get_absolute_url }}"><span class="unit_price">{{ item.product.product.name }}</span></a>
+                <span class="unit_price">قیمت واحد: {{ item.product.product.off_price }} تومان</span>
+                <span class="unit_price">موجودی: {{ item.product.product.inventory }}</span>
+                {% if item.product.product.has_color_option %}
+                <span class="unit_price">رنگ: {{ item.product.color.color }}</span>
+                {% endif %}
+                {% if item.product.product.has_size_option %}
+                <span class="unit_price">اندازه: {{ item.product.size.size }}</span>
+                {% endif %}
+                <span id="quantity-{{ item.product.id }}" class="quantity">* {{ item.quantity }}</span>
+                <span id="total-price-{{ item.product.id }}" class="total_price">قیمت *{{ item.quantity }}: {{ item.total }} تومان</span>
+            </div>
+            <div class="actions">
+                <div class="add_product">+</div>
+                <div class="decrease_product">-</div>
+                <div class="remove_product">حذف</div>
+            </div>
+            </div>
+        {% endfor %}
+    </div>
+    <br>
+    {% if cart %}
+    <div class="cart_result">
+        <div class="products_price">قیمت مجموع: <span id="products_price">{{ cart.total_price }}</span></div>
+        <div class="post_price">هزینه ارسال: <span id="post_price">{{ cart.post_price }}</span></div>
+        <div class="final_price">مبلغ قابل پرداخت: <span id="final_price">{{ cart.final_price }}</span></div>
+    </div>
+    <a href="{% url 'order:order' %}">
+    <div style="display:flex; float: right; width: fit-content; height: fit-content; border: 5px solid black; border-radius: 10px; text-align: center; margin: 10px; padding: 5px;">
+        ادامه خرید
+    </div>
+    </a>
+    <a href="{% url 'shop:product_list' %}">
+    <div style="display:flex; float: right; width: fit-content; height: fit-content; border: 5px solid black; border-radius: 10px; text-align: center; margin: 10px; padding: 5px;">
+        بازگشت به لیست محصولات
+    </div>
+    </a>
+    {% endif %}
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script>
+        $(document).ready(function (){
+            $('.add_product').on('click', function (){
+                var itemId = $(this).closest('.item').data('item-id');
+                update_quantity(itemId, 'add');
+            });
+            $('.decrease_product').on('click', function (){
+                var itemId = $(this).closest('.item').data('item-id');
+                update_quantity(itemId, 'decrease');
+            });
+            $('.remove_product').on('click', function (){
+                var itemId = $(this).closest('.item').data('item-id');
+                remove_item(itemId);
+            })
+            function update_quantity(item_id, action){
+                $.ajax({
+                    type: 'POST',
+                    url: '{% url 'cart:update_quantity' %}',
+                    data: {
+                        'item_id': item_id,
+                        'action': action,
+                        'csrfmiddlewaretoken': '{{ csrf_token }}'
+                    },
+                    success: function (data){
+                        $('#cart_info').text(data.cart_count);
+                        $('#quantity-' + item_id ).text('* '+data.item_count);
+                        $('#total-price-' + item_id).text(' قیمت*'+data.item_count+': '+data.total_price + ' تومان');
+                        $('#products_price').text(data.products_price);
+                        $('#final_price').text(data.final_price);
+                        $('#post_price').text(data.post_price);
+                    }
+                })
+            }
+            function remove_item(item_id){
+                $.ajax({
+                    type: 'POST',
+                    url: '{% url 'cart:remove_item' %}',
+                    data: {
+                        'item_id': item_id,
+                        'csrfmiddlewaretoken': '{{ csrf_token }}'
+                    },
+                    success: function (data){
+                        $('#cart_info').text(data.cart_count);
+                        $('#products_price').text(data.products_price);
+                        $('#final_price').text(data.final_price);
+                        $('#post_price').text(data.post_price);
+                        $(`.item[data-item-id=${item_id}]`).fadeOut(500)
+                    }
+                })
+            }
+        })
+    </script>
+{% endblock %}

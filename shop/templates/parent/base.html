@@ -1,0 +1,45 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Shop | {% block title %}{% endblock %}</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/base.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+
+    {% block head %}{% endblock %}
+</head>
+<body>
+{% include 'partials/header.html' %}
+{% for message in messages %}
+    {% if message.tags == 'success' %}
+    <div style="border-left: 40px solid green; background-color: white" class="message-box">{{ message }}</div>
+    {% elif message.tags == 'error' %}
+        <div style="border-left: 40px solid red; background-color: white" class="message-box">{{ message }}</div>
+    {% endif %}
+{% endfor %}
+{% include 'partials/navigation.html' %}
+{% block content %}
+{% endblock %}
+{% block scripts %}{% endblock %}
+{% include 'partials/footer.html' %}
+</body>
+</html>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Get the message box element
+        var messageBox = document.querySelector(".message-box");
+
+        // Add the 'show' class to trigger the slide-in effect
+        messageBox.classList.add("show");
+
+        // After 5 seconds, hide the message with a reverse transition
+        setTimeout(function() {
+            messageBox.classList.remove("show");
+            messageBox.classList.add("hide"); // Slide it back out to the left
+        }, 5000); // 5000 milliseconds = 5 seconds
+    });
+</script>
+

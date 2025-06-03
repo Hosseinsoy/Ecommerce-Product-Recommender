@@ -1,0 +1,26 @@
+{% extends 'parent/base.html' %}
+{% block title %}Login{% endblock %}
+{% block content %}
+    <div class="header">
+       <h1 style="direction: rtl">ورود | ثبت نام</h1>
+    </div>
+    <div class="container">
+    <div class="big_detail">
+        <div class="login_choice" style="height: 250px; text-align: center">
+            <div class="unit_price" style="border: 3px solid black; border-radius: 10px; padding: 5px; background-color: #50dfb4; margin-bottom: 25px; margin-top: 25px">
+                <a href="{% url 'account:verification_login' %}" style="text-decoration: none">ورود با کد تایید</a>
+            </div>
+            <div class="unit_price" style="border: 3px solid black; border-radius: 10px; padding: 5px; background-color: #50dfb4;">
+                <a href="{% url 'account:username_password_login' %}" style="text-decoration: none">ورود با رمز عبور</a>
+            </div>
+            <div class="unit_price" style="margin-top: 50px; font-size: 15px; border: 3px solid black; border-radius: 10px; padding: 5px; background-color: #50dfb4;">
+                <a href="{% url 'account:register' %}" style="text-decoration: none">ثبت نام</a>
+            </div>
+            <div class="unit_price" style="margin-top: 10px; font-size: 15px; border: 3px solid black; border-radius: 10px; padding: 5px; background-color: #50dfb4;">
+                <a href="{% url 'account:login_seller' %}" style="text-decoration: none">فروشنده اید | وارد شوید</a>
+            </div>
+        </div>
+    </div>
+    </div>
+
+{% endblock %}

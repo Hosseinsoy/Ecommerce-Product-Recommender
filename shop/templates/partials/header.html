@@ -1,0 +1,58 @@
+{% load static %}
+{% load shop_tags %}
+<div style="position: sticky; top: 0; z-index: 100;">
+    <div class="cart_container">
+        {% with cart_count=cart|length %}
+        <div>
+            <a href="{% url 'cart:cart_detail' %}">
+            <div class="cart">
+                <i style="color: black" class="fa-solid fa-cart-shopping"></i>
+                <span style="color: black" id="cart_info" class="cart_info">
+                    {{ cart_count }}
+                </span>
+            </div>
+            </a>
+        </div>
+        {% endwith %}
+        <a class="product_list_bottom" href="{% url 'shop:product_list' %}">
+        <div>
+            محصولات
+        </div>
+        </a>
+        <div class="search_box">
+            <form method="post" action="{% url 'shop:search' %}">
+                {% csrf_token %}
+            <input type="text" name="query" placeholder="دنبال چه کالایی هستی؟">
+            <input type="submit" value="جستجو">
+            </form>
+        </div>
+        {% if request.user.is_authenticated %}
+            <a class="login-bottom" href="{% url 'account:logout' %}">
+            <div>
+                خروج
+            </div>
+            </a>
+            {% if request.user|user_type == 'shop' %}
+            <a class="profile_bottom" href="{% url 'account:profile' %}">
+            <div>
+                پروفایل
+            </div>
+            </a>
+            {% else %}
+            <a class="profile_seller_bottom" href="{% url 'account:seller_profile' %}">
+            <div>
+                پروفایل
+            </div>
+            </a>
+            {% endif %}
+        {% else %}
+            <a class="login-bottom" href="{% url 'account:login_choice' %}">
+            <div>
+                ورود | ثبت نام
+            </div>
+            </a>
+        {% endif %}
+
+    <br>
+    </div>
+</div>

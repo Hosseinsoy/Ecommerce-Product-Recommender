@@ -1,0 +1,11 @@
+<div class="change_phone_box" style="direction:rtl; display: none; position: fixed; backdrop-filter: blur(25px); left: 0; top: 0; width: 100%; height: 100%; z-index: 9999;">
+    <div style="position: relative; margin: auto; top: 10%; width: 25%; padding: 20px; background: white; border: darkblue solid 5px; border-radius: 15px;">
+        <span class="close_button" style="cursor: pointer; float: left; font-size: 24px;">&times;</span>
+        <form method="post" action="{% url 'account:change_phone' %}" id="change-phone-form">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <input type="submit" value="ارسال کد تایید">
+
+        </form>
+    </div>
+</div>

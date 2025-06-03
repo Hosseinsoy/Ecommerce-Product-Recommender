@@ -1,0 +1,151 @@
+{% extends 'parent/base.html' %}
+{% load shop_tags %}
+{% block title %}{{ product.name }}{% endblock %}
+{% block content %}
+    <div class="header">
+        <h1>جزئیات محصول</h1>
+    </div>
+    <div class="container">
+    <div class="big_detail">
+        <div class="img_detail">
+        {% for img in product.images.all %}
+            <div><a href="{{ img.image_file.url }}"><img style="margin-top:10px; height: 400px; border: 5px solid black; border-radius: 10px" src="{{ img.image_file.url }}"></a></div>
+        {% endfor %}
+        </div>
+        <div class="product_detail">
+            <div style="text-align: right; margin: 5px;">{{ product.name }}</div>
+            <div style="text-align: right; margin: 5px;">دسته بندی: {{ product.category }}</div>
+            <div style="direction: rtl; text-align: right; margin: 5px;">فروشنده: {{ product.seller }}</div>
+            <hr>
+            {% if product.is_available %}
+            <div style="text-align: right; margin: 5px;">موجودی: {{ product.inventory }}</div>
+            {% if product.off != 0 %}
+                <div style="color: red; text-align: right; direction: rtl; margin: 5px;"><del>{{ product.price }} تومان</del></div>
+                <div style="text-align: right; direction: rtl; margin: 5px;">{{ product.off_price }} تومان</div>
+            {% else %}
+                <div style="text-align: right; direction: rtl; margin: 5px;">{{ product.price }} تومان</div>
+            {% endif %}
+<div style="direction: rtl; display: flex; align-items: center; margin-bottom: 10px;">
+    {% if product.has_color_option %}
+        <label for="color-select-id" style="font-size: 20px; margin-left: 10px;">رنگ:</label>
+        <select name="color-select_id" id="color-select-id" style="margin-left: 10px">
+            {% for color in product.color_variants.all %}
+                <option value="{{ color.id }}">{{ color.color }}</option>
+            {% endfor %}
+        </select>
+    {% endif %}
+
+    {% if product.has_size_option %}
+        <label for="size-select-id" style="font-size: 20px; margin-left: 10px; margin-right: 10px;">اندازه:</label>
+        <select name="size-select_id" id="size-select-id">
+            {% for size in product.size_variants.all %}
+                <option value="{{ size.id }}">{{ size.size }}</option>
+            {% endfor %}
+        </select>
+    {% endif %}
+</div>
+
+            <button id="add_to_cart_button">افزودن به سبد خرید</button>
+            {% if product in user.saved_products.all %}
+                <button id="save_product">حذف از ذخیره ها</button>
+            {% else %}
+                <button id="save_product">ذخیره محصول</button>
+            {% endif %}
+            {% else %}
+            <div style="color:red; font-weight:bold; text-align: right; margin: 5px;">ناموجود</div>
+            <button id="save_product">ذخیره محصول</button>
+            {% endif %}
+        <hr>
+            <div style="text-align: right; direction: rtl; margin: 5px;">{{ product.description }} </div>
+            {% for feature in product.features.all %}
+                <ul style="direction: rtl">
+                    <li>{{ feature.name }}: {{ feature.value }}</li>
+                </ul>
+            {% endfor %}
+    </div>
+    </div>
+    </div>
+    <div class="container">
+    <div class="big_detail" style="width: 50%">
+        <h3 style="padding: 15px; margin:5px; border-bottom: 2px solid black; border-top: 2px solid black; text-align: center">محصولات مرتبط</h3>
+        {% for product in related_products.all %}
+            <div class="product">
+                <a href="{{ product.get_absolute_url }}"><img style="; height: 50%; border-radius: 10px" src="
+                    {{ product.images.first.image_file.url }}" alt="Not found"></a>
+                <a href="{{ product.get_absolute_url }}"><div style="text-align: center; margin: 5px;">{{ product.name }}</div></a>
+                <hr>
+                <div style="text-align: right; margin: 5px;">موجودی: {{ product.inventory }}</div>
+                {% if product.off != 0 %}
+                    <div style="color: red; text-align: right; direction: rtl; margin: 5px;"><del>{{ product.price }} تومان</del></div>
+                    <div style="text-align: right; direction: rtl; margin: 5px;">{{ product.off_price }} تومان</div>
+                {% else %}
+                    <div style="text-align: right; direction: rtl; margin: 5px;">{{ product.price }} تومان</div>
+                {% endif %}
+            <hr>
+                <div style="text-align: right; direction: rtl; margin: 5px;">{{ product.description | truncatewords:10 }} </div>
+            </div>
+            {% empty %}
+            محصول مرتبطی یافت نشد
+        {% endfor %}
+    </div>
+    <div class="big_detail" style="width: 50%">
+        <h3 style="padding: 15px; margin:5px; border-bottom: 2px solid black; border-top: 2px solid black; text-align: center">
+            محصولات پیشنهادی برای شما</h3>
+        {% for product in recommended_products %}
+            <div class="product">
+                <a href="{{ product.get_absolute_url }}"><img style="; height: 50%; border-radius: 10px" src="
+                    {{ product.images.first.image_file.url }}" alt="Not found"></a>
+                <a href="{{ product.get_absolute_url }}"><div style="text-align: center; margin: 5px;">{{ product.name }}</div></a>
+                <hr>
+                <div style="text-align: right; margin: 5px;">موجودی: {{ product.inventory }}</div>
+                {% if product.off != 0 %}
+                    <div style="color: red; text-align: right; direction: rtl; margin: 5px;"><del>{{ product.price }} تومان</del></div>
+                    <div style="text-align: right; direction: rtl; margin: 5px;">{{ product.off_price }} تومان</div>
+                {% else %}
+                    <div style="text-align: right; direction: rtl; margin: 5px;">{{ product.price }} تومان</div>
+                {% endif %}
+            <hr>
+                <div style="text-align: right; direction: rtl; margin: 5px;">{{ product.description | truncatewords:10 }} </div>
+            </div>
+            {% empty %}
+            محصول پیشنهادی یافت نشد
+        {% endfor %}
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script>
+        $(document).ready(function (){
+            $('#add_to_cart_button').click(function (){
+                var colorId = $('#color-select-id').val() || 'None';
+                var sizeId = $('#size-select-id').val() || 'None';
+                $.ajax({
+                    type: 'POST',
+                    url: '{% url 'cart:add_to_cart' product.id %}',
+                    data: {'csrfmiddlewaretoken': '{{ csrf_token }}',
+                            'color_id': colorId,
+                            'size_id': sizeId
+                        },
+                    success: function (data){
+                        $('#cart_info').text(data.cart_count);
+                    },
+                    error: function (xhr, status, error) {
+                        alert("Something went wrong: " + xhr.responseText);
+                    }
+                });
+            });
+            $('#save_product').click(function (){
+                $.ajax({
+                    type: 'GET',
+                    url: '{% url 'shop:save_product' product.id %}',
+                    success: function (data){
+                        if (data.saved) {
+                            $('#save_product').text('حذف از ذخیره ها');
+                        } else {
+                            $('#save_product').text('ذخیره محصول');
+                        }
+
+                    },
+                });
+            });
+        });
+    </script>
+{% endblock %}

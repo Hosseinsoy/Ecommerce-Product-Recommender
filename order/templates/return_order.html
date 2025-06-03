@@ -1,0 +1,54 @@
+<div class="return_order_box" style="direction:rtl; display: none; position: fixed; backdrop-filter: blur(25px); background: rgba(255, 255, 255, 0.5); left: 0; top: 0; width: 100%; height: 100%; z-index: 9999;">
+    <div style="height: 550px; overflow-y:auto; position: relative; margin: auto; top: 10%; width: 50%; padding: 20px; background: white; border: darkblue solid 5px; border-radius: 15px;">
+        <span class="close_button" style="cursor: pointer; float: left; font-size: 24px;">&times;</span>
+        <form method="post" action="{% url 'order:return_product' order.id %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <hr>
+            <div id="dynamic-fields">
+
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script>
+    $(document).ready(function() {
+    // Event listener for changes on any checkbox within the multiple choice field
+    $('input[name="return_products"]').change(function() {
+        // Initialize an array to store selected product IDs
+        let selectedProducts = [];
+
+        // Loop through all checkboxes with the name 'return_products'
+        $('input[name="return_products"]:checked').each(function() {
+            selectedProducts.push($(this).val()); // Add the value (product ID) of each checked checkbox to the array
+        });
+
+        // Debugging: Check if the array has the selected product IDs
+        console.log('Selected products:', selectedProducts);
+
+        // If any product is selected, make an AJAX call
+        if (selectedProducts.length > 0) {
+            $.ajax({
+                url: "{% url 'order:return_product' order.id %}",
+                type: 'GET',
+                data: {
+                    'selected_products': selectedProducts.join(',') // Send the selected product IDs as a comma-separated string
+                },
+                success: function(response) {
+                    $('#dynamic-fields').html(response.template); // Populate the dynamic fields with the response
+                },
+                error: function(xhr, status, error) {
+                    console.log('AJAX Error:', error); // Log any AJAX errors for debugging
+                }
+            });
+        } else {
+            // Handle the case where no products are selected (e.g., clear the dynamic fields)
+            $('#dynamic-fields').empty();
+            console.log('No product selected');
+        }
+    });
+});
+
+</script>

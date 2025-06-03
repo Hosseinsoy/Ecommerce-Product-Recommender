@@ -1,0 +1,403 @@
+{% extends 'parent/base.html' %}
+{% load static %}
+
+{% block title %}ایجاد محصول جدید{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div style="width: 500px" class="header2">
+        {% if editing %}
+        <h2>ویرایش محصول</h2>
+        {% else %}
+        <h2>ایجاد محصول</h2>
+        {% endif %}
+    </div>
+{# -----------------------------------------------------------------------------------------------------------------------------------------------#}
+    <div class="form-card">
+        <form method="post" enctype="multipart/form-data" class="product-form">
+            {% csrf_token %}
+            <div style="margin-bottom: 0" class="form-section">
+                {{ form.as_p }}
+                <hr>
+            </div>
+{# -----------------------------------------------------------------------------------------------------------------------------------------------#}
+       <div style="margin-bottom: 0" class="form-section">
+        <label for="size-checkbox">سایزبندی دارد؟</label>
+           {% if product.has_size_option %}
+            <input name="has_size_option" id="size-checkbox" type="checkbox" checked>
+           {% else %}
+            <input name="has_size_option" id="size-checkbox" type="checkbox">
+           {% endif %}
+       </div>
+        {% if product.has_size_option %}
+            <div id="size-container">
+        {% else %}
+            <div id="size-container" style="display: none">
+        {% endif %}
+            {{ size_formset.management_form }}
+            {% for form in size_formset %}
+                {{ form.id }}
+            <div id="size">
+            {% for field in form %}
+                {% if field.name != 'DELETE' %}
+                {% if field.label != 'Id' %}
+                        <label style="display: inline" for="field">{{ field.label }}:</label>
+                        <div style="display: inline" id="field">{{ field }}</div>
+                {% endif %}
+                {% endif %}
+                {% endfor %}
+                {% if editing %}
+                {% if forloop.counter > 2 %}
+                    <div style="margin-bottom: 20px">
+                    <td>{{ form.DELETE.label }}</td>
+                    <td>{{ form.DELETE }}</td>
+                    </div>
+                {% endif %}
+            {% endif %}
+            </div>
+            {% endfor %}
+            <div style="background-color: red" id="delete-size" class="add-feature">- حذف</div>
+            <div id="add_size" class="add-feature">+ اضافه</div>
+            </div>
+{# -----------------------------------------------------------------------------------------------------------------------------------------------#}
+       <div style="margin-bottom: 0" class="form-section">
+        <label for="color-checkbox">رنگ بندی دارد؟</label>
+           {% if product.has_color_option %}
+            <input name="has_color_option" id="color-checkbox" type="checkbox" checked>
+           {% else %}
+            <input name="has_color_option" id="color-checkbox" type="checkbox">
+           {% endif %}
+       </div>
+        {% if product.has_color_option %}
+            <div id="color-container">
+        {% else %}
+            <div id="color-container" style="display: none">
+        {% endif %}
+            {{ color_formset.management_form }}
+            {% for form in color_formset %}
+                {{ form.id }}
+            <div id="color">
+            {% for field in form %}
+                {% if field.name != 'DELETE' %}
+                {% if field.label != 'Id' %}
+                        <label style="display: inline" for="field">{{ field.label }}:</label>
+                        <div style="display: inline" id="field">{{ field }}</div>
+                {% endif %}
+                {% endif %}
+                {% endfor %}
+                {% if editing %}
+                {% if forloop.counter > 2 %}
+                    <div style="margin-bottom: 20px">
+                    <td>{{ form.DELETE.label }}</td>
+                    <td>{{ form.DELETE }}</td>
+                    </div>
+                {% endif %}
+                {% endif %}
+
+            </div>
+            {% endfor %}
+            <div style="background-color: red" id="delete-color" class="add-feature">- حذف</div>
+            <div id="add-color" class="add-feature">+ اضافه</div>
+            </div>
+{# -----------------------------------------------------------------------------------------------------------------------------------------------#}
+            <div style="margin-bottom: 0" class="form-section">
+                <hr>
+                {{ img_form.as_p }}
+            </div>
+
+            <div style="margin-top: 0" class="form-section">
+                <h3>تصاویر بیشتر</h3>
+                <hr style="border: 2px solid black">
+                <div id="img_box">
+                    {{ more_img_form.management_form }}
+                    {% for form in more_img_form %}
+                        {{ form.id }}
+                    <div id="pure_img">
+                      {% for field in form %}
+                        {% if field.name != 'DELETE' %}
+                        {% if field.label != 'Id' %}
+                                <label for="field">{{ field.label }}:</label>
+                                <div style="display: inline" id="field">{{ field }}</div>
+                        {% endif %}
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                        <br>
+                        {% if form.instance.image_file %}
+                         <a href="{{ form.instance.image_file.url }}" target="_blank">
+                         <img src="{{ form.instance.image_file.url }}" alt="Current Image" style="border: 1px solid black; max-width: 150px;"></a>
+                        {% endif %}
+                        {% if editing %}
+                            {% if forloop.counter != 1 %}
+                                <td>{{ form.DELETE.label }}</td>
+                                <td>{{ form.DELETE }}</td>
+                            {% endif %}
+                        {% endif %}
+                        <hr style="border: 2px solid black">
+                    {% endfor %}
+            </div>
+            <div style="background-color: red" id="delete-img" class="add-feature">- حذف</div>
+            <div id="add_img" class="add-feature">+ تصویر بیشتر</div>
+            <br>
+            <hr>
+{# -----------------------------------------------------------------------------------------------------------------------------------------------#}
+            <div class="form-section">
+                <h3>ویژگی های محصول</h3>
+                <div id="feature_box">
+                    {{ feature_formset.management_form }}
+                    {% for form in feature_formset %}
+                        {{ form.id }}
+                        <div class="feature-form">
+                            {% for field in form %}
+                            {% if field.name != 'DELETE' %}
+                            {% if field.label != 'Id' %}
+                                    <label for="field">{{ field.label }}:</label>
+                                    <div id="field">{{ field }}</div>
+                            {% endif %}
+                            {% endif %}
+                            {% endfor %}
+                            {% if editing %}
+                            {% if forloop.counter != 1 %}
+                                <td>{{ form.DELETE.label }}</td>
+                                <td>{{ form.DELETE }}</td>
+                            {% endif %}
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+                    <div style="background-color: red" id="delete-feature" class="add-feature">- حذف</div>
+                    <div id="add_feature" class="add-feature">+ ویژگی جدید</div>
+            </div>
+{# -----------------------------------------------------------------------------------------------------------------------------------------------#}
+            <div class="form-footer">
+                {% if editing %}
+                <input type="submit" value="ویرایش محصول" class="submit-btn">
+                {% else %}
+                <input type="submit" value="ایجاد محصول" class="submit-btn">
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+
+
+
+<style>
+.container {
+    max-width: 2500px;
+    margin: 0 auto;
+    padding: 20px;
+    direction: rtl;
+    text-align: right;
+    font-family: 'IRANSans', Arial, sans-serif;
+}
+
+.header h2 {
+    font-size: 1.8em;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.form-card {
+    width: 1500px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+}
+
+.product-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.form-section h3 {
+    font-size: 1.2em;
+    color: #555;
+    margin-bottom: 10px;
+}
+
+.divider {
+    border: none;
+    border-top: 1px solid #eee;
+    margin: 20px 0;
+}
+
+.feature-form {
+    margin-bottom: 15px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+}
+
+.delete-feature {
+    color: red;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.9em;
+}
+
+.add-feature {
+    color: #007bff;
+    cursor: pointer;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+.submit-btn {
+    background-color: #007bff;
+    color: #fff;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1em;
+}
+
+.submit-btn:hover {
+    background-color: #0056b3;
+}
+
+/* General Button Styling */
+button, .submit-btn, .delete-feature {
+    display: inline-block;
+    font-family: 'IRANSans', Arial, sans-serif;
+    font-size: 1em;
+    font-weight: 600;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+}
+
+/* Submit Button */
+.submit-btn {
+    background-color: #007bff;
+    color: #fff;
+    box-shadow: 0 3px 6px rgba(0, 123, 255, 0.3);
+}
+
+.submit-btn:hover {
+    background-color: #0056b3;
+    box-shadow: 0 4px 8px rgba(0, 123, 255, 0.4);
+}
+
+/* Delete Button */
+.delete-feature {
+    background-color: #ff4d4f;
+    color: #fff;
+    box-shadow: 0 3px 6px rgba(255, 77, 79, 0.3);
+    padding: 5px 15px;
+    font-size: 0.9em;
+}
+
+.delete-feature:hover {
+    background-color: #d9363e;
+    box-shadow: 0 4px 8px rgba(255, 77, 79, 0.4);
+}
+
+/* Add Feature Button */
+.add-feature {
+    background-color: #28a745;
+    color: #fff;
+    padding: 8px 20px;
+    font-size: 1em;
+    font-weight: bold;
+    border-radius: 6px;
+    box-shadow: 0 3px 6px rgba(40, 167, 69, 0.3);
+}
+
+.add-feature:hover {
+    background-color: #218838;
+    box-shadow: 0 4px 8px rgba(40, 167, 69, 0.4);
+}
+
+/* Button Spacing */
+button, .submit-btn, .delete-feature, .add-feature {
+    margin: 10px 0;
+}
+
+/* General Input Field Styling */
+input[type="text"], input[type="email"], input[type="password"], select, textarea {
+    width: 100%;
+    padding: 12px 18px;
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 1.1em;
+    background-color: #f9f9f9;
+    box-sizing: border-box;
+    transition: all 0.3s ease-in-out;
+}
+
+/* Focus State for Input Fields */
+input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus, select:focus, textarea:focus {
+    border-color: #007bff;
+    outline: none;
+    background-color: #eaf2ff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+}
+
+/* Improved Textarea Styling */
+textarea {
+    min-height: 120px;
+    resize: vertical;
+    font-size: 1.1em;
+    padding: 12px 18px;
+}
+
+/* File Input Styling */
+input[type="file"], input[type="number"], input[type="checkbox"]{
+    padding: 8px 10px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    font-size: 1em;
+}
+
+/* Focus State for File Input */
+input[type="file"]:focus {
+    border-color: #007bff;
+    outline: none;
+    background-color: #eaf2ff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+}
+
+/* Label Styling */
+label {
+    font-size: 1.1em;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+    {#display: block;#}
+}
+
+/* Form Section Spacing */
+.form-section {
+    margin-bottom: 30px;
+}
+
+/* Adjust Input & Button Transitions */
+input[type="text"], input[type="email"], input[type="password"], select, textarea, button, .submit-btn, .delete-feature, .add-feature {
+    transition: all 0.3s ease-in-out;
+}
+
+/* Add some spacing between the input fields and other elements */
+.form-section input[type="text"], .form-section input[type="email"], .form-section input[type="password"], .form-section select, .form-section textarea {
+    margin-bottom: 15px;
+}
+
+</style>
+
+
+
+{% endblock %}
+
+{% block scripts %}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="{% static 'js/add_product.js' %}"></script>
+{% endblock %}

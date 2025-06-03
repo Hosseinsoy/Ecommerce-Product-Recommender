@@ -1,0 +1,699 @@
+body {
+    font-family: 'IRANSansWeb', Arial, sans-serif;
+}
+
+
+.header {
+    text-align: center;
+    color: black;
+    font-weight: bold;
+    background-color: darkseagreen;
+    font-size: 12px;
+    padding: 20px;
+    margin-top: 12px;
+    margin-right: 12px;
+    margin-left: 12px;
+    border-top: 5px solid #244242;
+    border-left: 5px solid #244242;
+    border-right: 5px solid #244242;
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+
+
+}
+
+.container {
+    display: flex;
+}
+
+.small {
+    float: right;
+    border-bottom: 5px solid #244242;
+    border-top: 5px solid #244242;
+    border-left: 5px solid #244242;
+    margin-left: 12px;
+    width: 20%;
+    right: 12px;
+    height: fit-content;
+    text-align: right;
+    padding: 10px;
+    direction: rtl;
+    border-bottom-left-radius: 15px;
+}
+
+
+.big {
+    width: 100%;
+    margin-right: 12px;
+    padding: 15px;
+    border: 5px solid #244242;
+    text-align: right;
+}
+
+.big_order_create {
+    width: 100%;
+    margin-right: 12px;
+    padding: 15px;
+    text-align: right;
+}
+
+.big_detail {
+    width: 100%;
+    margin-right: 12px;
+    margin-left: 12px;
+    margin-bottom: 12px;
+    padding: 15px;
+    border: 5px solid #244242;
+    border-bottom-left-radius: 15px;
+    border-bottom-right-radius: 15px;
+    text-align: right;
+}
+
+.product {
+    float: right;
+    margin: 20px;
+    padding: 20px;
+    width: 200px;
+    height: 350px;
+    border: solid #244242 5px;
+    border-radius: 15px;
+    text-align: center;
+}
+
+.product_order_create {
+    float: right;
+    margin-right: 37px;
+    margin-bottom: 15px;
+    padding: 20px;
+    width: 150px;
+    height: 250px;
+    border: solid #244242 5px;
+    border-radius: 15px;
+    text-align: center;
+}
+
+.flex_order_container {
+    display: block;
+}
+
+.product_detail {
+    float: right;
+    padding: 20px;
+    text-align: right;
+    font-size: 25px;
+}
+
+.img_detail {
+    float: right;
+    width: 30%;
+    margin-right: 25px;
+
+}
+
+.cart {
+    background-color: #8FBC8FFF;
+    float: left;
+    padding: 5px;
+    margin-bottom: 15px;
+    margin-right: 0px;
+    margin-top: 15px;
+    margin-left: 20%;
+    border: 3px solid #244242;
+    border-radius: 10px;
+    width: 41px;
+    height: fit-content;
+}
+
+.cart_icon {
+    text-align: left;
+}
+
+.cart_info {
+    text-align: center;
+    direction: rtl;
+    font-weight: bold;
+}
+
+.cart_container {
+    display: flex;
+    margin-top: 15px;
+    margin-left: 12px;
+    margin-right: 12px;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 15px;
+    border-bottom-left-radius: 15px;
+    background-color: #50dfb4;
+    color: black;
+    border: 5px solid #244242;
+}
+
+/* Cart Header */
+.header {
+    text-align: center;
+    color: black;
+    font-weight: bold;
+    background-color: darkseagreen;
+    font-size: 16px; /* Increased font size for better readability */
+    padding: 20px;
+    border-top: 5px solid #244242;
+    border-left: 5px solid #244242;
+    border-right: 5px solid #244242;
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+}
+
+.header2 {
+    text-align: center;
+    color: black;
+    font-weight: bold;
+    background-color: darkseagreen;
+    font-size: 16px; /* Increased font size for better readability */
+    padding: 20px;
+    margin-top: 0;
+    border: 5px solid #244242;
+    border-radius: 15px;
+}
+
+/* Header */
+
+/* Container Layout */
+
+/* Cart Items */
+.item {
+    direction: rtl;
+    display: flex;
+    align-items: center;
+    background-color: #fff;
+    border: 5px solid #244242;
+    border-radius: 15px;
+    padding: 15px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    gap: 15px; /* فاصله بین تصویر و اطلاعات محصول */
+}
+
+.item_create_order {
+    text-align: center;
+    direction: rtl;
+    border: 3px solid black;
+    border-radius: 15px;
+    padding: 20px;
+    margin: 20px;
+    width: 100%;
+    height: 250%;
+
+}
+
+.flex-container{
+    display: flex;
+    width: 100%;
+}
+
+.order_item {
+    direction: rtl;
+    background-color: #fff;
+    width: 500px;
+    border: 5px solid #244242;
+    border-radius: 15px;
+    padding: 15px;
+    margin: auto;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    gap: 15px; /* فاصله بین تصویر و اطلاعات محصول */
+
+}
+
+.order_detail_template {
+    direction: rtl;
+    background-color: #fff;
+    float: right;
+    width: 1000px;
+    border: 2px solid #244242;
+    border-radius: 15px;
+    padding: 15px;
+    margin: 25px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    gap: 15px; /* فاصله بین تصویر و اطلاعات محصول */
+}
+
+
+.product_image {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+.product_info {
+    flex: 1;
+    font-size: 14px;
+}
+
+.product_info span {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.unit_price {
+    font-weight: bold;
+}
+
+.quantity, .total_price {
+    color: #555;
+}
+
+.actions {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.actions div {
+    background-color: #007bff;
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    text-align: center;
+    font-size: 16px;
+}
+
+.actions div:hover {
+    background-color: #0056b3;
+}
+
+/* Cart Summary */
+.cart_result {
+    direction: rtl;
+    background-color: #f9f9f9;
+    border: 5px solid #244242;
+    border-radius: 15px;
+    padding: 15px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    font-size: 16px;
+}
+
+.cart_result div {
+    margin-bottom: 10px;
+}
+
+.cart_result span {
+    font-weight: bold;
+    color: #333;
+}
+
+.big_cart {
+    margin-right: 12px;
+    margin-left: 12px;
+    padding: 20px;
+    border: 5px solid #244242;
+    border-bottom-left-radius: 15px;
+    border-bottom-right-radius: 15px;
+    text-align: right;
+}
+
+.big_order {
+    margin-right: 12px;
+    width: 94.1%;
+    margin-left: 12px;
+    padding: 20px;
+    border: 5px solid #244242;
+    border-bottom-left-radius: 15px;
+    border-bottom-right-radius: 15px;
+    text-align: right;
+    position: absolute;
+}
+
+.pagination {
+    border-bottom: 5px solid black;
+    border-right: 5px solid black;
+    border-left: 5px solid black;
+    width: 79.1%;
+    margin-right: 12px;
+    margin-left: 12px;
+    margin-bottom: 12px;
+    border-bottom-right-radius: 15px;
+    border-bottom-left-radius: 15px;
+    padding: 10px;
+    text-align: right;
+    float: right;
+    text-align: center;
+}
+
+
+.pagination_search {
+    width: 96.5%;
+    margin-right: 12px;
+    margin-left: 12px;
+    margin-bottom: 12px;
+    border-bottom-right-radius: 15px;
+    border-bottom-left-radius: 15px;
+    padding: 10px;
+    text-align: right;
+    float: right;
+    text-align: center;
+}
+
+.pagination-container {
+    margin: auto;
+    text-align: center;
+    padding: 10px;
+    display: inline-block;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.pagination-link {
+    color: #007bff;
+    margin: 0 8px;
+    text-decoration: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.pagination-link:hover {
+    background-color: #007bff;
+    color: #fff;
+}
+
+.pagination-active {
+    color: #fff;
+    background-color: #007bff;
+    font-weight: bold;
+    border-radius: 4px;
+}
+
+.pagination-prev, .pagination-next {
+    color: #2d56e6;
+}
+
+.pagination-ellipsis {
+    margin: 0 8px;
+    color: gray;
+}
+
+.disabled {
+    color: lightgray;
+    pointer-events: none;
+}
+
+
+.search_box {
+    text-align: center;
+    margin-bottom: 5px;
+    margin-right: 450px;
+    margin-left: 32%;
+    font-size: 13px;
+    direction: rtl;
+    padding: 2px;
+}
+
+.login-bottom {
+    text-decoration: none;
+    background-color: #8FBC8FFF;
+    color: black;
+    border: 3px solid black;
+    border-radius: 5px;
+    width: fit-content;
+    height: fit-content;
+    padding: 5px;
+    margin-bottom: 15px;
+    margin-right: 15px;
+    margin-top: 15px;
+    margin-left: 0%;
+}
+
+.profile_bottom {
+    text-decoration: none;
+    background-color: #8FBC8FFF;
+    color: black;
+    border: 3px solid black;
+    border-radius: 5px;
+    width: fit-content;
+    height: fit-content;
+    padding: 5px;
+    margin-bottom: 15px;
+    margin-right: 15px;
+    margin-top: 15px;
+    margin-left: 0%;
+}
+
+.profile_seller_bottom {
+    text-decoration: none;
+    background-color: #d592e8;
+    color: black;
+    border: 3px solid black;
+    border-radius: 5px;
+    width: fit-content;
+    height: fit-content;
+    padding: 5px;
+    margin-bottom: 15px;
+    margin-right: 15px;
+    margin-top: 15px;
+    margin-left: 0%;
+}
+
+.product_list_bottom {
+    text-decoration: none;
+    background-color: #8FBC8FFF;
+    color: black;
+    border: 3px solid black;
+    border-radius: 5px;
+    width: fit-content;
+    height: fit-content;
+    padding: 5px;
+    margin-bottom: 15px;
+    margin-top: 15px;
+    margin-left: 25px;
+}
+
+.login_choice {
+    font-size: 20px;
+    margin-left: 41%;
+    margin-right: 41%;
+    padding: 20px;
+    width: 200px;
+    height: 400px;
+    border: solid #244242 5px;
+    border-radius: 15px;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.small_right {
+    float: right;
+    border-bottom: 5px solid #244242;
+    border-top: 5px solid #244242;
+    border-right: 5px solid #244242;
+    margin-right: 12px;
+    width: 20%;
+    right: 12px;
+    height: 75px;
+    text-align: right;
+    padding: 10px;
+    direction: rtl;
+    border-bottom-right-radius: 15px;
+}
+
+.pdf_small_right {
+    float: right;
+    border-bottom: 5px solid #244242;
+    border-top: 5px solid #244242;
+    border-right: 5px solid #244242;
+    margin-right: 12px;
+    width: 20%;
+    right: 12px;
+    height: 75px;
+    text-align: right;
+    padding: 10px;
+    direction: rtl;
+    border-bottom-right-radius: 15px;
+}
+
+.big_profile {
+    width: 100%;
+    margin-left: 12px;
+    margin-bottom: 12px;
+    padding: 15px;
+    border: 5px solid #244242;
+    border-bottom-left-radius: 15px;
+    border-bottom-right-radius: 15px;
+    text-align: right;
+
+}
+
+.register_box {
+    direction: rtl;
+    font-size: 20px;
+    margin-left: 41%;
+    margin-right: 41%;
+    padding: 20px;
+    width: 300px;
+    height: fit-content;
+    border: solid #244242 5px;
+    border-radius: 15px;
+    text-align: right;
+    margin-bottom: 30px;
+}
+
+.order_information_box {
+    direction: rtl;
+    font-size: 20px;
+    margin: auto;
+    padding: 20px;
+    width: 800px;
+    border: solid #244242 5px;
+    border-radius: 15px;
+    text-align: right;
+}
+
+/* Container for the message */
+/* Container for the message */
+.message-box {
+    position: fixed;
+    top: 20px;
+    left: -100%; /* Start off-screen */
+    /*width: fit-content;*/
+    font-weight: bold;
+    border: 1px solid black;
+    border-radius: 5px;
+    margin-left: 10px;
+    padding: 20px;
+    margin-top: 100px;
+    color: black;
+    z-index: 9999; /* Ensures it appears above other content */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: left 0.5s ease-in-out; /* Smooth transition for both appearing and disappearing */
+}
+
+.message-box.show {
+    left: 20px; /* Slide in from the left */
+}
+
+.message-box.hide {
+    left: -100%; /* Slide back out to the left */
+}
+
+.verification-container {
+    text-align: center;
+    background: #fff;
+    padding: 30px 50px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.countdown {
+    /*font-size: 1.2rem;*/
+    color: #ff6347;
+    margin-top: 10px;
+}
+
+#timer {
+    font-weight: bold;
+}
+
+.expired-box {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #ffe6e6;
+    border: 1px solid #ff6347;
+    border-radius: 8px;
+    color: #ff6347;
+}
+
+.expired-box a {
+    color: #ff6347;
+    text-decoration: underline;
+}
+/* General Input Field Styling */
+input[type="text"], input[type="email"], input[type="password"], select, textarea {
+    /*width: 100%;*/
+    padding: 12px 18px;
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    /*font-size: 1.1em;*/
+    background-color: #f9f9f9;
+    box-sizing: border-box;
+    transition: all 0.3s ease-in-out;
+}
+
+/* Focus State for Input Fields */
+input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus, select:focus, textarea:focus {
+    border-color: #007bff;
+    outline: none;
+    background-color: #eaf2ff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+}
+
+/* Improved Textarea Styling */
+textarea {
+    /*min-height: 120px;*/
+    resize: vertical;
+    /*font-size: 1.1em;*/
+    padding: 12px 18px;
+}
+
+/* File Input Styling */
+input[type="file"] {
+    padding: 8px 10px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    font-size: 1em;
+}
+
+/* Focus State for File Input */
+input[type="file"]:focus {
+    border-color: #007bff;
+    outline: none;
+    background-color: #eaf2ff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+}
+
+/* Label Styling */
+label {
+    /*font-size: 1.1em;*/
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+    /*display: block;*/
+}
+
+/* Form Section Spacing */
+.form-section {
+    margin-bottom: 30px;
+}
+
+/* Adjust Input & Button Transitions */
+input[type="text"], input[type="email"], input[type="password"], select, textarea, button, .submit-btn, .delete-feature, .add-feature {
+    transition: all 0.3s ease-in-out;
+}
+
+/* Add some spacing between the input fields and other elements */
+.form-section input[type="text"], .form-section input[type="email"], .form-section input[type="password"], .form-section select, .form-section textarea {
+    margin-bottom: 15px;
+}
+/* Make the labels and inputs for "نام ویژگی" and "مقدار ویژگی" fit content */
+.form-section .feature-form label {
+    /*width: fit-content;*/
+    display: inline-block;
+    margin-right: 0;
+}
+
+.form-section .feature-form input {
+    /*width: fit-content;*/
+    display: inline-block;
+    margin-left: 10px; /* Adjust margin to ensure there's space between label and input */
+}
+
+/* If you have specific classes or ids for the fields, you can target them directly */
+#id_feature_name, #id_feature_value {
+    /*width: fit-content;*/
+    display: inline-block;
+    margin-left: 10px;
+}
+
+

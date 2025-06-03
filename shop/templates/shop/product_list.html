@@ -1,0 +1,95 @@
+{% extends 'parent/base.html' %}
+{% block title %}Products{% endblock %}
+{% block content %}
+    <div class="header">
+    {% if category %}
+        <h1>لیست محصولات دسته بندی {{ category.name }}</h1>
+    {% else %}
+       <h1> لیست محصولات</h1>
+    {% endif %}
+    </div>
+    <div class="container">
+    <div style="width: 22%" class="small">
+    <form method="get">
+    <div class="form-group">
+        <h4 style="text-align: center; border-bottom: 2px solid black; padding-bottom: 5px">فیلتر ها</h4>
+
+        <!-- Category Filter -->
+        <div class="form-group">
+            <label for="id_category">دسته بندی</label>
+            <select name="category" id="id_category" class="form-control">
+                {% for choice in filter.form.category.field.choices %}
+                    <option value="{{ choice.0 }}" {% if choice.0 == filter.form.category.value %}selected{% endif %}>
+                        {{ choice.1 }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <br>
+        <br>
+        <!-- Price Range Filter -->
+        <div class="form-group">
+            <label for="price_min">حداقل قیمت</label>
+            <input type="number" name="price_min" id="price_min" class="form-control" value="{{ request.GET.price_min }}">
+        </div>
+        <br>
+        <div class="form-group">
+            <label for="price_max">حداکثر قیمت</label>
+            <input type="number" name="price_max" id="price_max" class="form-control" value="{{ request.GET.price_max }}">
+        </div>
+        <br>
+        <br>
+        <!-- Sorting Filter -->
+        <div class="form-group">
+            <label for="id_ordering">مرتب سازی براساس</label>
+            <select name="ordering" id="id_ordering" class="form-control">
+                {% for choice in filter.form.ordering.field.choices %}
+                    <option value="{{ choice.0 }}" {% if choice.0 == filter.form.ordering.value %}selected{% endif %}>
+                        {{ choice.1 }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+    </div>
+    <br>
+    <br>
+    <br>
+    <button style="margin-top: 5px" type="submit" class="btn btn-primary">اعمال فیلتر</button>
+    <a style="text-decoration: none" href="{% url 'shop:product_list' %}" class="btn btn-secondary">
+        <div style="float:left; margin-bottom:10px; border: 2px solid black; border-radius: 5px; width: fit-content;  padding: 5px;">
+            پاکسازی
+        </div>
+    </a>
+</form>
+
+    </div>
+
+    <div class="big">
+        {% for product in products %}
+            <div class="product">
+                <a href="{{ product.get_absolute_url }}"><img style="; height: 50%; border-radius: 10px" src="
+                    {{ product.images.first.image_file.url }}" alt="Not found"></a>
+                <a style="text-decoration: none; color: black" href="{{ product.get_absolute_url }}"><div style="text-align: center; margin: 5px;">{{ product.name }}</div></a>
+                <hr>
+                {% if product.is_available %}
+                <div style="text-align: right; margin: 5px;">موجودی: {{ product.inventory }}</div>
+                {% if product.off != 0 %}
+                    <div style="color: red; text-align: right; direction: rtl; margin: 5px;"><del>{{ product.price }} تومان</del></div>
+                    <div style="text-align: right; direction: rtl; margin: 5px;">{{ product.off_price }} تومان</div>
+                {% else %}
+                    <div style="text-align: right; direction: rtl; margin: 5px;">{{ product.price }} تومان</div>
+                {% endif %}
+                {% else %}
+                <div style="color: red; font-weight:bold; text-align: right; margin: 5px;">ناموجود</div>
+                {% endif %}
+            <hr>
+                <div style="text-align: right; direction: rtl; margin: 5px;">{{ product.description | truncatewords:10 }} </div>
+            </div>
+        {% endfor %}
+    </div>
+    </div>
+        <div style="width: 77.8%" class="pagination">
+    {% include 'partials/pagination.html' with page=page_obj %}
+        </div>
+{% endblock %}

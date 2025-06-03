@@ -1,0 +1,27 @@
+{% extends 'parent/base.html' %}
+{% block title %}Login{% endblock %}
+{% block content %}
+    <div class="header">
+       <h1>شماره تلفن خود را وارد کنید</h1>
+    </div>
+    <div class="container">
+    <div class="big_detail">
+        <div class="login_choice">
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <input type="submit" value="ارسال کد تایید">
+            </form>
+        </div>
+        {% for message in messages %}
+        <div style="text-align: center; color: red">{{ message }}</div>
+    {% endfor %}
+    </div>
+
+    </div>
+<script>
+    // Set this before starting a new verification code process (e.g., in your Django view or a new verification button click)
+    sessionStorage.setItem('isNewLogin', 'true');
+</script>
+
+{% endblock %}

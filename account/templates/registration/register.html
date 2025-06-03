@@ -1,0 +1,37 @@
+{% extends 'parent/base.html' %}
+{% block title %}Register{% endblock %}
+{% block content %}
+    <div class="header">
+    {% if shopping %}
+       <h1>برای ثبت سفارش ثبت نام کنید</h1>
+    {% else %}
+       <h1>برای ثبت نام اطلاعات زیر را وارد کنید</h1>
+    {% endif %}
+    </div>
+    <div class="container">
+    <div class="big_detail">
+        <div class="register_box">
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <input type="submit" value="ثبت نام و ادامه خرید">
+            </form>
+            <br><br><br>
+            {% if shopping %}
+                <a href="{% url 'order:login_choice' %}" style="text-decoration: none"><div style="cursor: pointer; border: 2px solid black; font-size: 14px; font-weight: bold;border-radius: 8px; padding: 10px; margin: auto; width: fit-content;">حساب کاربری دارید | وارد شوید</div></a>
+            {% else %}
+                <a href="{% url 'account:login_choice' %}" style="text-decoration: none"><div style="cursor: pointer; border: 2px solid black; font-size: 14px; font-weight: bold;border-radius: 8px; padding: 10px; margin: auto; width: fit-content;">حساب کاربری دارید | وارد شوید</div></a>
+            {% endif %}
+        </div>
+        {% for message in messages %}
+        <div style="text-align: center; color: red">{{ message }}</div>
+    {% endfor %}
+    </div>
+
+    </div>
+<script>
+    // Set this before starting a new verification code process (e.g., in your Django view or a new verification button click)
+    sessionStorage.setItem('isNewLogin', 'true');
+</script>
+
+{% endblock %}
