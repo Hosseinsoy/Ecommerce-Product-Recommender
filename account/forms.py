@@ -258,16 +258,11 @@ class ProductImageForm(forms.ModelForm):
         model = Image
         fields = ['image_file']
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['image_file'].required = False
-
     def clean(self):
         cleaned_data = super().clean()
         image = cleaned_data.get('image_file')
 
         if not image and self.instance.pk:
-            # هیچ عکس جدیدی انتخاب نشده ولی قبلاً عکس داشته، پس مشکلی نیست
             cleaned_data['image_file'] = self.instance.image_file
 
         return cleaned_data

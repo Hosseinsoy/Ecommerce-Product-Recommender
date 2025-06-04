@@ -465,9 +465,10 @@ def add_product(request):
                 image.save()
 
                 for form in more_img_form:
-                    img = form.save(commit=False)
-                    img.product = product
-                    img.save()
+                    if form.cleaned_data:
+                        img = form.save(commit=False)
+                        img.product = product
+                        img.save()
 
                 for form in feature_formset:
                     feature = form.save(commit=False)
@@ -538,7 +539,7 @@ def edit_product(request, product_id):
             return HttpResponseNotFound('محصول مورد نظر یافت نشد')
 
         ProductFeatureFormSet = modelformset_factory(ProductFeature, fields=('name', 'value'), extra=0, can_delete=True)
-        ProductImageFormSet = modelformset_factory(Image, form=ProductImageForm, extra=0, can_delete=True)
+        ProductImageFormSet = modelformset_factory(Image, fields=['image_file',], extra=0, can_delete=True)
         ProductSizeFormset = modelformset_factory(ProductSizeVariant, fields=('size',), extra=0, can_delete=True)
         ProductColorFormset = modelformset_factory(ProductColorVariant, fields=('color',), extra=0, can_delete=True)
 
@@ -590,9 +591,11 @@ def edit_product(request, product_id):
                 has_color_option = request.POST.get('has_color_option') == 'on'
                 if product.has_size_option and not has_size_option:
                     product.has_size_option = False
+                    product.save()
                     ProductSizeVariant.objects.filter(product=product).delete()
-                if product.has_color_option and not has_color_option:
+                elif product.has_color_option and not has_color_option:
                     product.has_color_option = False
+                    product.save()
                     ProductColorVariant.objects.filter(product=product).delete()
 
                 size_variants = []
