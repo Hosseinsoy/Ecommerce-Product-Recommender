@@ -95,22 +95,21 @@ document.addEventListener("DOMContentLoaded", function () {
 
 <script src="{% static 'assets/js/vendors/countDown/jquery.countdown.min.js' %}"></script>
 <script>
-    $(document).ready(function() {
-        var now = new Date();
-        var day = now.getDate();
-        var month = now.getMonth() + 1;
-        var year = now.getFullYear() + 1;
+$(document).ready(function () {
 
-        var nextyear = month + '/' + day + '/' + year + ' 07:07:07';
+    $('.example').each(function () {
 
-        $('.example').countdown({
-            date: nextyear,
-            offset: +2,
-            day: 'Day',
-            days: 'Days',
+        let date = $(this).data('date');
+
+        $(this).countdown({
+            date: date,
+            offset: +3.5,
             hideOnComplete: true
         });
+
     });
+
+});
 </script>
 
 <script>

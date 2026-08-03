@@ -1,3 +1,4 @@
+from django.utils import timezone
 from django.db import models
 from slugify import slugify as alt_slugify
 from django_jalali.db import models as jmodels
@@ -39,6 +40,30 @@ class Product(models.Model):
     slug = models.SlugField(max_length=250, unique=True)
     has_size_option = models.BooleanField(default=False, verbose_name='سایزبندی دارد؟')
     has_color_option = models.BooleanField(default=False, verbose_name='رنگ بندی دارد؟')
+    flash_sale_start = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name='شروع شگفت انگیز'
+    )
+
+    flash_sale_end = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name='پایان شگفت انگیز'
+    )
+
+    from django.utils import timezone
+
+    @property
+    def is_flash_sale(self):
+        now = timezone.localtime()
+
+        return (
+                self.off >= 10 and
+                self.flash_sale_start and
+                self.flash_sale_end and
+                self.flash_sale_start <= now <= self.flash_sale_end
+        )
 
     class Meta:
         ordering = ['-created']

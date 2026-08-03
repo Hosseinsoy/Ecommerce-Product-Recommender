@@ -8,6 +8,7 @@ from django.http import JsonResponse
 
 from django.shortcuts import render, get_object_or_404, redirect
 from django.template.loader import render_to_string
+from django.utils import timezone
 
 from account.models import ShopUser
 from cart.cart import Cart
@@ -44,7 +45,19 @@ User = settings.AUTH_USER_MODEL
 
 
 def home(request):
-    return render(request, 'shop/home.html')
+    flash_products = [
+         product for product in Product.objects.prefetch_related(
+            'images',
+            'variants'
+            )
+         if product.is_flash_sale
+     ][:10]
+
+    context = {
+        'shocking_products': flash_products,
+    }
+
+    return render(request, 'shop/home.html', context)
 
 
 class ProductListView(FilterView):

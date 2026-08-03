@@ -1,9 +1,10 @@
 {% extends 'parent/base.html' %}
+{% load humanize %}
 {% load static %}
 {% block title %}Home{% endblock %}
 {% block content %}
 {#    < -- Story:Start -- >#}
-    <div class="container mt-xxxx-large">
+<div class="container mt-xxxx-large">
     <div class="story-section my-3 text-center px-5">
         <div class="row">
             <div class="col-sm-12 col-md-12 col-lg-6 col-xl-6 d-flex justify-content-around align-items-center mb-3">
@@ -50,7 +51,6 @@
             </div>
         </div>
     </div>
-</div>
 {#    < -- Story:End -- >#}
 {#    < -- Inside Story:Start -- >#}
 <div class="modal  fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -264,4 +264,130 @@
     </div>
 </section>
 <!-- Categories:end -->
->{% endblock %}
+<!--    Banners:start-->
+    <div class="banners mt-4">
+        <div class="row">
+            <div class="col-6 col-lg-3 col-xl-3 mb-3">
+                <a href="" title="">
+                    <img src="{% static 'assets/img/small-banner-1.jpg' %}" alt="" class="img-fluid border-radius-3xl img-opacity">
+                </a>
+            </div>
+            <div class="col-6 col-md-6 col-lg-3 col-xl-3 mb-3">
+                <a href="" title="">
+                    <img src="{% static 'assets/img/small-banner-3.jpg' %}" alt="" class="img-fluid border-radius-3xl img-opacity">
+                </a>
+            </div>
+            <div class="col-6 col-md-6 col-lg-3 col-xl-3 mb-3">
+                <a href="" title="">
+                    <img src="{% static 'assets/img/small-banner-4.jpg' %}" alt="" class="img-fluid border-radius-3xl img-opacity">
+                </a>
+            </div>
+            <div class="col-6 col-md-6 col-lg-3 col-xl-3 mb-3">
+                <a href="" title="">
+                    <img src="{% static 'assets/img/small-banner-5.jpg' %}" alt="" class="img-fluid border-radius-3xl img-opacity">
+                </a>
+            </div>
+        </div>
+    </div>
+<!--    Banners:end-->
+<!--Best Suggestions:start-->
+    <div class="best-suggestions border-radius-2xl py-1">
+        <!-- Slider:start -->
+        <div class="swiper bestSuggestionsSlider">
+            <div class="swiper-wrapper p-2">
+                <div class="swiper-slide text-center d-flex flex-column justify-content-between align-items-center">
+                    <img src="{% static 'assets/img/Amazings.png' %}" alt="" class="amazing-img">
+                    <img src="{% static 'assets/img/box.png' %}" alt="" class="box-img d-block">
+                    <a href="#" class="text-white d-block mt-3" title="">مشاهده همه <i
+                            class="fa fa-angle-left align-baseline ms-1"></i></a>
+                </div>
+                {% for product in shocking_products %}
+                {% if forloop.first %}
+                <div class="swiper-slide border-radius-1-tr-br">
+                {% else %}
+                <div class="swiper-slide">
+                {% endif %}
+                    <div class="position-relative">
+                        <ul class="example"
+                            data-date="{{ product.flash_sale_end|date:'m/d/Y H:i:s' }}">
+                            <li><span class="days">00</span><p class="days_text">روز</p></li>
+                            <li class="seperator">:</li>
+                            <li><span class="hours">00</span><p class="hours_text">ساعت</p></li>
+                            <li class="seperator">:</li>
+                            <li><span class="minutes">00</span><p class="minutes_text">دقیقه</p></li>
+                            <li class="seperator">:</li>
+                            <li><span class="seconds">00</span><p class="seconds_text">ثانیه</p></li>
+                        </ul>
+                    </div>
+                    <br>
+                    {% with image=product.images.first %}
+                        {% if image %}
+                            <img class="img-flash" src="{{ image.image_file.url }}"
+                                 alt="{{ product.name }}">
+                        {% endif %}
+                    {% endwith %}
+                    <h6 class="product-title">
+                        <a href="{{ product.get_absolute_url }}" class="text-dark text-decoration-none">
+                            {{ product.name }}
+                        </a>
+                    </h6>
+                    <div class="product-details d-flex justify-content-between align-items-center mt-4">
+                        <span class="discount-amount text-white px-2 border-radius-3xl fs-6 fw-bold">{{ product.off }}%</span>
+                        <span class="discounted_price fw-bold fs-5">{{ product.off_price|intcomma }}<span>تومان</span></span>
+                    </div>
+                    <del class="d-block real_price float-end gray-500 pe-4">{{ product.price|intcomma }}</del>
+
+                    <a href="{{ product.get_absolute_url }}" class="stretched-link" title=""></a>
+                </div>
+                {% endfor %}
+
+                <div class="swiper-slide border-radius-1-tl-bl">
+                    <div class="card h-100 border-0 border-radius-1-tl-bl">
+                        <div class="card-body d-flex flex-column justify-content-center align-items-center text-center">
+                            <i class="fa fa-angle-left fs-2 text-info mb-3"></i>
+
+                            <a href="#"
+                               class="stretched-link text-black-50 fw-bold"
+                               title="">
+                                مشاهده همه
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="swiper-button-next bg-light border-radius-circle border-gray-400"></div>
+            <div class="swiper-button-prev bg-light border-radius-circle border-gray-400"></div>
+            <div class="swiper-pagination"></div>
+
+        </div>
+        <!-- Slider:end -->
+    </div>
+    <!--Best Suggestions:End-->
+        <!--    Banners:start-->
+    <div class="banners my-5">
+        <div class="row">
+            <div class="col-md-6 col-12">
+                <a href="" title="" class="banner-item">
+                    <div class="banner-inner">
+                        <img src="{% static 'assets/img/banner-md-1.jpg' %}" alt="" class="img-fluid">
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-6 col-12">
+                <a href="" title="" class="banner-item">
+                    <div class="banner-inner">
+                        <img src="{% static 'assets/img/banner-md-2.jpg' %}" alt="" class="img-fluid">
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+
+    <!--    Banners:end-->git add .
+git commit -m "Add flash sale section and improve cart UI"
+</div>
+
+</div>
+{% endblock %}
