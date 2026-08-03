@@ -43,6 +43,10 @@ User = settings.AUTH_USER_MODEL
 #     return render(request, 'shop/product_list.html', context)
 
 
+def home(request):
+    return render(request, 'shop/home.html')
+
+
 class ProductListView(FilterView):
     model = Product
     queryset = Product.objects.all().order_by('-is_available', '-created')
@@ -84,7 +88,6 @@ def search(request):
     query = None
     result = []
     form = SearchForm(request.POST)
-
     if 'query' in request.POST:
         if form.is_valid():
             query = form.cleaned_data['query']

@@ -1,0 +1,123 @@
+.blog-card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid $gray-300;
+  transition: all 0.4s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+
+  &:hover {
+    transform: translateY(-10px) scale(1.02);
+    background: linear-gradient(135deg, #ffffff 0%, #f0faff 100%);
+  }
+
+  .blog-card-image {
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    img {
+      width: 80%;
+      height: 80%;
+      border-radius: 16px; // عکس دایره‌ای
+      object-fit: cover;
+      transition: transform 0.5s ease;
+    }
+
+    &:hover img {
+      transform: scale(1.1) rotate(2deg);
+    }
+  }
+
+  .blog-card-body {
+    padding: 18px;
+    text-align: center;
+
+    .category {
+      display: inline-block;
+      padding: 4px 12px;
+      font-size: 12px;
+      font-weight: bold;
+      color: #fff;
+      background: linear-gradient(90deg, $theme, #3b82f6);
+      border-radius: 50px;
+      margin-bottom: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: #111;
+    }
+
+    .excerpt {
+      font-size: 14px;
+      color: #444;
+      line-height: 1.8;
+      margin-bottom: 14px;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      display: -webkit-box;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .read-more {
+      display: inline-block;
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      color: $theme;
+      border: 1px solid $theme;
+      border-radius: 50px;
+      transition: all 0.3s ease;
+      text-decoration: none;
+
+      &:hover {
+        background: $theme;
+        color: #fff;
+      }
+    }
+  }
+
+  .blog-card-footer {
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    padding: 12px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .author {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      img {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+
+      span {
+        font-size: 13px;
+        color: #333;
+        font-weight: 500;
+      }
+    }
+
+    .time {
+      font-size: 12px;
+      color: #777;
+    }
+  }
+}

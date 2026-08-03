@@ -1,0 +1,79 @@
+/**=====================
+    Sellers css start
+==========================**/
+
+.shops {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+
+  .shop-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 18px;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    transition: transform 0.3s ease, border-color 0.3s ease;
+
+    &:hover {
+      transform: translateY(-4px);
+      border-color: #bbb;
+    }
+
+    .shop-logo {
+      width: 90px;
+      height: 90px;
+      margin-bottom: 12px;
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        border: 1px solid #e5e5e5;
+        border-radius: 6px;
+        padding: 6px;
+        background: #fdfdfd;
+      }
+    }
+
+    .shop-info {
+      width: 100%;
+
+      h3 {
+        font-size: 16px;
+        font-weight: 700;
+        margin: 0 0 6px;
+        a {
+          color: $theme; // استفاده از رنگ تم فقط اینجا
+          text-decoration: none;
+          &:hover {
+            text-decoration: underline;
+          }
+        }
+      }
+
+      .rate {
+        margin: 6px 0;
+        i {
+          font-size: 15px;
+          color: #ffc107; // ستاره زرد
+          margin: 0 1px;
+        }
+      }
+
+      .details {
+        font-size: 13px;
+        color: #555;
+        border-top: 1px dashed #ddd;
+        padding-top: 8px;
+        margin-top: 8px;
+        line-height: 1.5;
+      }
+
+
+    }
+  }
+}

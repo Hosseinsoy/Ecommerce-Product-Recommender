@@ -1,0 +1,186 @@
+.contact-flat {
+  color: #222;
+  padding: 20px;
+
+  .card-flat {
+    background: #fff;
+    border-radius: 18px;
+    padding: 20px;
+    margin-bottom: 25px;
+    border: 1px solid $gray-300;
+    .card-header-flat {
+      h2 {
+        font-size: 20px;
+        font-weight: 700;
+        color: $theme;
+        margin-bottom: 6px;
+      }
+      .divider-flat {
+        height: 3px;
+        width: 35px;
+        background-color: $theme;
+        border-radius: 2px;
+        margin: 6px 0 10px 0;
+      }
+      p {
+        font-size: 13px;
+        color: #555;
+      }
+    }
+
+    .form-flat {
+      margin-top: 12px;
+
+      .form-row-flat {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+
+        .form-group-flat {
+          flex: 1 1 200px;
+          display: flex;
+          flex-direction: column;
+          direction: rtl;
+
+          label {
+            font-size: 13px;
+            margin-bottom: 4px;
+          }
+
+          input, textarea {
+            background: transparent;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 13px;
+            outline: none;
+            text-align: right;
+            transition: all 0.2s;
+            &:focus {
+              border-color: $theme;
+              box-shadow: 0 0 4px rgba(0,0,102,0.2);
+            }
+          }
+
+          select {
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 13px;
+            background: transparent;
+            outline: none;
+            direction: rtl;          // راست‌چین کردن خود select و گزینه‌ها
+            text-align: right !important;       // متن انتخاب‌شده راست‌چین شود
+            text-align-last: right;  // متن انتخاب‌شده در مرورگرهای پشتیبانی‌شده
+            -moz-text-align-last: right; // فایرفاکس
+            &:focus {
+              border-color: $theme;
+              box-shadow: 0 0 4px rgba(0,0,102,0.2);
+            }
+          }
+
+          &.full-width-flat {
+            flex: 1 1 100%;
+          }
+        }
+      }
+
+      .form-footer-flat {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 12px;
+        button {
+          background-color: $theme;
+          color: #fff;
+          border: none;
+          border-radius: 14px;
+          padding: 10px 20px;
+          cursor: pointer;
+          font-weight: 600;
+          transition: all 0.2s;
+          &:hover {
+            background-color: #00004d;
+          }
+        }
+      }
+    }
+
+    .holidays-grid-flat {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 15px;
+
+      .holiday-flat {
+        flex: 1 1 120px;
+        text-align: center;
+        padding: 12px 8px;
+        border-radius: 16px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background: #f0f4ff;
+        transition: all 0.2s;
+        &:hover {
+          background: #dbe4ff;
+          transform: translateY(-3px);
+        }
+
+        strong {
+          font-size: 18px;
+          color: $theme;
+          margin-bottom: 4px;
+        }
+        span {
+          font-size: 13px;
+          margin-bottom: 2px;
+          color: #222;
+        }
+        small {
+          font-size: 11px;
+          color: #555;
+        }
+      }
+    }
+
+    .info-list-flat {
+      margin-top: 10px;
+      .info-item-flat {
+        margin-bottom: 10px;
+        strong {
+          font-size: 15px;
+          color: $theme;
+          margin-bottom: 2px;
+          display: block;
+        }
+        p {
+          font-size: 13px;
+          color: #555;
+        }
+      }
+    }
+  }
+
+  @media screen and (max-width: 767px) {
+    .card-flat {
+      .form-row-flat {
+        flex-direction: column;
+        gap: 8px; // ← فاصله منطقی برای موبایل (می‌تونید 6 یا 10 هم بگذارید)
+      }
+
+      .form-group-flat {
+        flex: 0!important; // ← هر input کل عرض رو بگیره
+      }
+
+      input, textarea, select {
+        width: 100%; // ← اطمینان از پر شدن کامل عرض کارت
+      }
+
+      .holidays-grid-flat {
+        flex-direction: column;
+        gap: 10px;
+      }
+    }
+  }
+
+}

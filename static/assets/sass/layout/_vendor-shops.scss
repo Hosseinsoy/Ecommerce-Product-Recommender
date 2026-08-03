@@ -1,0 +1,116 @@
+/* =====================
+   Shops Section Styles
+======================== */
+.shop-section {
+  margin-top: 1.5rem;
+  border: 1px solid $gray-300;
+  border-radius: 1rem;
+  background: #fff;
+
+  .shop-box {
+    border-left: 1px solid $gray-150;
+
+    &:first-child {
+      border-left: 0;
+    }
+
+    .shop-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem;
+
+      h5 {
+        font-size: 15px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+
+        .icon-holder {
+          display: inline-flex;
+
+          svg {
+            width: 16px;
+            height: 16px;
+            color: $gray-700;
+          }
+        }
+
+        a {
+          color: $gray-900;
+          text-decoration: none;
+        }
+
+        .tag {
+          font-size: 13px;
+          background: $gray-100;
+          color: $gray-600;
+          padding: 2px 6px;
+          border-radius: 0.5rem;
+        }
+      }
+
+      .view-link {
+        font-size: 13px;
+        font-weight: 600;
+        color: $gray-700;
+        text-decoration: none;
+
+        i {
+          font-size: 12px;
+          margin-right: 4px;
+          vertical-align: middle;
+        }
+
+        &:hover {
+          color: $gray-900;
+        }
+      }
+    }
+
+    .shop-gallery {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 0;
+
+      .shop-item {
+        flex: 1;
+        text-align: center;
+        padding: 0.75rem;
+        border-left: 1px solid $gray-150;
+
+        &:last-child {
+          border-left: 0;
+        }
+
+        img {
+          max-width: 100%;
+          height: auto;
+          border-radius: 0.5rem;
+          border: 1px solid $gray-200;
+        }
+      }
+    }
+  }
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+  .shop-section .shop-box {
+    border-left: 0;
+  }
+}
+
+@media (max-width: 400px) {
+  .shop-section .shop-header {
+    h5, h5 a {
+      font-size: 13px;
+    }
+
+    h5 span {
+      display: none;
+    }
+  }
+}

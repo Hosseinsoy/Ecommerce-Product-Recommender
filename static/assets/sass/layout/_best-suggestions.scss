@@ -1,0 +1,129 @@
+/**=====================
+    Best Suggestion css start
+==========================**/
+.best-suggestions{
+  background-color: $theme-500;
+  padding-left: 2px;
+  .swiper{
+    .swiper-slide {
+      background-color: $white;
+      padding: 10px;
+      .example {
+       position: absolute;
+        direction: ltr;
+        list-style: none;
+        display: flex;
+        left: -5%;
+        top: -251px;
+        justify-content: center;
+        align-items: center;
+        gap: 2px; // فاصله بین اعداد
+        padding: 0;
+        margin: 10px 0;
+        font-family: Arial, sans-serif;
+
+        li {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+
+          span {
+            font-size: 0.8rem; // کوچکترش کن
+            font-weight: bold;
+            color: red; // رنگ قرمز
+            padding: 2px 5px;
+            border-radius: 5px;
+            min-width: 21px;
+            text-align: center;
+          }
+
+          &.seperator {
+            font-size: 1rem;
+            font-weight: bold;
+            color: red;
+          }
+
+          p {
+            display: none; // حذف متن Days, Hours, Minutes, Seconds
+          }
+        }
+      }
+
+
+      &:first-child{
+        background-color: $theme-500;
+      }
+      &:not(:first-child){
+        img{
+          object-fit: contain;
+          width: 100px;
+          height: 180px !important;
+          margin: 0 auto;
+          display: block;
+        }
+      }
+      .amazing-img{
+        width: 80px;
+        height: 80px !important;
+      }
+      .box-img{
+        width: 130px;
+        height: 120px !important;
+      }
+      .product-details{
+        .discount-amount{
+          background-color: $theme-500;
+        }
+        .discounted_price{
+          span{
+            font: {
+              size: 12px;
+            }
+          }
+        }
+      }
+      &.border-radius-1-tl-bl{
+        padding: 109px 0;
+        i{
+          font: {
+            size: 30px;
+          }
+        }
+      }
+    }
+    .swiper-button-disabled{
+      display: none;
+    }
+  }
+}
+
+@media screen and (max-width:320px){
+  .swiper{
+   .swiper-slide{
+     .box-img{
+       object-fit: contain !important;
+       width: 100px !important;
+       height: 90px !important;
+     }
+     .product-details{
+       display: inherit !important;
+       .discounted_price{
+         display: block;
+       }
+     }
+   }
+  }
+}
+@media screen and (max-width:361px){
+  .swiper{
+    .swiper-slide{
+      .product-details{
+        .discount-amount,.discounted_price{
+          font: {
+            size: 14px !important;
+          }
+        }
+      }
+    }
+  }
+}

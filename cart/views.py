@@ -45,31 +45,42 @@ def update_quantity(request):
 
     try:
         product = get_object_or_404(ProductVariant, id=item_id)
-        print(product)
         cart = Cart(request)
 
         if action == 'add':
             cart.add(product)
         elif action == 'decrease':
             cart.decrease(product)
-        else:
-            return JsonResponse({'error': 'Invalid action'}, status=400)
 
-        cart_item = cart.cart[item_id]
-        print(cart_item)
+        if str(item_id) in cart.cart:
+            item_count = cart.cart[str(item_id)]['quantity']
+
+            total_price = item_count * product.product.off_price
+            old_total_price = item_count * product.product.price
+
+        else:
+            item_count = 0
+            total_price = 0
+            old_total_price = 0
 
         response_data = {
             'cart_count': len(cart),
-            'item_count': cart.cart[str(item_id)]['quantity'],
-            'total_price': cart_item['quantity'] * product.product.off_price,
+            'item_count': item_count,
+
+            'total_price': total_price,
+            'old_total_price': old_total_price,
+
+            'off': product.product.off,
+
             'products_price': cart.total_price(),
             'final_price': cart.final_price(),
-            'post_price': cart.post_price()
+            'post_price': cart.post_price(),
         }
+
         return JsonResponse(response_data)
+
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
-
 
 @require_POST
 def remove_item(request):

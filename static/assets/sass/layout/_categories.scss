@@ -1,0 +1,102 @@
+/**=====================
+    Categories css start
+==========================**/
+
+.categories{
+  a{
+    strong{
+      margin-top: 6px;
+      color: $black !important;
+    }
+  }
+}
+.categories2 {
+  padding: 3rem 1rem;
+  background: #fff;
+
+  header {
+    margin-bottom: 2rem;
+    text-align: center;
+
+    h3 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #222;
+    }
+
+    p {
+      font-size: 0.9rem;
+      color: #666;
+      margin-top: 0.5rem;
+      &:hover{
+        color: $theme;
+      }
+    }
+  }
+
+  ul {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 1.2rem;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .group-card {
+    border: 1px solid #dcdcdc;
+    border-radius: 0.75rem;
+    background: #fff;
+    overflow: hidden; // برای اینکه عکس از گوشه‌ها بیرون نزنه
+    transition: transform 0.25s ease, border-color 0.25s ease;
+
+    &:hover {
+      transform: translateY(-4px);
+      border-color: $theme;
+      figcaption{
+        color: $theme;
+      }
+    }
+
+    a {
+      display: block;
+      color: inherit;
+      text-decoration: none;
+
+      figure {
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+
+        img {
+          width: 100%;
+          height: 120px;
+          object-fit: contain;
+          display: block
+        }
+
+        figcaption {
+          flex-grow: 1;
+          padding: 0.75rem;
+          font-size: 0.9rem;
+          font-weight: 500;
+          text-align: center;
+          color: #333;
+          background: #fafafa;
+          border-top: 1px solid #eee;
+        }
+      }
+    }
+  }
+}
+
+
+//responsive codes for categories
+@media screen and (max-width:991px) {
+  .categories{
+    .clearfix{
+      display: none!important;
+    }
+  }
+}

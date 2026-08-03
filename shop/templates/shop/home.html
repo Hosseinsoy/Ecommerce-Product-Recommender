@@ -1,0 +1,267 @@
+{% extends 'parent/base.html' %}
+{% load static %}
+{% block title %}Home{% endblock %}
+{% block content %}
+{#    < -- Story:Start -- >#}
+    <div class="container mt-xxxx-large">
+    <div class="story-section my-3 text-center px-5">
+        <div class="row">
+            <div class="col-sm-12 col-md-12 col-lg-6 col-xl-6 d-flex justify-content-around align-items-center mb-3">
+                <!-- Story Item:start -->
+                <div class="story-item" data-bs-toggle="modal" data-bs-target="#exampleModal" data-index="0">
+                    <img src="{% static 'assets/img/story-1.jpg' %}" alt="" class="img-fluid border-radius-circle">
+                    <strong class="fs-7">سشوار</strong>
+                </div>
+                <!-- Story Item:end -->
+
+                <div class="story-item" data-bs-toggle="modal" data-bs-target="#exampleModal" data-index="1">
+                    <img src="{% static 'assets/img/story-2.jpg' %}" alt="" class="img-fluid border-radius-circle">
+                    <strong class="fs-7">دکوری</strong>
+                </div>
+
+                <div class="story-item" data-bs-toggle="modal" data-bs-target="#exampleModal" data-index="2">
+                    <img src="{% static 'assets/img/story-3.jpg' %}" alt="" class="img-fluid border-radius-circle">
+                    <strong class="fs-7">تخفیف</strong>
+                </div>
+
+                <div class="story-item" data-bs-toggle="modal" data-bs-target="#exampleModal" data-index="3">
+                    <img src="{% static 'assets/img/story-4.jpeg' %}" alt="" class="img-fluid border-radius-circle">
+                    <strong class="fs-7">بهداشتی</strong>
+                </div>
+            </div>
+
+            <div class="col-sm-12 col-md-12 col-lg-6 col-xl-6 d-flex justify-content-around align-items-center mb-3">
+                <div class="story-item" data-bs-toggle="modal" data-bs-target="#exampleModal" data-index="4">
+                    <img src="{% static 'assets/img/story-5.jpeg' %}" alt="" class="img-fluid border-radius-circle">
+                    <strong class="fs-7">وقت سفر</strong>
+                </div>
+                <div class="story-item" data-bs-toggle="modal" data-bs-target="#exampleModal" data-index="5">
+                    <img src="{% static 'assets/img/story-7.jpeg' %}" alt="" class="img-fluid border-radius-circle">
+                    <strong class="fs-7">پیراهن</strong>
+                </div>
+                <div class="story-item" data-bs-toggle="modal" data-bs-target="#exampleModal" data-index="6">
+                    <img src="{% static 'assets/img/story-8.jpeg' %}" alt="" class="img-fluid border-radius-circle">
+                    <strong class="fs-7">آرایش </strong>
+                </div>
+                <div class="story-item" data-bs-toggle="modal" data-bs-target="#exampleModal" data-index="7">
+                    <img src="{% static 'assets/img/story-6.jpeg' %}" alt="" class="img-fluid border-radius-circle">
+                    <strong class="fs-7">برترین‌ها</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{#    < -- Story:End -- >#}
+{#    < -- Inside Story:Start -- >#}
+<div class="modal  fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content story-content">
+            <div class="modal-body d-flex flex-column align-items-center">
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+
+
+                <div class="story-videos-box mt-3">
+                    <div class="row profile-box p-2 d-flex justify-content-between font-vazir">
+                        <div class="col-auto"><img src="{% static 'assets/img/profile2.png' %}"><span
+                                class="px-2 text-white font-sans fw-bold">Saeid Tohidi</span></div>
+                        <div class="col-auto">
+                            <div class="btn btn-primary">دنبال کنید</div>
+                        </div>
+                    </div>
+                    <div class="row feedback-box p-2 d-flex flex-column text-white font-sans mt-5">
+                        <div class="col-auto text-white text-center "><i class="fa-regular fa-heart"></i>
+                            <div class="px-2  ">18</div>
+                        </div>
+                        <div class="col-auto mt-3 text-center">
+                            <div class="story-comment "><i class="fa-regular fa-comment"></i></div>
+                            <div class="px-2  ">14</div>
+                        </div>
+                    </div>
+                    <div class="story-video-title text-white fw-bold font-sans"><span>عنوان معرفی محصول</span></div>
+                    <video id="story-slider" controls loop="loop">
+                        <source src="{% static 'assets/img/1111.mp4' %}"
+                                type="video/mp4"/>
+                    </video>
+                    <ul class="story-navigation d-flex flex-md-column">
+                        <li class="story-videos"><img class="story-thumb"
+                                                      src="{% static 'assets/img/thumb1.jpg' %}"
+                                                      alt="preview1"
+                                                      data-video="images/1111.mp4"/>
+                        </li>
+                        <li class="story-videos"><img class="story-thumb"
+                                                      src="{% static 'assets/img/thumb2.jpg' %}"
+                                                      alt="preview2"
+                                                      data-video="images/2222.mp4"/>
+                        </li>
+                        <li class="story-videos"><img class="story-thumb"
+                                                      src="{% static 'assets/img/thumb3.jpg' %}"
+                                                      alt="preview3"
+                                                      data-video="images/3333.mp4"/>
+                        </li>
+                        <li class="story-videos"><img class="story-thumb" src="{% static 'assets/img/thumb4.jpg' %}" alt="preview4"
+                                                      data-video="images/4444.mp4"/></li>
+                    </ul>
+                    <div class="swiper-button-next"></div>
+                    <div class="swiper-button-prev"></div>
+                </div>
+
+                <div class="swiper story-other-prd mt-3">
+                    <div class="swiper-wrapper">
+                        <div class="swiper-slide"><a href="#">
+                            <div class=" other-prd bg-white d-flex align-items-center">
+                                <div class="p-2 px-0"></div>
+                                <div class="bs-img"><img src="{% static 'assets/img/bs-mobile.jpg' %}"></div>
+                                <div class="bs-detail p-2 text-color "><span>گوشی موبایل سامسونگ مدل Galaxy A15 دو سیم کارت ظرفیت 128 گیگابایت و رم 4 گیگابایت - ویتنام</span>
+                                </div>
+                            </div>
+                        </a></div>
+                        <div class="swiper-slide"><a href="#">
+                            <div class=" other-prd bg-white d-flex align-items-center">
+                                <div class="p-2 px-0"></div>
+                                <div class="bs-img"><img src="{% static 'assets/img/bs-mobile.jpg' %}"></div>
+                                <div class="bs-detail p-2 text-color"><span>گوشی موبایل سامسونگ مدل Galaxy A15 دو سیم کارت ظرفیت 128 گیگابایت و رم 4 گیگابایت - ویتنام</span>
+                                </div>
+                            </div>
+                        </a></div>
+                        <div class="swiper-slide"><a href="#">
+                            <div class=" other-prd bg-white d-flex align-items-center">
+                                <div class="p-2 px-0"></div>
+                                <div class="bs-img"><img src="{% static 'assets/img/bs-mobile.jpg' %}"></div>
+                                <div class="bs-detail p-2 text-color"><span>گوشی موبایل سامسونگ مدل Galaxy A15 دو سیم کارت ظرفیت 128 گیگابایت و رم 4 گیگابایت - ویتنام</span>
+                                </div>
+                            </div>
+                        </a></div>
+                    </div>
+                </div>
+
+
+            </div>
+
+        </div>
+    </div>
+</div>
+{#    < -- Inside Story:End -- >#}
+<div class="w-100 px-3">
+    <div class="swiper heroSlider rounded-3 position-relative">
+        <div class="swiper-wrapper">
+            <a href="#" class="swiper-slide">
+                <img src="{% static 'assets/img/header-slider-1.jpg' %}" alt="" class="hero-slide-img w-100">
+            </a>
+            <a href="#" class="swiper-slide">
+                <img src="{% static 'assets/img/header-slider-2.jpg' %}" alt="" class="hero-slide-img w-100">
+            </a>
+            <a href="#" class="swiper-slide">
+                <img src="{% static 'assets/img/header-slider-3.jpg' %}" alt="" class="hero-slide-img w-100">
+            </a>
+        </div>
+
+        <!-- SVGهای تزئینی -->
+        <svg class="position-absolute hero-left-svg d-none d-md-block" width="70" height="255" viewBox="0 0 76 285"
+             fill="none" xmlns="http://www.w3.org/2000/svg">
+            <g filter="url(#filter0_d_6_41)">
+                <path d="M70 275V10C70 86 14 91.0878 14 142.752C14 194.416 70 201 70 275Z" fill="white"></path>
+            </g>
+            <defs>
+                <filter id="filter0_d_6_41" x="0" y="0" width="76" height="285" filterUnits="userSpaceOnUse"
+                        color-interpolation-filters="sRGB">
+                    <feFlood flood-opacity="0" result="BackgroundImageFix"></feFlood>
+                    <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
+                                   result="hardAlpha"></feColorMatrix>
+                    <feOffset dx="-4"></feOffset>
+                    <feGaussianBlur stdDeviation="5"></feGaussianBlur>
+                    <feComposite in2="hardAlpha" operator="out"></feComposite>
+                    <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.08 0"></feColorMatrix>
+                    <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_6_41"></feBlend>
+                    <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_6_41" result="shape"></feBlend>
+                </filter>
+            </defs>
+        </svg>
+
+        <svg class="position-absolute hero-right-svg d-none d-md-block" width="70" height="255" viewBox="0 0 76 285"
+             fill="none" xmlns="http://www.w3.org/2000/svg">
+            <g filter="url(#filter0_d_6_41)">
+                <path d="M70 275V10C70 86 14 91.0878 14 142.752C14 194.416 70 201 70 275Z" fill="white"></path>
+            </g>
+            <defs>
+                <filter id="filter0_d_6_41" x="0" y="0" width="76" height="285" filterUnits="userSpaceOnUse"
+                        color-interpolation-filters="sRGB">
+                    <feFlood flood-opacity="0" result="BackgroundImageFix"></feFlood>
+                    <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
+                                   result="hardAlpha"></feColorMatrix>
+                    <feOffset dx="-4"></feOffset>
+                    <feGaussianBlur stdDeviation="5"></feGaussianBlur>
+                    <feComposite in2="hardAlpha" operator="out"></feComposite>
+                    <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.08 0"></feColorMatrix>
+                    <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_6_41"></feBlend>
+                    <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_6_41" result="shape"></feBlend>
+                </filter>
+            </defs>
+        </svg>
+
+        <svg class="position-absolute hero-bottom-svg d-none d-md-block" version="1.1"
+             xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" viewBox="0 0 480 110" width="480"
+             height="110" style="filter: drop-shadow(0 -7px 25px rgba(0,0,0,0.3));">
+            <defs>
+                <path d="M-607 -202L1073 -202L1073 0C679.8 0 461.36 0 417.67 0C368 0 358 50 327.34 50C310.37 50 174.64 50 157.67 50C128 50 118 0 67 0C22.07 0 -202.6 0 -607 0L-607 -202Z"
+                      id="dixoAXFOW"></path>
+            </defs>
+            <use xlink:href="#dixoAXFOW" opacity="1" fill="#ffffff" fill-opacity="1"></use>
+        </svg>
+
+        <div class="swiper-button-next"></div>
+        <div class="swiper-button-prev"></div>
+        <div class="swiper-pagination"></div>
+    </div>
+</div>
+<!--Header::end-->
+<div class="banner container d-md-block d-none my-5">
+    <div class="row">
+        <div class="col-12">
+            <a href="" title="" class="banner-item">
+                <div class=""> <!-- wrapper خارجی -->
+                    <div class=""> <!-- inner که transform روی آن می‌رود -->
+                        <img src="{% static 'assets/img/md-banner.jpg' %}" alt="" class="w-100 border-radius-3xl">
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+{#    < -- Banner:End -- >#}
+<!-- Categories:start -->
+<section class="categories mt-5">
+    <h2 class="text-center fs-4">دسته بندی ها</h2>
+
+    <div class="row mt-5">
+        <div class="col-sm-12 col-md-12 col-lg-10 col-xl-10
+                    offset-sm-0 offset-md-0 offset-lg-2 offset-xl-2 mb-3">
+
+            <div class="row">
+
+                {% for category in categories %}
+                    <div class="col-4 col-lg-2 col-xl-2 mb-4">
+                        <a href="#" title="{{ category.name }}">
+                            <img src="{{ category.image_file.url }}"
+                                 alt="{{ category.name }}"
+                                 class="img-fluid img-opacity">
+
+                            <strong class="text-center d-block fs-7">
+                                {{ category.name }}
+                            </strong>
+                        </a>
+                    </div>
+
+                    {% if forloop.counter|divisibleby:5 %}
+                        <div class="clearfix d-none d-lg-block"></div>
+                    {% endif %}
+
+                {% endfor %}
+
+            </div>
+
+        </div>
+    </div>
+</section>
+<!-- Categories:end -->
+>{% endblock %}

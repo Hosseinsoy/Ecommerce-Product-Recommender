@@ -1,0 +1,103 @@
+/* Brands Styling - Border Focused Rewrite */
+.brands {
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: center;
+  }
+
+  .brand-box {
+    padding: 1.5rem;
+    border: 3px dashed #dee2e6; /* بردر متفاوت و واضح */
+    border-radius: 1.8rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #fff; /* بدون سایه */
+    transition: border 0.3s ease, transform 0.3s ease;
+
+    &:hover {
+      border: 3px solid $gray-300; /* تم سایت روی hover */
+      transform: scale(1.03);
+    }
+
+    .seller-image {
+      width: 100%;
+      border-radius: 1.5rem;
+      border: 2px dotted #e9ecef; /* بردر ملایم داخلی */
+      overflow: hidden;
+      margin-bottom: 1rem;
+
+      a {
+        display: block;
+        img {
+          width: 100%;
+          height: auto;
+          object-fit: contain;
+          display: block;
+          transition: transform 0.3s ease;
+        }
+
+        &:hover img {
+          transform: scale(1.05);
+        }
+      }
+    }
+
+    .seller-name {
+      h2 {
+        font-size: 0.95rem;
+        font-weight: 700;
+        text-align: center;
+        margin: 0;
+
+        a {
+          color: #212529; /* gray-900 */
+          text-decoration: none;
+          padding: 0.2rem 0.5rem;
+          border: 2px solid #dee2e6; /* بردر دور متن */
+          border-radius: 0.5rem;
+          display: inline-block;
+          transition: border 0.3s ease;
+
+          &:hover {
+            border-color: #000066;
+          }
+        }
+      }
+    }
+  }
+}
+
+/* Responsive tweaks */
+@media (max-width: 768px) {
+  .brand-box {
+    padding: 1rem;
+
+    .seller-name h2 {
+      font-size: 0.9rem;
+    }
+  }
+}
+
+@media (max-width: 576px) {
+  .brand-box {
+    padding: 0.8rem;
+
+    .seller-name h2 {
+      font-size: 0.85rem;
+    }
+  }
+}
+.banner-wrapper{
+  img{
+    border-radius: 16px;
+  }
+}
+.banner-inner{
+  padding: 10px;
+  img{
+    border-radius: 16px;
+  }
+}

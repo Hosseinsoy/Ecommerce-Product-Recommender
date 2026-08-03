@@ -46,7 +46,8 @@ INSTALLED_APPS = [
     'django_filters',
     "api.apps.ApiConfig",
     'rest_framework',
-    'slugify'
+    'slugify',
+    'django.contrib.humanize',
 ]
 
 MIDDLEWARE = [
@@ -74,6 +75,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'cart.context_processor.cart_context',
+                'shop.context_processor.categories'
             ],
         },
     },
@@ -139,6 +141,10 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',
+]
+
 MEDIA_URL = 'media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
@@ -181,3 +187,6 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',  # Default backend
 ]
 
+USE_THOUSAND_SEPARATOR = True
+THOUSAND_SEPARATOR = ','
+NUMBER_GROUPING = 3

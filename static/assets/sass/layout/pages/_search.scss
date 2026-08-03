@@ -1,0 +1,558 @@
+/**=====================
+    Search css start
+==========================**/
+.search {
+  /* کل container */
+  /* Container اصلی */
+  .filter-wrapper {
+    border: 1px solid #dee2e6;
+    border-radius: 16px;
+    background-color: #f8f9fa;
+    padding: 16px 20px;
+    font-family: sans-serif;
+
+    /* عنوان فیلتر */
+    .filter-heading {
+      color: #212529;
+      font-weight: 700;
+      border-bottom: 2px solid #e9ecef;
+      padding-bottom: 8px;
+      margin-bottom: 16px;
+    }
+
+    /* Wrapper آکاردئون */
+    .filter-accordion {
+      .section-category,
+      .section-brand,
+      .section-price {
+        border-radius: 12px;
+        background-color: #f1f2f4;
+        margin-bottom: 16px;
+
+        /* دکمه toggle */
+        .toggle-category,
+        .toggle-brand,
+        .toggle-price {
+          background-color: $theme;
+          color: #ffffff;
+          font-weight: 600;
+          border-radius: 8px;
+          margin: 6px 0;
+          padding: 10px 14px;
+          border: none;
+          width: 100%;
+          text-align: left;
+          cursor: pointer;
+          transition: background 0.3s ease;
+
+          &:focus {
+            outline: none;
+          }
+
+          &:hover {
+            background-color: #000055;
+          }
+        }
+
+        .body-category,
+        .body-brand,
+        .body-price {
+          padding: 16px;
+          background-color: #f8f9fa;
+
+          ul {
+            list-style: none;
+            padding-left: 0;
+
+            li {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              padding: 8px 0;
+
+              a {
+                color: #000000; /* متن تیره */
+                font-weight: 500;
+                text-decoration: none;
+                transition: color 0.3s ease;
+
+                &:hover {
+                  color: $theme; /* تغییر رنگ هاور */
+                }
+              }
+
+              input[type="checkbox"] {
+                width: 18px;
+                height: 18px;
+                accent-color: $theme;
+              }
+            }
+          }
+
+          /* Wrapper محدوده قیمت */
+          .price-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 12px;
+
+            .price-input {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              padding: 6px 12px;
+              border-radius: 8px;
+              background-color: #f1f2f4;
+
+              input.text-price {
+                border: 1px solid #dee2e6;
+                border-radius: 6px;
+                width: 80px;
+                padding: 4px 8px;
+                text-align: center;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    /* فقط کالاهای موجود */
+    .filter-available-wrapper {
+      margin-top: 16px;
+      display: flex;
+      align-items: center;
+
+      .input-available {
+        width: 20px;
+        height: 20px;
+        accent-color: $theme;
+        margin-right: 8px;
+      }
+
+      .label-available {
+        color: #000000;
+        font-weight: 500;
+      }
+    }
+
+    /* دکمه فیلتر */
+    .filter-btn-wrapper {
+      margin-top: 16px;
+
+      .btn-filter {
+        display: inline-block;
+        background-color: $theme;
+        border: none;
+        color: #ffffff;
+        font-weight: 600;
+        padding: 10px 16px;
+        border-radius: 12px;
+        text-align: center;
+        text-decoration: none;
+        transition: background 0.3s ease;
+
+        &:hover {
+          background-color: #000055;
+        }
+
+        .icon-filter {
+          margin-right: 6px;
+        }
+      }
+    }
+  }
+
+
+  // متغیرها (در صورت نیاز مقدار را تغییر بده)
+  // ======================
+  // Products component SCSS
+  // ======================
+  .products {
+    font-family: 'Arial', sans-serif;
+
+    .product-ordering-wrapper {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid #e1e2e4;
+      direction: rtl; /* برای متن فارسی */
+
+      .ordering {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        min-width: 0;
+
+        .label {
+          font-size: 13px;
+          color: #333;
+          margin-right: 10px;
+          white-space: nowrap;
+          flex: 0 0 auto;
+          min-width: 0;
+        }
+
+        .option {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 13px;
+          color: #666;
+          margin: 0 6px;
+          text-decoration: none;
+          padding: 6px 10px;
+          min-height: 36px; /* مناسب برای تاچ */
+          border-radius: 8px;
+          transition: background-color .15s ease, color .15s ease, transform .12s ease;
+          line-height: 1;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          -webkit-tap-highlight-color: transparent;
+          touch-action: manipulation;
+
+          &:hover,
+          &:focus {
+            color: #000044;
+            background-color: #f5f5f5;
+            outline: none;
+            transform: translateY(-1px);
+          }
+
+          &.active {
+            color: $theme;
+            font-weight: 700;
+            background-color: rgba($theme, 0.06);
+            border: 1px solid rgba($theme, 0.12);
+          }
+        } // .option
+      } // .ordering
+
+      .product-count {
+        font-size: 13px;
+        color: #555;
+        white-space: nowrap;
+        flex: 0 0 auto;
+      }
+
+      /* Responsive — موبایل: استک کردن و پیچ خوردن گزینه‌ها */
+      @media (max-width: 600px) {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+        padding: 10px 0;
+
+        .product-count {
+          order: 0;
+          align-self: flex-start;
+          font-size: 13px;
+        }
+
+        .ordering {
+          order: 1;
+          width: 100%;
+          justify-content: flex-start;
+          gap: 6px;
+
+          .label {
+            margin-right: 8px;
+            font-size: 13px;
+          }
+
+          .option {
+            padding: 8px 12px;
+            margin: 4px 4px;
+            font-size: 14px;
+            min-height: 40px;
+            flex: 0 0 auto;
+          }
+        }
+      }
+
+      /* Tablet adjustments */
+      @media (min-width: 601px) and (max-width: 900px) {
+        padding: 12px 0;
+
+        .ordering .option {
+          padding: 7px 11px;
+          font-size: 13px;
+        }
+      }
+
+      /* Very small screens — (اختیاری) پنهان کردن label برای فضای بیشتر */
+      @media (max-width: 360px) {
+        .ordering .label {
+          display: none;
+        }
+        .product-count {
+          font-size: 12px;
+        }
+      }
+
+      /* دسترسی‌پذیری: فوکوس واضح */
+      .ordering .option:focus {
+        box-shadow: 0 0 0 3px rgba($theme, 0.12);
+        border-radius: 8px;
+      }
+    }
+
+    .products-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+
+      .product-item {
+        background-color: #ffffff; // پس‌زمینه روشن
+        color: #333; // متن تیره
+        border-radius: 12px;
+        padding: 15px;
+        text-align: center;
+        position: relative;
+        border: 1px solid #f1f2f4;
+        transition: transform 0.2s;
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
+
+        &:hover {
+          transform: translateY(-5px);
+        }
+
+        .image {
+          position: relative;
+          margin-bottom: 10px;
+
+          img {
+            width: 100%;
+            border-radius: 10px;
+            display: block;
+          }
+
+          .badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: #ffcc00;
+            color: #000;
+            padding: 4px 8px;
+            font-size: 11px;
+            border-radius: 5px;
+            font-weight: bold;
+          }
+        }
+
+        .title {
+          font-weight: 700;
+          font-size: 16px;
+          margin-bottom: 5px;
+          color: $theme; // کمی آبی برای عنوان
+        }
+
+        .description {
+          font-size: 12px;
+          color: #666;
+          margin-bottom: 10px;
+          min-height: 30px;
+        }
+
+        .details {
+          display: flex;
+          justify-content: space-between;
+          font-size: 14px;
+          margin-bottom: 10px;
+
+          .score {
+            color: #ffb400;
+
+            i {
+              margin-right: 3px;
+            }
+          }
+
+          .price {
+            font-weight: bold;
+            color: $black; // آبی برای قیمت
+          }
+        }
+
+        /* actions container — تنظیمات برای جلوگیری از بهم ریختن چیدمان */
+        .actions {
+          display: inline-flex;
+          gap: 8px;
+          align-items: center;
+          justify-content: center;
+          overflow: hidden;        // کمک می‌کند هنگام انیمیشن، چیدمان خراب نشود
+          min-height: 1.4em;       // فضایی برای آیکن‌ها در حالت نمایش
+          margin-top: 8px;
+          /* اگر می‌خواهی محل آیکن‌ها همیشه یکسان باشد، مقدار min-width مناسب اضافه کن */
+        }
+
+        /* پایان .product-item */
+      } // end .product-item
+    } // end .products-list
+
+    // =========================
+    // رفتار نمایش/مخفی کردن SVG
+    // =========================
+    // قواعد پایه: svg ها در حالت پیش‌فرض مخفی هستند (عرض/ارتفاع صفر، opacity صفر)
+    .products-list .product-item .actions svg,
+    .products-list .product-item .actions svg.theme-color {
+      display: inline-block;
+      vertical-align: middle;
+      width: 0;                     // مخفی: هیچ فضا اشغال نکند
+      height: 0;
+      opacity: 0;
+      transform: translateY(6px) scale(0.85);
+      transition: width .18s ease, height .18s ease, opacity .18s ease, transform .18s ease;
+      pointer-events: none;         // وقتی مخفی‌اند کلیک‌پذیر نباشند
+      box-sizing: content-box;
+      overflow: visible;
+    }
+
+    // وقتی موس روی لیست محصولات است: همه آیکن‌ها مخفی بمانند
+    // این کار باعث می‌شود فقط آیتمِ هاور شده آیکن‌های خودش را نشان دهد.
+    .products-list:hover .product-item .actions svg {
+      width: 0;
+      height: 0;
+      opacity: 0;
+      transform: translateY(6px) scale(0.85);
+      pointer-events: none;
+    }
+
+    // وقتی موس روی یک آیتم است یا کیبورد فوکوس درون آن است: فقط svg های همان آیتم ظاهر شوند
+    // این قاعده بعد از قانون قبلی آمده تا در cascade بر آن غلبه کند.
+    .products-list .product-item:hover .actions svg,
+    .products-list .product-item:focus-within .actions svg {
+      width: 1.4em;    // مطابق اندازه‌ای که در HTML برای svg استفاده شده
+      height: 1.4em;
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events: auto;
+    }
+
+    // اگر بخواهی استایل ظاهری svg ها (مثلاً فاصله داخلی یا بک‌گراند) را تغییر دهی:
+    .products-list .product-item .actions svg {
+      padding: 2px;
+      border-radius: 6px;
+      transition: background-color .18s ease, color .18s ease, transform .18s ease;
+    }
+
+    // حالت hover روی خود آیکن (در صورتی که فعال است)
+    .products-list .product-item .actions svg:hover {
+      transform: translateY(-2px) scale(1.03);
+    }
+
+    // دسترسی پذیری: وقتی با کیبورد روی گزینه‌ها می‌روی، مرئی شدن آیکن‌ها
+    .products-list .product-item a:focus + .actions svg,
+    .products-list .product-item button:focus + .actions svg {
+      width: 1.4em;
+      height: 1.4em;
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events: auto;
+    }
+
+    // اختیاری: برای حالات تِم تاریک یا viewport کوچک می‌توان media query اضافه کرد
+    @media (max-width: 420px) {
+      .products-list .product-item .actions svg {
+        width: 1.2em;
+        height: 1.2em;
+      }
+
+      .products-list {
+        gap: 12px;
+      }
+    }
+  }
+
+
+  .pagination {
+    .page-link {
+      color: rgb(var(--theme-color-blue));
+    }
+
+    .page-item {
+      &.active {
+        .page-link {
+          background-color: rgba(var(--theme-color-blue), .3);
+          border-color: transparent;
+        }
+      }
+    }
+  }
+
+  .not-found-box {
+    text-align: center;
+    padding: 2rem 1rem;
+
+    img {
+      max-width: 200px;
+      margin-bottom: 1.5rem;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    .message-box {
+      border: 2px dashed $theme;
+      border-radius: 1rem;
+      padding: 1.5rem 1rem;
+      display: inline-block;
+      box-shadow: 0 4px 12px rgba(0, 0, 102, 0.15);
+      transition: transform 0.3s ease;
+
+      &:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 6px 18px rgba(0, 0, 102, 0.25);
+      }
+
+      p {
+        margin: 0.6rem 0;
+      }
+
+      .fw-bold {
+        font-size: 1.1rem;
+        color: $theme;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        i {
+          font-size: 1.3rem;
+          margin-left: 0.5rem;
+          color: $theme;
+        }
+      }
+
+      .fw-lighter {
+        font-size: 0.95rem;
+        color: #444;
+        font-style: italic;
+      }
+    }
+  }
+
+  // انیمیشن شناور تصویر
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+
+}
+
+@media screen and (max-width: 991px) {
+  .search {
+    .product-ordering {
+      .count-of-comments {
+        display: none;
+      }
+    }
+  }
+}

@@ -1,10 +1,193 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% load static %}
+{% load shop_tags %}
 
-</body>
-</html>
+<!--Footer:start-->
+<footer class="footer mt-5">
+    <div class="container">
+        <div class="footer-top mt-4 mb-5">
+            <!-- Footer Top Detail -->
+            <div class="footer-top-detial d-flex justify-content-between align-items-center">
+                <div>
+                    <a href="" title="">
+                        <img src="{% static 'assets/img/logo-md.png' %}" alt="">
+                    </a>
+                    <p class="mt-2 fs-7">تلفن پشتیبانی : 05144445697</p>
+                </div>
+
+                <a href="#top" class="back-to-top border-radius-3xl px-3 py-2 gray-600 fs-7">
+                    بلوشاپ به بالا
+                    <i class="fa fa-angle-up ps-2"></i>
+                </a>
+            </div>
+
+            <!-- Footer Top Attr -->
+            <div class="footer-top-attr d-flex justify-content-between align-items-center my-5">
+
+                <div class="top-right-item text-center">
+                    <img src="{% static 'assets/img/express-delivery.svg' %}" alt="" title="">
+                    <p class="mt-2 fs-8">امکان تحویل اکسپرس</p>
+                </div>
+
+                <div class="top-right-item text-center">
+                    <img src="{% static 'assets/img/cash-on-delivery.svg' %}" alt="" title="">
+                    <p class="mt-2 fs-8">امکان پرداخت در محل</p>
+                </div>
+
+                <div class="top-right-item text-center">
+                    <img src="{% static 'assets/img/support.svg' %}" alt="" title="">
+                    <p class="mt-2 fs-8">7 روز هفته، 24 ساعته</p>
+                </div>
+
+                <div class="top-right-item text-center">
+                    <img src="{% static 'assets/img/days-return.svg' %}" alt="" title="">
+                    <p class="mt-2 fs-8">هفت روز ضمانت بازگشت کالا</p>
+                </div>
+
+                <div class="top-right-item text-center">
+                    <img src="{% static 'assets/img/original-products.svg' %}" alt="" title="">
+                    <p class="mt-2 fs-8">ضمانت اصالت کالا</p>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="footer-main my-5">
+            <div class="row">
+
+                <div class="col-sm-12 col-md-6 col-lg-3 col-xl-3 mb-4">
+                    <p class="fw-bold fs-6">راهنمای خرید از بلوشاپ</p>
+                    <ul class="ui">
+                        <li class="my-2"><a href="">نحوه ثبت سفارش</a></li>
+                        <li class="my-2"><a href="">رویه ارسال سفارش</a></li>
+                        <li class="my-2"><a href="">شیوه های پرداخت</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-sm-12 col-md-6 col-lg-3 col-xl-3 mb-4">
+                    <p class="fw-bold fs-6">خدمات مشتریان</p>
+                    <ul class="ui">
+                        <li class="my-2"><a href="">پاسخ به پرسش های متدوال</a></li>
+                        <li class="my-2"><a href="">رویه های بازگشت کالا</a></li>
+                        <li class="my-2"><a href="">شرایط استفاده</a></li>
+                        <li class="my-2"><a href="">حریم خصوصی</a></li>
+                        <li class="my-2"><a href="">گزارش باگ</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-sm-12 col-md-6 col-lg-3 col-xl-3 mb-4">
+                    <p class="fw-bold fs-6">راهنمای خرید از بلوشاپ</p>
+                    <ul class="ui">
+                        <li class="my-2"><a href="">نحوه ثبت سفارش</a></li>
+                        <li class="my-2"><a href="">رویه ارسال سفارش</a></li>
+                        <li class="my-2"><a href="">شیوه های پرداخت</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-sm-12 col-md-6 col-lg-3 col-xl-3 mb-4">
+                    <p class="fw-bold fs-6">همراه ما باشید!</p>
+
+                    <ul class="social-list d-flex justify-content-around align-items-center mt-3">
+                        <li class="my-2 instagram">
+                            <a href=""><i class="fab fa-instagram fa-2x gray-500"></i>
+</a>
+                        </li>
+                        <li class="my-2 twitter">
+                            <a href=""><i class="fab fa-twitter fa-2x gray-500"></i></a>
+                        </li>
+                        <li class="my-2 linkedin">
+                            <a href=""><i class="fab fa-linkedin fa-2x gray-500"></i></a>
+                        </li>
+                        <li class="my-2 telegram">
+                            <a href=""><i class="fab fa-telegram fa-2x gray-500"></i></a>
+                        </li>
+                    </ul>
+
+                    <p class="fw-bold fs-6 mt-4">
+                        با ثبت ایمیل، از جدیدترین اخبار با خبر شوید
+                    </p>
+
+                    <div class="subscribe-in-newsletter mt-3">
+                        <form action="" class="d-flex align-items-center justify-content-around">
+                            <input type="text"
+                                   placeholder="ایمیل شما"
+                                   class="form-control px-3 py-2 border-radius-3xl">
+
+                            <button type="submit"
+                                    class="btn text-white fw-bold ms-2 px-3 py-2 border-radius-3xl">
+                                ثبت
+                            </button>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer-info py-5">
+        <div class="container">
+            <div class="row">
+
+                <div class="col-sm-12 col-md-12 col-lg-8 col-xl-8 mb-3">
+                    <h1 class="fw-bold fs-5">
+                        فروشگاه اینترنتی بلوشاپ، بررسی، انتخاب و خرید آنلاین.
+                    </h1>
+
+                    <p class="gray-600 mt-3 fs-7">
+                        خرید اینترنتی مطمئن، نیازمند فروشگاهی است که بتواند کالاهایی متنوع، باکیفیت و دارای قیمت مناسب
+                        را در مدت زمانی کوتاه به دست مشتریان خود برساند و ضمانت بازگشت کالا هم داشته باشد؛ ویژگی‌هایی که
+                        فروشگاه اینترنتی بلوشاپ سال‌هاست بر روی آن‌ها کار کرده و توانسته از این طریق مشتریان ثابت خود
+                        را داشته باشد.
+                    </p>
+                </div>
+
+                <div class="col-sm-12 col-md-12 col-lg-4 col-xl-4 mb-3 d-flex justify-content-evenly align-items-center">
+
+                    <img src="{% static 'assets/img/symbol-01.png' %}"
+                         alt=""
+                         title=""
+                         class="img-fluid border border-gray-200 border-radius-3xl">
+
+                    <img src="{% static 'assets/img/symbol-02.png' %}"
+                         alt=""
+                         title=""
+                         class="img-fluid border border-gray-200 border-radius-3xl">
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="footer-copyright text-center py-4">
+        <div class="container">
+            <p class="fs-8 gray-600">
+                برای استفاده از مطالب بلوشاپ، داشتن «هدف غیرتجاری» و ذکر «منبع» کافیست. تمام حقوق اين وب‌سايت نیز برای
+                شرکت بلوشاپ محفوظ است.
+            </p>
+        </div>
+    </div>
+
+</footer>
+<!--Footer:end-->
+
+<!--Scroll To Top:start-->
+<div class="to-top border-radius-circle text-center">
+    <a href="#">
+        <!--begin::Svg Icon-->
+        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px"
+             viewBox="0 0 24 24" version="1.1">
+            <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                <polygon points="0 0 24 0 24 24 0 24"/>
+                <path d="M8.2928955,10.2071068 C7.90237121,9.81658249 7.90237121,9.18341751 8.2928955,8.79289322 C8.6834198,8.40236893 9.31658478,8.40236893 9.70710907,8.79289322 L15.7071091,14.7928932 C16.085688,15.1714722 16.0989336,15.7810586 15.7371564,16.1757246 L10.2371564,22.1757246 C9.86396402,22.5828436 9.23139665,22.6103465 8.82427766,22.2371541 C8.41715867,21.8639617 8.38965574,21.2313944 8.76284815,20.8242754 L13.6158645,15.5300757 L8.2928955,10.2071068 Z"
+                      fill="#000000" fill-rule="nonzero"
+                      transform="translate(12.000003, 15.500003) scale(-1, 1) rotate(-90.000000) translate(-12.000003, -15.500003) "/>
+                <path d="M6.70710678,12.2071104 C6.31658249,12.5976347 5.68341751,12.5976347 5.29289322,12.2071104 C4.90236893,11.8165861 4.90236893,11.1834211 5.29289322,10.7928968 L11.2928932,4.79289682 C11.6714722,4.41431789 12.2810586,4.40107226 12.6757246,4.76284946 L18.6757246,10.2628495 C19.0828436,10.6360419 19.1103465,11.2686092 18.7371541,11.6757282 C18.3639617,12.0828472 17.7313944,12.1103502 17.3242754,11.7371577 L12.0300757,6.88414142 L6.70710678,12.2071104 Z"
+                      fill="#000000" fill-rule="nonzero" opacity="0.3"
+                      transform="translate(12.000003, 8.500003) scale(-1, 1) rotate(-360.000000) translate(-12.000003, -8.500003) "/>
+            </g>
+        </svg><!--end::Svg Icon-->
+    </a>
+
+</div>
+<!--Scroll To Top:end-->

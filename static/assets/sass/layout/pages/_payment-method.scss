@@ -1,0 +1,611 @@
+.payment2 {
+  padding: 25px;
+  border-radius: 20px;
+  font-family: 'Arial', sans-serif;
+  color: #1a1a1a;
+
+  .payment-header-alt {
+    border-radius: 16px;
+    border: 1px solid $gray-300;
+    text-align: center;
+    margin-bottom: 30px;
+    padding-bottom: 15px;
+
+    .logo-img {
+      width: 170px;
+      margin: 0 auto 20px;
+      transition: transform 0.3s;
+
+      &:hover {
+        transform: scale(1.1);
+      }
+    }
+
+    .payment-progress {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 47px;
+
+      .step {
+        position: relative;
+        color: $theme;
+        font-weight: 600;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 15px;
+        border-radius: 16px;
+        border: 1px solid $gray-300;
+        transition: all 0.3s ease;
+
+        &:hover {
+          background-color: $theme;
+          color: #fff;
+          transform: translateY(-2px);
+        }
+
+        i {
+          font-size: 20px;
+        }
+      }
+
+      .shipping:before, .payment:before {
+        content: '';
+        position: absolute;
+        height: 3px;
+        width: 80px;
+        background-color: #b3b3ff;
+        top: 50%;
+        left: 100%;
+        transform: translateY(-50%);
+        border-radius: 2px;
+        opacity: 0.6;
+      }
+
+      .payment:before {
+        background-color: #6666ff;
+      }
+    }
+  }
+
+  .payment-details-alt {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+
+    .payment-methods-alt {
+      padding: 20px;
+      border-radius: 16px;
+      border: 1px solid $gray-300;
+
+      h2 {
+        font-size: 18px;
+        color: $theme;
+        margin-bottom: 15px;
+      }
+
+      form {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+
+        .payment-option {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 10px 15px;
+          border-radius: 12px;
+          border: 1px solid #c0c0ff;
+          transition: all 0.3s;
+
+          &:hover {
+            background-color: #f0f0ff;
+          }
+
+          .radio-btn {
+            appearance: none;
+            width: 22px;
+            height: 22px;
+            border: 2px solid $theme;
+            border-radius: 50%;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s;
+
+            &:checked {
+              background-color: $theme;
+              border-color: $theme;
+
+              &::after {
+                content: '';
+                position: absolute;
+                top: 4px;
+                left: 4px;
+                width: 10px;
+                height: 10px;
+                background: #fff;
+                border-radius: 50%;
+              }
+            }
+          }
+
+          label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 500;
+            cursor: pointer;
+
+            i {
+              font-size: 24px;
+              color: #6666ff;
+            }
+
+            span {
+              font-size: 14px;
+              color: #333;
+              display: block;
+            }
+          }
+        }
+      }
+    }
+
+    .discount-section {
+      padding: 18px;
+      background: #f9f9ff;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      border: 1px solid #d0d0ff;
+      border-radius: 16px;
+
+      form {
+        position: relative;
+
+        input {
+          width: 100%;
+          padding: 12px 15px;
+          border-radius: 12px;
+          border: 1px solid $theme;
+          font-size: 14px;
+          transition: all 0.3s;
+
+          &:focus {
+            border-color: #000099;
+            outline: none;
+          }
+        }
+
+        button {
+          position: absolute;
+          top: 2px;
+          left: 2px;
+          padding: 6px 12px;
+          background-color: $theme;
+          color: #fff;
+          border-radius: 10px;
+          font-size: 13px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s;
+        }
+      }
+    }
+
+    .order-summary {
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 16px;
+      border: 1px solid $gray-300;
+
+      h2 {
+        color: $theme;
+        font-size: 18px;
+        margin-bottom: 15px;
+      }
+
+      p {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 500;
+        margin: 6px 0;
+
+        .badge {
+          background-color: #ccccff;
+          padding: 3px 8px;
+          border-radius: 10px;
+          font-size: 12px;
+        }
+      }
+
+      span {
+        color: #444;
+        font-size: 13px;
+      }
+    }
+
+    .cart-summary {
+      background: #ffffff;
+      overflow: hidden;
+      border-radius: 16px;
+      border: 1px solid $gray-300;
+
+      .price-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 20px;
+        border-bottom: 1px solid #e0e0ff;
+
+        .text-muted {
+          color: #6666ff;
+        }
+
+        .text-danger {
+          color: #cc0000;
+          font-weight: 600;
+        }
+      }
+
+      .d-grid {
+        padding: 20px;
+
+        .btn {
+          width: 100%;
+          padding: 12px 0;
+          border-radius: 18px;
+          background-color: $theme;
+          color: #fff;
+          font-weight: 600;
+          text-align: center;
+          transition: all 0.3s;
+
+          &:hover {
+            background-color: #3333cc;
+            transform: translateY(-2px);
+          }
+        }
+      }
+
+      .cart-points {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 20px;
+        background: #f0f0ff;
+
+        img {
+          width: 24px;
+          height: 24px;
+        }
+
+        span {
+          font-size: 14px;
+          color: $theme;
+        }
+      }
+    }
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .payment2 {
+    .payment-header-alt {
+      .payment-progress {
+        gap: 10px;
+        flex-direction: column !important;
+        .step {
+          gap: 4px;
+         width: 148px;
+          text-align: center;
+          &:hover {
+            background-color: $theme;
+            color: #fff;
+            transform: translateY(-2px);
+          }
+
+          i {
+            font-size: 20px;
+          }
+        }
+
+        .shipping:before, .payment:before {
+          width: 15px;
+          display: none;
+        }
+      }
+    }
+  }
+}
+
+@media screen and (max-width: 500px) {
+  .payment2 {
+    .payment-header-alt {
+      border: 0;
+
+      i {
+        display: none;
+      }
+    }
+
+    .payment-details-alt .order-summary {
+      border: 0;
+    }
+  }
+}
+
+/**=====================
+    Payment Method css start
+==========================**/
+
+.payment {
+  .payment-header-alt {
+    border-radius: 16px;
+    border: 1px solid $gray-300;
+    text-align: center;
+    margin-bottom: 30px;
+    padding-bottom: 15px;
+
+    .logo-img {
+      width: 170px;
+      margin: 0 auto 20px;
+      transition: transform 0.3s;
+
+      &:hover {
+        transform: scale(1.1);
+      }
+    }
+
+    .payment-progress {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 47px;
+
+      .step {
+        position: relative;
+        color: $theme;
+        font-weight: 600;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 15px;
+        border-radius: 16px;
+        border: 1px solid $gray-300;
+        transition: all 0.3s ease;
+
+        &:hover {
+          background-color: $theme;
+          color: #fff;
+          transform: translateY(-2px);
+        }
+
+        i {
+          font-size: 20px;
+        }
+      }
+
+      .shipping:before, .payment:before {
+        content: '';
+        position: absolute;
+        height: 3px;
+        width: 80px;
+        background-color: #b3b3ff;
+        top: 50%;
+        left: 100%;
+        transform: translateY(-50%);
+        border-radius: 2px;
+        opacity: 0.6;
+      }
+
+      .payment:before {
+        background-color: #6666ff;
+      }
+    }
+  }
+
+  .payment-transfer-time {
+    .payment-products {
+      .payment-products-image {
+        img {
+          width: 90px;
+        }
+      }
+    }
+
+    .payment-time {
+      .nav-pills .nav-link.active {
+        background-color: $white !important;
+        color: $theme !important;
+
+        .data-span {
+          color: $black;
+          border-bottom: 4px solid $theme;
+        }
+      }
+    }
+  }
+
+  .payment-details {
+    .payment-methods {
+      form {
+        label {
+          i {
+            vertical-align: -5px;
+          }
+        }
+
+        .form-check-input {
+          border: 2px solid $gray-600;
+        }
+
+        .form-check-input:checked {
+          border: 3px solid $theme;
+          background-color: $theme;
+        }
+
+        .form-check-input:checked ~ label, .form-check-input:checked ~ label i {
+          color: $theme;
+        }
+      }
+    }
+
+    .payment-discount {
+      form {
+        input {
+          &:focus {
+            border-color: $theme;
+          }
+        }
+
+        input:focus ~ .btn {
+          color: $theme;
+        }
+
+        .btn {
+          top: 2px;
+          left: 0;
+        }
+      }
+    }
+
+    .cart-summary {
+      background: #ffffff;
+      overflow: hidden;
+      border-radius: 16px;
+      border: 1px solid $gray-300;
+
+      .price-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 20px;
+        border-bottom: 1px solid #e0e0ff;
+
+        .text-muted {
+          color: #6666ff;
+        }
+
+        .text-danger {
+          color: #cc0000;
+          font-weight: 600;
+        }
+      }
+
+      .d-grid {
+        padding: 20px;
+
+        .btn {
+          width: 100%;
+          padding: 12px 0;
+          border-radius: 18px;
+          background-color: $theme;
+          color: #fff;
+          font-weight: 600;
+          text-align: center;
+          transition: all 0.3s;
+
+          &:hover {
+            background-color: #3333cc;
+            transform: translateY(-2px);
+          }
+        }
+      }
+
+      .cart-points {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 20px;
+        background: #f0f0ff;
+
+        img {
+          width: 24px;
+          height: 24px;
+        }
+
+        span {
+          font-size: 14px;
+          color: $theme;
+        }
+      }
+    }
+  }
+}
+
+//responsive codes
+@media screen and (max-width: 768px) {
+  .payment {
+    .payment-header-alt {
+      .payment-progress {
+        gap: 10px;
+        flex-direction: column !important;
+        .step {
+          gap: 4px;
+          width: 148px;
+          text-align: center;
+          &:hover {
+            background-color: $theme;
+            color: #fff;
+            transform: translateY(-2px);
+          }
+
+          i {
+            font-size: 20px;
+          }
+        }
+
+        .shipping:before, .payment:before {
+          width: 15px;
+          display: none;
+        }
+      }
+    }
+
+    .payment-details {
+      .payment-address {
+        flex-direction: column;
+
+        .address-details {
+          margin-bottom: 20px;
+        }
+      }
+    }
+  }
+}
+
+@media screen and (max-width: 518px) {
+  .payment {
+    .payment-header {
+      .shipping, .pay {
+        &:before {
+          width: 15px !important;
+        }
+      }
+    }
+  }
+}
+@media screen and (max-width: 497px) {
+  .payment {
+    .payment-header {
+
+      i {
+        display: none;
+      }
+
+      .text-danger, .text-secondary {
+        margin: 0 5px !important;
+      }
+    }
+
+    .payment-details {
+      .payment-address {
+      }
+    }
+  }
+}

@@ -1,0 +1,66 @@
+/**=====================
+    Suggestions css start
+==========================**/
+.suggestions {
+  background: $white;
+  padding: 2rem 1rem;
+
+  h2 {
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+
+  .wrapper {
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: 1.5rem;
+    background-color: #ffffff;
+  }
+
+  .row {
+    .suggest-item {
+      position: relative;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+      border-left: 1px solid rgba(0, 0, 0, 0.04);
+      transition: all 0.3s ease;
+
+      &:hover {
+        background-color: #f2f3ff;
+        transform: translateY(-2px);
+      }
+
+      .item-inner {
+        a {
+          text-decoration: none;
+
+          img {
+            width: 85px;
+            height: 85px;
+            object-fit: contain;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            background-color: #ffffff;
+            transition: transform 0.3s ease;
+          }
+
+          &:hover img {
+            transform: scale(1.05);
+          }
+
+          .title {
+            color: #000066;
+            font-weight: 500;
+            margin-top: 0.75rem;
+          }
+        }
+      }
+    }
+
+    // حذف خط مرزی در آخرین ردیف و ستون
+    .suggest-item:nth-child(6n) {
+      border-left: none;
+    }
+    .suggest-item:nth-last-child(-n + 6) {
+      border-bottom: none;
+    }
+  }
+}

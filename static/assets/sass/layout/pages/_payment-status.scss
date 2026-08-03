@@ -1,0 +1,198 @@
+.payment-status {
+  border: 1px solid #e2e6ea;
+  border-radius: 14px;
+  padding: 20px;
+  background: #fff;
+
+  .payment-header {
+    margin-top: 12px;
+
+    h2 {
+      font-size: 18px;
+      font-weight: 700;
+
+      /* فقط جمله اول سبز/قرمز میشه */
+      .status-text {
+        display: block;
+        margin-bottom: 6px;
+      }
+
+      /* شماره سفارش و سایر متن‌ها همه آبی تیره */
+      span {
+        display: block;
+        margin-top: 8px;
+        font-size: 13px;
+        font-weight: 400;
+        color: $theme;
+      }
+    }
+
+    .payment-status-img {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+
+      img {
+        max-width: 167px; /* بزرگ‌تر برای ناموفق */
+        margin-bottom: 10px;
+      }
+    }
+  }
+
+  .payment-details {
+    margin: 28px 0 15px;
+
+    a {
+      display: inline-block;
+      font-size: 14px;
+      padding: 8px 16px;
+      border-radius: 10px;
+      text-decoration: none;
+      transition: all 0.2s ease-in-out;
+      color: $theme;
+
+      &.main-btn {
+        margin-inline-end: 10px;
+        border: 1px solid $theme;
+      }
+    }
+  }
+
+  /* حالت موفق */
+  &.success {
+    h2 .status-text {
+      font-size: 20px;
+      color: #198754;
+    } /* سبز ملایم */
+  }
+
+  /* حالت ناموفق */
+  &.failed {
+    h2 .status-text {
+      font-size: 20px;
+      color: #d93025;
+    } /* قرمز ملایم */
+  }
+}
+
+.payment-info-box {
+  margin-top: 20px;
+  border: 1px solid #e2e6ea;
+  border-radius: 14px;
+  padding: 16px;
+  background: #fff;
+
+  p.info-title {
+    font-weight: 600;
+    margin: 14px 0 10px;
+    color: $theme;
+  }
+
+  .payment-table {
+    overflow-x: auto;
+    table {
+      width: 100%;
+      border-collapse: collapse;
+
+      thead tr {
+        background: $theme;
+        color: #fff;
+        font-size: 13px;
+        font-weight: 500;
+      }
+      tbody tr {
+        font-size: 13px;
+        border-bottom: 1px solid #f0f0f0;
+        td, th {
+          padding: 9px 12px;
+          text-align: start;
+          color: $theme;
+        }
+      }
+    }
+  }
+}
+/* ====== ریسپانسیو ====== */
+
+/* موبایل (تا 576px) */
+@media (max-width: 576px) {
+  .payment-status {
+    padding: 16px;
+
+    .payment-header {
+      text-align: center;
+
+      h2 {
+        font-size: 16px;
+
+        .status-text {
+          font-size: 20px;
+        }
+
+        span {
+          font-size: 12px;
+        }
+      }
+
+      .payment-status-img {
+        justify-content: center;
+
+        img {
+          max-width: 120px;
+          margin: 10px auto;
+        }
+      }
+    }
+
+    .payment-details {
+      text-align: center;
+
+      a {
+        display: block;
+        margin: 6px auto;
+        width: 80%;
+      }
+    }
+  }
+
+  .payment-info-box {
+    padding: 12px;
+
+    p.info-title {
+      font-size: 14px;
+      text-align: center;
+    }
+
+    .payment-table table {
+      font-size: 12px;
+    }
+  }
+}
+
+/* تبلت (بین 577px تا 992px) */
+@media (min-width: 577px) and (max-width: 992px) {
+  .payment-status {
+    .payment-header {
+      h2 {
+        font-size: 16px;
+      }
+
+      .payment-status-img img {
+        max-width: 140px;
+      }
+    }
+
+    .payment-details {
+      a {
+        font-size: 13px;
+        padding: 7px 14px;
+      }
+    }
+  }
+
+  .payment-info-box {
+    .payment-table table {
+      font-size: 13px;
+    }
+  }
+}

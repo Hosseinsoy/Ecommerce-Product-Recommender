@@ -1,0 +1,91 @@
+/**=====================
+    FAQ SCSS - Fully Custom
+==========================**/
+
+.faq {
+  background-color: #fdfdfd;
+
+  .faq-header {
+    background: linear-gradient(180deg, #f4f4f6, #ffffff);
+    padding: 70px 20px;
+    text-align: center;
+
+    .faq-header-content {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 50px 30px;
+      background: url("../img/faq-pattern.svg") top center no-repeat;
+      background-size: 80px;
+      border-radius: 20px;
+      border: 1px solid $gray-300;
+      .question-icon {
+        width: 70px;
+        height: 70px;
+        margin: 0 auto 25px;
+        border-radius: 50%;
+        background-color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid #e9ecef;
+        transition: all 0.3s ease;
+
+        i {
+          font-size: 26px;
+          color: #0dcaf0;
+        }
+
+        &:hover {
+          background-color: #f8f9fa;
+          transform: scale(1.05);
+        }
+      }
+
+      p {
+        color: #495057;
+        margin: 10px 0;
+      }
+
+      input {
+        width: 100%;
+        max-width: 450px;
+        padding: 14px 18px;
+        border-radius: 15px;
+        border: 1px solid #dee2e6;
+        margin-top: 25px;
+        transition: all 0.3s ease;
+
+        &:focus {
+          border-color: #adb5bd;
+          outline: none;
+          box-shadow: 0 0 5px rgba(0, 0, 0, 0.05);
+        }
+      }
+    }
+  }
+
+  .faq-content {
+    max-width: 800px;
+    margin: 60px auto 0;
+
+    /* کلاس سفارشی برای آیتم‌های Accordion */
+    .faq-item {
+      background-color: #ffffff;
+      padding: 25px;
+      border-radius: 15px;
+      border: 1px solid $gray-300;
+      margin-bottom: 20px;
+      line-height: 1.8;
+      color: #495057;
+      transition: all 0.3s ease;
+
+      &:hover {
+        box-shadow: 0 6px 25px rgba(0, 0, 0, 0.01);
+      }
+
+      p {
+        margin: 0;
+      }
+    }
+  }
+}

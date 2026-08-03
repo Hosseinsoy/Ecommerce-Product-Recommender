@@ -1,0 +1,86 @@
+.body-login {
+  background: $gray-150;
+
+  .login-wrapper {
+    .login-form {
+      border: 1px solid $gray-300;
+      width: 480px;
+      padding: 2rem;
+      border-radius: 1rem;
+      background: $white;
+
+      img {
+        width: 140px;
+      }
+
+      h1, p {
+        color: #111;
+      }
+
+      .auth {
+        border: 1px solid $gray-500;
+        color: $gray-700;
+        border-radius: 12px;
+        padding: 12px;
+        margin-top: 100px;
+
+      }
+
+      .input-group {
+        position: relative;
+        margin: 20px 0;
+
+        input {
+          width: 100%;
+          padding: 12px;
+          border: 1px solid #ddd;
+          border-radius: 0.5rem;
+          outline: none;
+          font-size: 1rem;
+          background: transparent;
+          transition: all 0.3s ease;
+
+          &:focus {
+            border-color: $theme;
+          }
+
+          /* وقتی پر شد یا فوکوس شد */
+          &:focus ~ label,
+          &:not(:placeholder-shown) ~ label {
+            top: -8px;
+            right: 10px; // چون RTL هست
+            font-size: 0.8rem;
+            color: $theme;
+            background: #fff;
+            padding: 0 5px;
+          }
+        }
+
+        label {
+          position: absolute;
+          right: 12px; // RTL
+          top: 50%;
+          transform: translateY(-50%);
+          color: #777;
+          font-size: 1rem;
+          pointer-events: none;
+          transition: all 0.3s ease;
+        }
+      }
+
+
+      button {
+        padding: 10px;
+        border-radius: 0.5rem;
+        background: $theme;
+        border: none;
+        transition: 0.3s;
+      }
+    }
+  }
+}
+@media screen and (max-width: 992px) {
+  .body-login{
+    background: $white;
+  }
+}

@@ -1,17 +1,27 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html dir="rtl" lang="fa">
+<!--Head::start-->
 <head>
     <meta charset="UTF-8">
-    <title>Shop | {% block title %}{% endblock %}</title>
-    <link rel="stylesheet" type="text/css" href="{% static 'css/base.css' %}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <title>فروشگاه اینترنتی بلوشاپ</title>
 
+<link rel="stylesheet" href="{% static 'assets/css/vendors/swiper/swiper-bundle.min.css' %}">
+<link rel="stylesheet" href="{% static 'assets/css/vendors/bootstrap/bootstrap.rtl.css' %}">
+<link rel="stylesheet" href="{% static 'assets/css/vendors/fontawesome/all.css' %}">
+<link rel="stylesheet" href="{% static 'assets/css/style.css' %}">
+<link rel="stylesheet" href="{% static 'assets/css/vendors/countDown/jquery.countdown.css' %}">
 
-    {% block head %}{% endblock %}
 </head>
+<!--Head::end-->
 <body>
-{% include 'partials/header.html' %}
+<header>
+    {% include 'partials/header.html' %}
+</header>
 {% for message in messages %}
     {% if message.tags == 'success' %}
     <div style="border-left: 40px solid green; background-color: white" class="message-box">{{ message }}</div>
@@ -19,27 +29,116 @@
         <div style="border-left: 40px solid red; background-color: white" class="message-box">{{ message }}</div>
     {% endif %}
 {% endfor %}
-{% include 'partials/navigation.html' %}
 {% block content %}
 {% endblock %}
-{% block scripts %}{% endblock %}
+<footer>
 {% include 'partials/footer.html' %}
-</body>
-</html>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</footer>
+<!-- jQuery -->
+<script src="{% static 'assets/js/vendors/jquery/jquery-3.6.0.min.js' %}"></script>
+
+<!-- Bootstrap -->
+<script src="{% static 'assets/js/vendors/bootstrap/bootstrap.bundle.min.js' %}"></script>
+
+<!-- Swiper -->
+<script src="{% static 'assets/js/vendors/swiper/swiper-bundle.min.js' %}"></script>
+
+<!-- CountDown -->
+<script src="{% static 'assets/js/vendors/countDown/jquery.countdown.min.js' %}"></script>
+
+<!-- Main -->
+<script src="{% static 'assets/js/main.js' %}"></script>
+<!--Index JS:start Only for this page-->
+<script src="{% static 'assets/js/index.js' %}"></script>
+<script src="{% static 'assets/js/vendors/jquery/jquery-3.6.0.min.js' %}"></script>
+
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        // Get the message box element
-        var messageBox = document.querySelector(".message-box");
+document.addEventListener("DOMContentLoaded", function () {
 
-        // Add the 'show' class to trigger the slide-in effect
-        messageBox.classList.add("show");
+    if (document.querySelector(".heroSlider")) {
+        new Swiper(".heroSlider", {
+            autoplay: true,
+            autoplayTimeout: 5000,
+            slidesPerView: 1,
+            spaceBetween: 5,
+            loop: true,
+            navigation: {
+                nextEl: ".swiper-button-next",
+                prevEl: ".swiper-button-prev",
+            },
+            pagination: {
+                el: ".swiper-pagination",
+                clickable: true,
+            },
+        });
+    }
 
-        // After 5 seconds, hide the message with a reverse transition
-        setTimeout(function() {
-            messageBox.classList.remove("show");
-            messageBox.classList.add("hide"); // Slide it back out to the left
-        }, 5000); // 5000 milliseconds = 5 seconds
+    if (document.querySelector(".example")) {
+        var now = new Date();
+        var day = now.getDate();
+        var month = now.getMonth() + 1;
+        var year = now.getFullYear() + 1;
+
+        var nextyear = month + '/' + day + '/' + year + ' 07:07:07';
+
+        $('.example').countdown({
+            date: nextyear,
+            offset: +2,
+            day: 'Day',
+            days: 'Days',
+            hideOnComplete: true
+        });
+    }
+
+});
+</script>
+
+<script src="{% static 'assets/js/vendors/countDown/jquery.countdown.min.js' %}"></script>
+<script>
+    $(document).ready(function() {
+        var now = new Date();
+        var day = now.getDate();
+        var month = now.getMonth() + 1;
+        var year = now.getFullYear() + 1;
+
+        var nextyear = month + '/' + day + '/' + year + ' 07:07:07';
+
+        $('.example').countdown({
+            date: nextyear,
+            offset: +2,
+            day: 'Day',
+            days: 'Days',
+            hideOnComplete: true
+        });
     });
 </script>
+
+<script>
+    const updateCartUrl = "{% url 'cart:update_quantity' %}";
+    const removeCartUrl = "{% url 'cart:remove_item' %}";
+    const csrfToken = "{{ csrf_token }}";
+</script>
+<script src="{% static 'assets/js/cart_info.js' %}"></script>
+
+{% block scripts %}
+{% endblock %}
+</body>
+</html>
+
+{#<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>#}
+{#<script>#}
+{#    document.addEventListener("DOMContentLoaded", function() {#}
+{#        // Get the message box element#}
+{#        var messageBox = document.querySelector(".message-box");#}
+{##}
+{#        // Add the 'show' class to trigger the slide-in effect#}
+{#        messageBox.classList.add("show");#}
+{##}
+{#        // After 5 seconds, hide the message with a reverse transition#}
+{#        setTimeout(function() {#}
+{#            messageBox.classList.remove("show");#}
+{#            messageBox.classList.add("hide"); // Slide it back out to the left#}
+{#        }, 5000); // 5000 milliseconds = 5 seconds#}
+{#    });#}
+{#</script>#}
 

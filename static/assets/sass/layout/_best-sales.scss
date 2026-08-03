@@ -1,0 +1,98 @@
+/**=====================
+    Best Sales css start
+==========================**/
+.best-sales-section {
+  border-radius: 1.5rem;
+  transition: all 0.3s ease;
+  border: 1px solid $gray-300;
+
+  .text-dark-blue {
+    color: #000066;
+  }
+
+  .product-slide-item {
+    padding: 0.5rem 1rem;
+
+    .product-link {
+      background: #fff;
+      border-radius: 1rem;
+      margin-bottom: 0.75rem;
+      padding: 0.6rem 0.8rem;
+      text-decoration: none;
+      transition: all 0.25s ease-in-out;
+      max-height: 115px !important;
+      &:hover {
+        transform: translateY(-2px);
+        background: linear-gradient(180deg, #ffffff 0%, #eef0ff 100%);
+      }
+
+      .product-image img {
+        width: 78px;
+        height: 78px;
+        object-fit: contain;
+        border-radius: 0.75rem;
+      }
+
+      .rank-number {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #000066;
+        opacity: 0.8;
+        width: 32px;
+        text-align: center;
+      }
+
+      .product-info {
+        flex-grow: 1;
+        text-align: right;
+        border-right: 2px solid rgba(0, 0, 102, 0.1);
+        padding-right: 0.6rem;
+
+        p {
+          font-size: 0.85rem;
+          color: #222;
+          margin-bottom: 0.2rem;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+      }
+    }
+  }
+
+  .custom-swiper-btn {
+    background: rgba(255, 255, 255, 0.9);
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    box-shadow: 0 2px 5px rgba(0, 0, 102, 0.2);
+    transition: background 0.3s ease;
+
+    &::after {
+      color: #000066;
+      font-size: 0.85rem;
+      font-weight: bold;
+    }
+
+    &:hover {
+      background: #000066;
+
+      &::after {
+        color: #fff;
+      }
+    }
+  }
+
+  .see-all {
+    font-size: 0.9rem;
+    color: #000066;
+    text-decoration: none;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+
+    &:hover {
+      text-decoration: underline;
+      color: darken(#000066, 10%);
+    }
+  }
+}
