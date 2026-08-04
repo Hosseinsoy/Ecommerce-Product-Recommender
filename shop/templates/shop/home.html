@@ -241,7 +241,7 @@
 
                 {% for category in categories %}
                     <div class="col-4 col-lg-2 col-xl-2 mb-4">
-                        <a href="#" title="{{ category.name }}">
+                        <a href="{{ category.get_absolute_url }}" title="{{ category.name }}">
                             <img src="{{ category.image_file.url }}"
                                  alt="{{ category.name }}"
                                  class="img-fluid img-opacity">
@@ -385,8 +385,113 @@
     </div>
 
 
-    <!--    Banners:end-->git add .
-git commit -m "Add flash sale section and improve cart UI"
+    <!--    Banners:end-->
+<!--    Best Brands:start-->
+    <section class="best-brands border-radius-3xl border border-gray-300 mt-4 pb-4">
+        <!--        Section Title:start-->
+        <h2 class="text-center my-4 section-title fs-4">
+            <i class="fa fa-star"></i>
+            محبوب ترین برندها
+        </h2>
+        <!--        Section Title:end-->
+
+        <!--            Slider:start-->
+        <div class="swiper brandsSlider">
+            <div class="swiper-wrapper">
+
+                {% for brand in popular_brands %}
+
+                    <!--            Brands Item:start-->
+                    <div class="swiper-slide position-relative">
+                        <div class="brands-item d-flex justify-content-center align-items-center">
+                            <a href="#"
+                               title="{{ brand.name }}"
+                               class="stretched-link">
+
+                                <img src="{{ brand.logo.url }}"
+                                     alt="{{ brand.name }}"
+                                     title="{{ brand.name }}"
+                                     class="img-fluid p-3">
+
+                            </a>
+                        </div>
+                    </div>
+                    <!--            Brands Item:end-->
+
+                {% endfor %}
+
+            </div>
+            <div class="swiper-button-next bg-light border-radius-circle"></div>
+            <div class="swiper-button-prev bg-light border-radius-circle"></div>
+        </div>
+        <!--            Slider:end-->
+    </section>
+    <!--    Best Brands:end-->
+
+ <!-- Best Sales:start -->
+    <section class="best-sales-section mt-5 position-relative rounded-4 overflow-hidden">
+        <!-- Section Title:start -->
+        <h2 class="text-center py-3 fw-semibold fs-4">
+            <i class="fa fa-bolt me-2 fs-6"></i>
+            جدیدترین محصولات
+        </h2>
+        <!-- Section Title:end -->
+
+        <!-- Slider:start -->
+        <div class="swiper bestSales px-2 py-4">
+            <div class="swiper-wrapper">
+                {% for group in newest_products %}
+                    <div class="swiper-slide">
+                        <div class="product-slide-item">
+                            {% for product in group %}
+                                {% if product %}
+                                    <a href="{{ product.get_absolute_url }}"
+                                       class="d-flex align-items-center justify-content-between product-link">
+                                        <div class="product-image">
+                                            {% with image=product.images.first %}
+                                                {% if image %}
+                                                    <img src="{{ image.image_file.url }}"
+                                                         alt="{{ product.name }}"
+                                                         title="{{ product.name }}"
+                                                         class="img-fluid">
+                                                {% endif %}
+                                            {% endwith %}
+                                        </div>
+                                        <div class="product-info">
+                                            <p class="mb-2 fw-bold">
+                                                {{ product.name }}
+                                            </p>
+                                            {% if product.off >= 10 %}
+                                                <div class="d-flex align-items-center gap-2 mb-1">
+                                                    <span class="badge bg-danger">
+                                                        {{ product.off }}%
+                                                    </span>
+                                                    <span class="fw-bold text-danger">
+                                                        {{ product.off_price|intcomma }}
+                                                        تومان
+                                                    </span>
+                                                </div>
+                                                <small class="text-muted text-decoration-line-through">
+                                                    {{ product.price|intcomma }}
+                                                    تومان
+                                                </small>
+                                            {% else %}
+                                                <span class="fw-bold text-dark">
+                                                    {{ product.price|intcomma }}
+                                                    تومان
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                    </a>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
 </div>
 
 </div>

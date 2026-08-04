@@ -1,5 +1,6 @@
 from django.utils import timezone
 from django.db import models
+from django.utils.text import slugify
 from slugify import slugify as alt_slugify
 from django_jalali.db import models as jmodels
 from django.urls import reverse
@@ -17,14 +18,78 @@ class Category(models.Model):
         verbose_name = 'دسته بندی'
         verbose_name_plural = 'دسته بندی ها'
 
-    # def get_absolute_url(self):
-    #     return reverse('shop:product_list_by_category', args=[self.slug])
+    def get_absolute_url(self):
+        return reverse(
+            "shop:category_detail",
+            kwargs={"slug": self.slug}
+        )
 
     def __str__(self):
         return self.name
 
 
+class Brand(models.Model):
+    name = models.CharField(
+        max_length=100,
+        unique=True,
+        verbose_name='نام برند'
+    )
+
+    slug = models.SlugField(
+        max_length=120,
+        unique=True,
+        blank=True
+    )
+
+    logo = models.ImageField(
+        upload_to='brands/',
+        blank=True,
+        null=True,
+        verbose_name='لوگو'
+    )
+
+    description = models.TextField(
+        blank=True,
+        verbose_name='توضیحات'
+    )
+
+    is_active = models.BooleanField(
+        default=True,
+        verbose_name='فعال'
+    )
+
+    sales_count = models.PositiveIntegerField(verbose_name='تعداد فروش', default=0)
+
+    created = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    class Meta:
+        ordering = ['name']
+        verbose_name = 'برند'
+        verbose_name_plural = 'برندها'
+
+    def __str__(self):
+        return self.name
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
+
+    def get_absolute_url(self):
+        return reverse('shop:brand_products', args=[self.slug])
+
+
 class Product(models.Model):
+    brand = models.ForeignKey(
+        Brand,
+        on_delete=models.PROTECT,
+        related_name='products',
+        verbose_name='برند',
+        null=True,
+        blank=True
+    )
     seller = models.ForeignKey('account.ShopSeller', default=1, on_delete=models.CASCADE, verbose_name='فروشنده', related_name='products')
     category = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name='دسته بندی')
     name = models.CharField(max_length=250, verbose_name='نام')

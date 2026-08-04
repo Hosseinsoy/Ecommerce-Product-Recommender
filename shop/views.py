@@ -1,4 +1,4 @@
-from itertools import product
+from itertools import product, zip_longest
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -9,11 +9,13 @@ from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.template.loader import render_to_string
 from django.utils import timezone
+from django.views import View
+from django.views.generic import ListView
 
 from account.models import ShopUser
 from cart.cart import Cart
 from .forms import SearchForm
-from .models import Category, Product, DiscountCode
+from .models import Category, Product, DiscountCode, Brand
 from django.conf import settings
 from django_filters.views import FilterView
 from .filters import ProductFilter
@@ -45,16 +47,32 @@ User = settings.AUTH_USER_MODEL
 
 
 def home(request):
+
     flash_products = [
-         product for product in Product.objects.prefetch_related(
+        product for product in Product.objects.prefetch_related(
             'images',
             'variants'
-            )
-         if product.is_flash_sale
-     ][:10]
+        )
+        if product.is_flash_sale
+    ][:10]
+
+    popular_brands = Brand.objects.filter(
+    ).order_by('-sales_count')[:12]
+
+    newest_products = Product.objects.prefetch_related(
+        'images'
+    ).filter(
+        is_available=True
+    ).order_by('-created')[:12]
+
+    def chunked(iterable, n):
+        args = [iter(iterable)] * n
+        return zip_longest(*args)
 
     context = {
         'shocking_products': flash_products,
+        'popular_brands': popular_brands,
+        "newest_products": chunked(newest_products, 3),
     }
 
     return render(request, 'shop/home.html', context)
@@ -149,3 +167,195 @@ def add_discount_code(request):
         return JsonResponse({'template': template})
 
 
+class CategoryDetailView(ListView):
+    model = Product
+    template_name = "shop/category_detail.html"
+    context_object_name = "products"
+    paginate_by = 12
+
+    def get_queryset(self):
+        self.category = get_object_or_404(
+            Category,
+            slug=self.kwargs["slug"]
+        )
+
+        return (
+            Product.objects
+            .filter(
+                category=self.category,
+                is_available=True
+            )
+            .prefetch_related(
+                "images",
+                "variants"
+            )
+            .select_related(
+                "brand",
+                "category"
+            )
+            .order_by("-created")
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        context["category"] = self.category
+
+        context["categories"] = Category.objects.all().order_by("name")
+
+        context["brands"] = Brand.objects.filter(
+            products__category=self.category,
+            products__is_available=True,
+        ).distinct().order_by("name")
+
+        products = self.get_queryset()
+
+        context["min_price"] = (
+            products.order_by("price").first().price
+            if products.exists() else 0
+        )
+
+        context["max_price"] = (
+            products.order_by("-price").first().price
+            if products.exists() else 0
+        )
+
+        return context
+
+
+class CategoryBrandsAjaxView(View):
+    def get(self, request):
+        category_ids = request.GET.getlist("categories")
+        brands = (
+            Brand.objects
+            .filter(
+                products__category__id__in=category_ids,
+                products__is_available=True
+            )
+            .distinct()
+            .order_by("name")
+        )
+
+        data = []
+
+        for brand in brands:
+            data.append({
+                "id": brand.id,
+                "name": brand.name,
+            })
+
+        return JsonResponse(data, safe=False)
+
+
+class CategoryProductsAjaxView(View):
+
+    def get(self, request, slug):
+
+        category = get_object_or_404(Category, slug=slug)
+
+        # -------------------------------
+        # دسته بندی
+        # -------------------------------
+        category_ids = request.GET.getlist("categories")
+
+        if category_ids:
+            products = Product.objects.filter(
+                category_id__in=category_ids
+            )
+        else:
+            products = Product.objects.filter(
+                category__slug=slug
+            )
+        products = (
+            products
+            .select_related(
+                "brand",
+                "category"
+            )
+            .prefetch_related(
+                "images",
+                "variants"
+            )
+        )
+
+        # -------------------------------
+        # برند
+        # -------------------------------
+        brand_ids = request.GET.getlist("brands")
+
+        if brand_ids:
+            products = products.filter(
+                brand_id__in=brand_ids
+            )
+
+        # -------------------------------
+        # قیمت
+        # -------------------------------
+        min_price = request.GET.get("min_price")
+        max_price = request.GET.get("max_price")
+
+        if min_price:
+            products = products.filter(
+                off_price__gte=min_price
+            )
+
+        if max_price:
+            products = products.filter(
+                off_price__lte=max_price
+            )
+
+        # -------------------------------
+        # فقط کالاهای موجود
+        # -------------------------------
+        only_available = request.GET.get("only_available")
+
+        if only_available == "1":
+            products = products.filter(
+                inventory__gt=0
+            )
+
+        # -------------------------------
+        # مرتب سازی
+        # -------------------------------
+        sort = request.GET.get("sort", "newest")
+
+        if sort == "newest":
+            products = products.order_by("-created")
+
+        elif sort == "oldest":
+            products = products.order_by("created")
+
+        elif sort == "cheap":
+            products = products.order_by("off_price", "price")
+
+        elif sort == "expensive":
+            products = products.order_by("-off_price", "-price")
+
+        # -------------------------------
+        # صفحه بندی
+        # -------------------------------
+        paginator = Paginator(products, 12)
+
+        page = request.GET.get("page")
+
+        page_obj = paginator.get_page(page)
+
+        html = render_to_string(
+            "includes/products_list.html",
+            {
+                "page_obj": page_obj,
+                "products": page_obj.object_list,
+                "paginator": paginator,
+                "is_paginated": page_obj.has_other_pages(),
+            },
+            request=request
+        )
+
+        return JsonResponse({
+            "html": html,
+            "count": paginator.count,
+        })
+
+
+def brand_detail(request, brand_name):
+    pass

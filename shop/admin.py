@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import Product, Image, ProductFeature, DiscountCode, ProductSizeVariant, ProductColorVariant, \
-    ProductVariant
+    ProductVariant, Brand
 
 from shop.models import Category
 
@@ -51,3 +51,8 @@ class CategoryAdmin(admin.ModelAdmin):
 @admin.register(DiscountCode)
 class DiscountCodeAdmin(admin.ModelAdmin):
     list_display = ['code', 'type', 'value']
+
+
+@admin.register(Brand)
+class BrandAdmin(admin.ModelAdmin):
+    list_display = ['name', 'slug', 'logo', 'description', 'is_active', 'created']

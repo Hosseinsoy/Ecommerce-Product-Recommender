@@ -1,0 +1,205 @@
+{% extends 'parent/base.html' %}
+{% load humanize %}
+{% load static %}
+
+{% block title %}Category Detail{% endblock %}
+
+{% block content %}
+
+<!-- Main:start -->
+<main class="container mt-xxxx-large">
+    <!-- Search:start -->
+    <div class="search">
+        <div class="row">
+            <div class="col-sm-12 col-md-12 col-lg-3 col-xl-3 mb-3">
+                <!-- Search Filters:start -->
+                <div class="search-filters border border-radius-3xl py-2 px-3 filter-wrapper">
+                    <h3 class="fs-5 fw-bold mt-2 filter-heading">
+                        فیلتر ها
+                    </h3>
+                    <div class="accordion accordion-flush mt-4 filter-accordion" id="accordionFlushExample">
+                        <!-- Category -->
+                        <div class="accordion-item border-0 section-category">
+                            <h2 class="accordion-header" id="flush-headingOne">
+                                <button class="accordion-button collapsed toggle-category"
+                                        type="button"
+                                        data-bs-toggle="collapse"
+                                        data-bs-target="#flush-collapseOne"
+                                        aria-expanded="false"
+                                        aria-controls="flush-collapseOne">
+                                    دسته بندی
+                                </button>
+                            </h2>
+                            <div id="flush-collapseOne"
+                                 class="accordion-collapse collapse content-category"
+                                 aria-labelledby="flush-headingOne"
+                                 data-bs-parent="#accordionFlushExample">
+                                <div class="accordion-body body-category">
+                                    <ul class="list-category">
+                                        {% for category_item in categories %}
+                                            <li class="item-category">
+                                                <a href="{{ category_item.get_absolute_url }}">
+                                                    {{ category_item.name }}
+                                                </a>
+                                                <label>
+                                                    <input
+                                                        type="checkbox"
+                                                        class="form-check-input checkbox-category"
+                                                        name="category"
+                                                        value="{{ category_item.id }}"
+                                                        {% if category_item.slug == category.slug %}checked{% endif %}>
+                                                </label>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Brand -->
+                        <div class="accordion-item border-0 section-brand">
+                            <h2 class="accordion-header" id="flush-headingTwo">
+                                <button class="accordion-button collapsed toggle-brand"
+                                        type="button"
+                                        data-bs-toggle="collapse"
+                                        data-bs-target="#flush-collapseTwo"
+                                        aria-expanded="false"
+                                        aria-controls="flush-collapseTwo">
+                                    برند
+                                </button>
+                            </h2>
+                            <div id="flush-collapseTwo"
+                                 class="accordion-collapse collapse content-brand"
+                                 aria-labelledby="flush-headingTwo"
+                                 data-bs-parent="#accordionFlushExample">
+                                <div class="accordion-body body-brand">
+                                    <ul id="brand-list" class="list-brand">
+                                        {% for brand in brands %}
+                                            <li class="item-brand">
+                                                <a href="#">
+                                                    {{ brand.name }}
+                                                </a>
+                                                <label>
+                                                    <input
+                                                        type="checkbox"
+                                                        class="form-check-input checkbox-brand"
+                                                        name="brand"
+                                                        value="{{ brand.id }}">
+                                                </label>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Price -->
+                        <div class="accordion-item border-0 section-price">
+                            <h2 class="accordion-header" id="flush-headingThree">
+                                <button class="accordion-button collapsed toggle-price"
+                                        type="button"
+                                        data-bs-toggle="collapse"
+                                        data-bs-target="#flush-collapseThree"
+                                        aria-expanded="false"
+                                        aria-controls="flush-collapseThree">
+                                    محدوده قیمت
+                                </button>
+                            </h2>
+                            <div id="flush-collapseThree"
+                                 class="accordion-collapse collapse content-price"
+                                 aria-labelledby="flush-headingThree"
+                                 data-bs-parent="#accordionFlushExample">
+                                <div class="accordion-body body-price">
+                                    <div class="price-wrapper">
+                                        <div class="price-input price-from">
+                                            <span>از</span>
+                                            <input type="number"
+                                                   class="text-price input-from"
+                                                   name="min_price"
+                                                   value="{{ min_price }}">
+                                            <span>تومان</span>
+                                        </div>
+                                        <div class="price-input price-to">
+                                            <span>تا</span>
+                                            <input type="number"
+                                                   class="text-price input-to"
+                                                   name="max_price"
+                                                   value="{{ max_price }}">
+
+                                            <span>تومان</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- فقط کالاهای موجود -->
+                    <div class="form-check form-switch mt-2 filter-available-wrapper">
+                        <input class="form-check-input input-available"
+                               type="checkbox"
+                               name="available"
+                               id="flexSwitchCheckDefault"
+                               checked>
+                        <label class="form-check-label label-available"
+                               for="flexSwitchCheckDefault">
+                            فقط کالاهای موجود
+                        </label>
+                    </div>
+                    <!-- دکمه -->
+                    <div class="d-grid gap-2 mt-3 filter-btn-wrapper">
+                        <button type="submit" class="btn-auth2 btn-filter">
+                            <i class="fa fa-filter icon-filter"></i>
+                            فیلتر کن!
+                        </button>
+                    </div>
+                </div>
+                <!-- Search Filters:end -->
+            </div>
+        <div class="col-sm-12 col-md-12 col-lg-9 col-xl-9">
+
+    <!-- Products:start -->
+    <div class="products">
+
+        <!-- مرتب سازی -->
+        <div class="product-ordering-wrapper">
+            <div class="ordering">
+                <span class="label">مرتب سازی:</span>
+
+                <a href="#" class="option active" data-sort="newest">
+                    جدیدترین
+                </a>
+
+                <a href="#" class="option" data-sort="oldest">
+                    قدیمی ترین
+                </a>
+
+                <a href="#" class="option" data-sort="cheap">
+                    ارزان ترین
+                </a>
+
+                <a href="#" class="option" data-sort="expensive">
+                    گران ترین
+                </a>
+
+            </div>
+
+            <div class="product-count" id="product-count">
+                {{ paginator.count }} کالا
+            </div>
+        </div>
+
+        <!-- فقط این قسمت با Ajax رفرش می‌شود -->
+        <div id="products-container">
+            {% include "includes/products_list.html" %}
+        </div>
+
+    </div>
+    <!-- Products:end -->
+
+</div>
+
+    </div>
+    </div>
+</main>
+{% endblock %}
+{% block scripts %}
+<script src="{% static 'js/filter_and_ordering.js' %}"></script>
+{% endblock %}
