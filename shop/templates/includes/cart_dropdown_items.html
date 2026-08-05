@@ -1,0 +1,117 @@
+{% load humanize %}
+
+{% if cart|length == 0 %}
+
+    <p class="noProductInCart text-center fs-6">
+        محصولی در سبد خرید وجود ندارد!
+    </p>
+
+{% else %}
+
+    {% for item in cart %}
+
+        <div
+            class="shopping-cart-item d-flex justify-content-between align-items-center py-3 border-bottom-gray-150 item"
+            id="cart-item-dropdown-{{ item.product.id }}"
+            data-item-id="{{ item.product.id }}">
+
+            <!-- سمت راست -->
+            <div class="shopping-cart-item-right me-3">
+
+                {% with image=item.product.product.images.first %}
+                    {% if image %}
+                        <img
+                            src="{{ image.image_file.url }}"
+                            alt="{{ item.product.product.name }}"
+                            class="object-contain">
+                    {% endif %}
+                {% endwith %}
+
+                <div class="shop-item-edit-box d-flex justify-content-between align-items-center px-3 pt-2 pb-1 border-radius-3xl">
+
+                    <span class="addition add_product">
+                        <i class="fas fa-plus"></i>
+                    </span>
+
+                    <span
+                        class="fs-5 quantity"
+                        id="quantity-{{ item.product.id }}">
+                        {{ item.quantity }}
+                    </span>
+
+                    <span class="decrease decrease_product">
+                        {% if item.quantity > 1 %}
+                            <i class="fas fa-minus"></i>
+                        {% else %}
+                            <i class="far fa-trash-alt"></i>
+                        {% endif %}
+                    </span>
+
+                </div>
+
+            </div>
+
+            <!-- سمت چپ -->
+            <div class="shopping-cart-item-left">
+
+                <h3 class="fs-6">
+                    {{ item.product.product.name }}
+                </h3>
+
+                {% if item.product.size %}
+                    <span class="d-block mt-1 fs-8">
+                        سایز:
+                        {{ item.product.size.size }}
+                    </span>
+                {% endif %}
+
+                {% if item.product.color %}
+                    <span class="d-block mt-1 fs-8">
+                        رنگ:
+                        {{ item.product.color.color }}
+                    </span>
+                {% endif %}
+
+                <span class="d-block mt-1 fs-8">
+                    <i class="far fa-check-circle text-success me-1"></i>
+                    موجود در انبار
+                </span>
+
+                <div class="pt-3">
+
+                    {% if item.product.product.off > 0 %}
+
+                        <div
+                            class="mb-1 old-price-wrapper"
+                            id="old-price-wrapper-{{ item.product.id }}">
+
+                            <small
+                                class="text-danger text-decoration-line-through"
+                                id="old-price-{{ item.product.id }}">
+
+                                {% widthratio item.product.product.price 1 item.quantity as old_price %}
+                                {{ old_price|intcomma }} تومان
+
+                            </small>
+
+                        </div>
+
+                    {% endif %}
+
+                    <span
+                        class="fs-4 fw-bold d-block item-total"
+                        id="total-price-{{ item.product.id }}">
+
+                        {{ item.total|intcomma }} تومان
+
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    {% endfor %}
+
+{% endif %}

@@ -1,0 +1,24 @@
+{% load humanize %}
+<div class="card shopping-cart-box position-absolute border-0 custom-box-shadow-s-1 overflow-hidden border-radius-3xl">
+    <!--                    Cart Header:start-->
+    <div class="card-header d-flex justify-content-between align-items-center bg-white fs-7">
+        <span><span class="countOfProducts" id="cart_info">{{ cart|length }}</span> کالا</span>
+        <a href="{% url 'cart:cart_detail' %}" class="text-info fw-bold" title="">
+            مشاهده سبد خرید
+            <i class="fa fa-angle-left ms-1"></i>
+        </a>
+    </div>
+    <!--                    Cart Header:end-->
+
+    <!--                    Cart Body:start-->
+        <!--                    Shopping Cart Item:start-->
+
+        <div class="card-body cartParent" id="cart-dropdown-body">
+            {% include "includes/cart_dropdown_items.html" %}
+        </div>
+    <!--                    Cart Body:end-->
+
+    <!--                    Cart Footer:start-->
+    {% include "includes/cart_dropdown_footer.html" %}
+    <!--                    Cart Footer:end-->
+</div>

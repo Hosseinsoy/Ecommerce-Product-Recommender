@@ -1,27 +1,31 @@
 from itertools import product, zip_longest
-
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 # from django.contrib.postgres.search import TrigramSimilarity
 from django.core.paginator import Paginator
 from django.http import JsonResponse
-
 from django.shortcuts import render, get_object_or_404, redirect
 from django.template.loader import render_to_string
 from django.utils import timezone
 from django.views import View
 from django.views.generic import ListView
-
 from account.models import ShopUser
 from cart.cart import Cart
 from .forms import SearchForm
+from django.db.models import Min, Max
 from .models import Category, Product, DiscountCode, Brand
 from django.conf import settings
 from django_filters.views import FilterView
 from .filters import ProductFilter
+from django.contrib.auth.mixins import LoginRequiredMixin
+from shop.utils.wishlist import (
+    get_wishlist,
+    save_wishlist,
+)
 
 User = settings.AUTH_USER_MODEL
 
+PRODUCTS_PER_PAGE = 12  # 4X
 
 # Create your views here.
 # def product_list(request, category_slug=None, base_on=None):
@@ -171,7 +175,7 @@ class CategoryDetailView(ListView):
     model = Product
     template_name = "shop/category_detail.html"
     context_object_name = "products"
-    paginate_by = 12
+    paginate_by = PRODUCTS_PER_PAGE
 
     def get_queryset(self):
         self.category = get_object_or_404(
@@ -179,12 +183,9 @@ class CategoryDetailView(ListView):
             slug=self.kwargs["slug"]
         )
 
-        return (
+        products = (
             Product.objects
-            .filter(
-                category=self.category,
-                is_available=True
-            )
+            .filter(is_available=True)
             .prefetch_related(
                 "images",
                 "variants"
@@ -193,33 +194,141 @@ class CategoryDetailView(ListView):
                 "brand",
                 "category"
             )
-            .order_by("-created")
         )
 
+        # -------------------------
+        # Category Filter
+        # -------------------------
+        category_ids = self.request.GET.getlist("categories")
+
+        if category_ids:
+            products = products.filter(category__id__in=category_ids)
+        else:
+            products = products.filter(category=self.category)
+
+        # -------------------------
+        # Brand Filter
+        # -------------------------
+        brand_ids = self.request.GET.getlist("brands")
+
+        if brand_ids:
+            products = products.filter(brand__id__in=brand_ids)
+
+        # -------------------------
+        # Price Filter
+        # -------------------------
+        min_price = self.request.GET.get("min_price")
+        max_price = self.request.GET.get("max_price")
+
+        if min_price:
+            products = products.filter(price__gte=min_price)
+
+        if max_price:
+            products = products.filter(price__lte=max_price)
+
+        # -------------------------
+        # Ordering
+        # -------------------------
+        sort = self.request.GET.get("sort", "newest")
+
+        if sort == "newest":
+            products = products.order_by("-created")
+
+        elif sort == "oldest":
+            products = products.order_by("created")
+
+        elif sort == "cheap":
+            products = products.order_by("off_price", "price")
+
+        elif sort == "expensive":
+            products = products.order_by("-off_price", "-price")
+
+        return products
+
     def get_context_data(self, **kwargs):
+        print("========== DEBUG ==========")
+        print("USER:", self.request.user)
+        print("TYPE:", type(self.request.user))
+        print("AUTH:", self.request.user.is_authenticated)
+
+        if self.request.user.is_authenticated:
+            print("Saved products manager:", self.request.user.saved_products)
+            print("Saved IDs:", list(self.request.user.saved_products.values_list("id", flat=True)))
+
         context = super().get_context_data(**kwargs)
 
         context["category"] = self.category
 
         context["categories"] = Category.objects.all().order_by("name")
 
-        context["brands"] = Brand.objects.filter(
-            products__category=self.category,
-            products__is_available=True,
-        ).distinct().order_by("name")
+        context["brands"] = (
+            Brand.objects.filter(
+                products__category=self.category
+            )
+            .distinct()
+            .order_by("name")
+        )
+        if self.request.user.is_authenticated:
+
+            context["saved_product_ids"] = list(
+                self.request.user.saved_products.values_list(
+                    "id",
+                    flat=True
+                )
+            )
+
+        else:
+
+            context["saved_product_ids"] = self.request.session.get(
+                "wishlist",
+                []
+            )
+        from cart.cart import Cart
+
+        cart = Cart(self.request)
+
+        context["cart_item_ids"] = [
+            int(item["product"].id)
+            for item in cart
+        ]
 
         products = self.get_queryset()
 
-        context["min_price"] = (
+        default_min = (
             products.order_by("price").first().price
             if products.exists() else 0
         )
 
-        context["max_price"] = (
+        default_max = (
             products.order_by("-price").first().price
             if products.exists() else 0
         )
 
+        context["min_price"] = self.request.GET.get("min_price", default_min)
+        context["max_price"] = self.request.GET.get("max_price", default_max)
+
+        context["selected_brands"] = [
+            int(x)
+            for x in self.request.GET.getlist("brands")
+        ]
+
+        context["only_available"] = (
+                self.request.GET.get("only_available") == "1"
+                or "only_available" not in self.request.GET
+        )
+
+        context["current_sort"] = self.request.GET.get(
+            "sort",
+            "newest"
+        )
+        context["selected_categories"] = [
+            int(x) for x in self.request.GET.getlist("categories")
+        ]
+        context["selected_brands"] = [
+            int(x) for x in self.request.GET.getlist("brands")
+        ]
+        context["current_sort"] = self.request.GET.get("sort", "newest")
+        context["is_wishlist_page"] = False
         return context
 
 
@@ -334,11 +443,21 @@ class CategoryProductsAjaxView(View):
         # -------------------------------
         # صفحه بندی
         # -------------------------------
-        paginator = Paginator(products, 12)
+        paginator = Paginator(products, PRODUCTS_PER_PAGE)
 
         page = request.GET.get("page")
 
         page_obj = paginator.get_page(page)
+
+        if (
+                request.user.is_authenticated
+                and isinstance(request.user, ShopUser)
+        ):
+            saved_product_ids = list(
+                request.user.saved_products.values_list("id", flat=True)
+            )
+        else:
+            saved_product_ids = []
 
         html = render_to_string(
             "includes/products_list.html",
@@ -347,6 +466,7 @@ class CategoryProductsAjaxView(View):
                 "products": page_obj.object_list,
                 "paginator": paginator,
                 "is_paginated": page_obj.has_other_pages(),
+                "saved_product_ids": saved_product_ids,
             },
             request=request
         )
@@ -359,3 +479,309 @@ class CategoryProductsAjaxView(View):
 
 def brand_detail(request, brand_name):
     pass
+
+
+class WishlistToggleView(View):
+
+    def post(self, request, product_id):
+
+        product = get_object_or_404(Product, id=product_id)
+
+        # -------------------------
+        # کاربر لاگین کرده
+        # -------------------------
+        if request.user.is_authenticated:
+
+            saved_products = request.user.saved_products
+
+            if saved_products.filter(id=product.id).exists():
+
+                saved_products.remove(product)
+                status = "removed"
+
+            else:
+
+                saved_products.add(product)
+                status = "added"
+
+            wishlist_products = saved_products.all()
+
+        # -------------------------
+        # مهمان
+        # -------------------------
+        else:
+
+            wishlist = get_wishlist(request.session)
+
+            if product.id in wishlist:
+
+                wishlist.remove(product.id)
+                status = "removed"
+
+            else:
+
+                wishlist.append(product.id)
+                status = "added"
+
+            save_wishlist(request.session, wishlist)
+
+            wishlist_products = Product.objects.filter(id__in=wishlist)
+
+        wishlist_html = render_to_string(
+            "includes/wishlist_dropdown_items.html",
+            {
+                "wishlist_products": wishlist_products,
+                "wishlist_count": wishlist_products.count(),
+            },
+            request=request,
+        )
+
+        return JsonResponse({
+            "status": status,
+            "wishlist_count": wishlist_products.count(),
+            "wishlist_html": wishlist_html,
+        })
+
+
+class WishlistView(ListView):
+    model = Product
+    template_name = "shop/wishlist.html"
+    context_object_name = "products"
+    paginate_by = PRODUCTS_PER_PAGE
+
+    def get_queryset(self):
+
+        if (
+            self.request.user.is_authenticated
+            and isinstance(self.request.user, ShopUser)
+        ):
+
+            products = (
+                self.request.user.saved_products
+                .select_related("brand", "category")
+                .prefetch_related("images", "variants")
+            )
+
+        else:
+
+            wishlist = get_wishlist(self.request.session)
+
+            products = (
+                Product.objects.filter(id__in=wishlist)
+                .select_related("brand", "category")
+                .prefetch_related("images", "variants")
+            )
+
+        # -------------------------
+        # Category Filter
+        # -------------------------
+        category_ids = self.request.GET.getlist("categories")
+
+        if category_ids:
+            products = products.filter(category__id__in=category_ids)
+
+        # -------------------------
+        # Brand Filter
+        # -------------------------
+        brand_ids = self.request.GET.getlist("brands")
+
+        if brand_ids:
+            products = products.filter(brand__id__in=brand_ids)
+
+        # -------------------------
+        # Price Filter
+        # -------------------------
+        min_price = self.request.GET.get("min_price")
+        max_price = self.request.GET.get("max_price")
+
+        if min_price:
+            products = products.filter(price__gte=min_price)
+
+        if max_price:
+            products = products.filter(price__lte=max_price)
+
+        # -------------------------
+        # Only Available
+        # -------------------------
+        if self.request.GET.get("only_available"):
+            products = products.filter(is_available=True)
+
+        # -------------------------
+        # Ordering
+        # -------------------------
+        sort = self.request.GET.get("sort", "newest")
+
+        if sort == "newest":
+            products = products.order_by("-created")
+
+        elif sort == "oldest":
+            products = products.order_by("created")
+
+        elif sort == "cheap":
+            products = products.order_by("off_price", "price")
+
+        elif sort == "expensive":
+            products = products.order_by("-off_price", "-price")
+
+        return products
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        products = self.object_list
+
+        context["categories"] = (
+            Category.objects.filter(product__in=products)
+            .distinct()
+            .order_by("name")
+        )
+
+        context["brands"] = (
+            Brand.objects.filter(products__in=products)
+            .distinct()
+            .order_by("name")
+        )
+
+        if (
+            self.request.user.is_authenticated
+            and isinstance(self.request.user, ShopUser)
+        ):
+            context["saved_product_ids"] = list(
+                self.request.user.saved_products.values_list(
+                    "id",
+                    flat=True
+                )
+            )
+        else:
+            context["saved_product_ids"] = get_wishlist(self.request.session)
+
+        price_range = products.aggregate(
+            min_price=Min("price"),
+            max_price=Max("price")
+        )
+
+        context["min_price"] = self.request.GET.get(
+            "min_price",
+            price_range["min_price"] or 0
+        )
+
+        context["max_price"] = self.request.GET.get(
+            "max_price",
+            price_range["max_price"] or 0
+        )
+
+        context["selected_categories"] = [
+            int(x)
+            for x in self.request.GET.getlist("categories")
+        ]
+
+        context["selected_brands"] = [
+            int(x)
+            for x in self.request.GET.getlist("brands")
+        ]
+
+        context["only_available"] = bool(
+            self.request.GET.get("only_available")
+        )
+
+        context["current_sort"] = self.request.GET.get(
+            "sort",
+            "newest"
+        )
+        context["is_wishlist_page"] = True
+
+        return context
+
+
+class WishlistAjaxView(WishlistView):
+
+    def get(self, request, *args, **kwargs):
+
+        self.object_list = self.get_queryset()
+
+        context = self.get_context_data()
+
+        html = render_to_string(
+            "includes/products_list.html",
+            context=context,
+            request=request
+        )
+
+        return JsonResponse({
+            "html": html,
+            "count": context["paginator"].count,
+        })
+
+
+class RemoveWishlistItemView(View):
+
+    def post(self, request):
+
+        product_id = request.POST.get("product_id")
+
+        if not product_id:
+            return JsonResponse({
+                "success": False
+            })
+
+        product_id = int(product_id)
+
+        # -------------------------
+        # User
+        # -------------------------
+        if request.user.is_authenticated:
+
+            request.user.saved_products.remove(product_id)
+
+            wishlist_products = (
+                request.user.saved_products
+                .prefetch_related("images")
+                .all()
+            )
+
+            wishlist_count = wishlist_products.count()
+
+        # -------------------------
+        # Guest
+        # -------------------------
+        else:
+
+            wishlist = request.session.get("wishlist", [])
+
+            if product_id in wishlist:
+                wishlist.remove(product_id)
+
+            request.session["wishlist"] = wishlist
+            request.session.modified = True
+
+            wishlist_products = (
+                Product.objects
+                .filter(id__in=wishlist)
+                .prefetch_related("images")
+            )
+
+            wishlist_count = len(wishlist)
+
+        # -------------------------
+        # Render dropdown html
+        # -------------------------
+        wishlist_html = render_to_string(
+            "includes/wishlist_dropdown_items.html",
+            {
+                "wishlist_products": wishlist_products,
+                "wishlist_count": wishlist_count,
+            },
+            request=request
+        )
+
+        return JsonResponse({
+
+            "success": True,
+
+            "product_id": product_id,
+
+            "wishlist_count": wishlist_count,
+
+            "wishlist_html": wishlist_html,
+
+        })

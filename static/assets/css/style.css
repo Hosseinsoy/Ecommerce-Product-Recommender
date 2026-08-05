@@ -7908,4 +7908,25 @@ p {
     padding-top:18px;
 }
 
+.wishlist-btn.active{
+    color:red;
+}
+.wishlist-wrapper{
+    position: relative;
+}
+
+.wishlist-box{
+    width: 360px;
+    top: 100%;
+    left: 0;
+    opacity: 0;
+    visibility: hidden;
+    transition: .25s;
+    z-index: 1000;
+}
+
+.wishlist-wrapper:hover .wishlist-box{
+    opacity: 1;
+    visibility: visible;
+}
 /*# sourceMappingURL=style.css.map */

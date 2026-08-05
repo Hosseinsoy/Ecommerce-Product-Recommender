@@ -1,5 +1,7 @@
 from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404
+from django.template.loader import render_to_string
+from django.views import View
 from django.views.decorators.http import require_POST
 from shop.models import Product, ProductVariant
 from cart.cart import Cart
@@ -25,8 +27,17 @@ def add_to_cart(request, product_id):
             product_variant = get_object_or_404(ProductVariant, product__id=product_id)
         cart = Cart(request)
         cart.add(product_variant)
+        cart_html = render_to_string(
+            "includes/cart_dropdown.html",
+            {
+                "cart": cart,
+            },
+            request=request,
+        )
+
         response_data = {
-            'cart_count': len(cart)
+            "cart_count": len(cart),
+            "cart_html": cart_html,
         }
         return JsonResponse(response_data)
     except:
@@ -40,47 +51,58 @@ def cart_detail(request):
 
 @require_POST
 def update_quantity(request):
-    item_id = request.POST.get('item_id')
-    action = request.POST.get('action')
+    item_id = request.POST.get("item_id")
+    action = request.POST.get("action")
 
     try:
         product = get_object_or_404(ProductVariant, id=item_id)
         cart = Cart(request)
 
-        if action == 'add':
+        if action == "add":
             cart.add(product)
-        elif action == 'decrease':
+        elif action == "decrease":
             cart.decrease(product)
 
         if str(item_id) in cart.cart:
-            item_count = cart.cart[str(item_id)]['quantity']
-
+            item_count = cart.cart[str(item_id)]["quantity"]
             total_price = item_count * product.product.off_price
             old_total_price = item_count * product.product.price
-
         else:
             item_count = 0
             total_price = 0
             old_total_price = 0
 
-        response_data = {
-            'cart_count': len(cart),
-            'item_count': item_count,
+        cart_body = render_to_string(
+            "includes/cart_dropdown_items.html",
+            {"cart": cart},
+            request=request,
+        )
 
-            'total_price': total_price,
-            'old_total_price': old_total_price,
+        cart_footer = render_to_string(
+            "includes/cart_dropdown_footer.html",
+            {"cart": cart},
+            request=request,
+        )
 
-            'off': product.product.off,
+        return JsonResponse({
+            "cart_count": len(cart),
+            "item_count": item_count,
 
-            'products_price': cart.total_price(),
-            'final_price': cart.final_price(),
-            'post_price': cart.post_price(),
-        }
+            "total_price": total_price,
+            "old_total_price": old_total_price,
 
-        return JsonResponse(response_data)
+            "off": product.product.off,
+
+            "products_price": cart.total_price(),
+            "final_price": cart.final_price(),
+            "post_price": cart.post_price(),
+
+            "cart_body": cart_body,
+            "cart_footer": cart_footer,
+        })
 
     except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
+        return JsonResponse({"error": str(e)}, status=500)
 
 @require_POST
 def remove_item(request):
@@ -89,13 +111,66 @@ def remove_item(request):
         product = get_object_or_404(ProductVariant, id=item_id)
         cart = Cart(request)
         cart.remove(product)
+        cart_html = render_to_string(
+            "includes/cart_dropdown.html",
+            {
+                "cart": cart,
+            },
+            request=request,
+        )
         response_data = {
             'cart_count': len(cart),
             'products_price': cart.total_price(),
             'final_price': cart.final_price(),
-            'post_price': cart.post_price()
+            'post_price': cart.post_price(),
+            'cart_html': cart_html,
+            'item_id': item_id,
         }
         return JsonResponse(response_data)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
+
+class CartToggleView(View):
+
+    def post(self, request, product_id):
+
+        product = get_object_or_404(Product, id=product_id)
+
+        product_variant = product.variants.first()
+
+        cart = Cart(request)
+
+        if str(product_variant.id) in cart.cart:
+            cart.remove(product_variant)
+            status = "removed"
+        else:
+            cart.add(product_variant)
+            status = "added"
+        cart_body = render_to_string(
+            "includes/cart_dropdown_items.html",
+            {"cart": cart},
+            request=request,
+        )
+
+        cart_footer = render_to_string(
+            "includes/cart_dropdown_footer.html",
+            {"cart": cart},
+            request=request,
+        )
+        return JsonResponse({
+            "success": True,
+            "status": status,
+            "product_id": product_variant.id,
+
+            "cart_count": len(cart),
+
+            "cart_body": cart_body,
+            "cart_footer": cart_footer,
+
+            "products_price": cart.total_price(),
+            "post_price": cart.post_price(),
+            "final_price": cart.final_price(),
+
+            "is_empty": len(cart) == 0,
+        })

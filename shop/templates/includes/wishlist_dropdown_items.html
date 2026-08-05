@@ -1,0 +1,49 @@
+{% load static %}
+{% load shop_tags %}
+{% load humanize %}
+
+{% if wishlist_products %}
+    {% for product in wishlist_products %}
+        <div class="wishlist-item d-flex justify-content-between align-items-center py-3 border-bottom-gray-150"
+             id="wishlist-item-{{ product.id }}"
+             data-product-id="{{ product.id }}">
+
+            <div class="d-flex align-items-center">
+
+                {% with image=product.images.first %}
+                    {% if image %}
+                        <img src="{{ image.image_file.url }}"
+                             style="width:60px;height:60px;object-fit:contain;">
+                    {% endif %}
+                {% endwith %}
+
+                <div class="ms-3">
+                    <div class="fw-bold">
+                        {{ product.name }}
+                    </div>
+
+                    <small class="text-muted">
+                        {{ product.off_price|intcomma }} تومان
+                    </small>
+                </div>
+
+            </div>
+
+            <button
+                type="button"
+                class="btn btn-sm text-danger remove-wishlist-item"
+                data-product-id="{{ product.id }}">
+
+                <i class="fa fa-trash"></i>
+
+            </button>
+
+        </div>
+        {% endfor %}
+{% else %}
+
+    <p class="text-center">
+        علاقه‌مندی خالی است.
+    </p>
+
+{% endif %}

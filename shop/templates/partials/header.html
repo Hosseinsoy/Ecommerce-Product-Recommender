@@ -1,5 +1,3 @@
-{% load humanize %}
-{% load humanize %}
 {% load static %}
 {% load shop_tags %}
 {% load humanize %}
@@ -119,6 +117,7 @@
                                                 </a>
                         {% endif %}
                         <!--            Login and Register:end-->
+
 <!--            Shopping Cart:start-->
                 <div class="shopping-cart-wrapper position-relative ms-2">
                     <!--            Shopping Cart Button:start-->
@@ -275,6 +274,7 @@
                     <!--                Shopping Cart Box:end-->
                 </div>
                 <!--            Shopping Cart:end-->
+
                     </div>
                     <!--            Main Mobile Navbar Left:end-->
                 </div>
@@ -347,7 +347,49 @@
                     <!--            Horizontal Line:start-->
                     <span class="horizontal-line"></span>
                     <!--            Horizontal Line:end-->
+                <!-- Wishlist -->
+                <div class="wishlist-wrapper position-relative ms-2">
 
+                    <a href="{% url 'shop:wishlist' %}"
+                       class="btn shopping-cart-btn position-relative border-radius-3xl">
+
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                             width="24"
+                             height="24"
+                             viewBox="0 0 24 24">
+                            <path fill="#000000"
+                                  d="M12.001 3.818a6.228 6.228 0 0 1 8.51 9.087l-5.224 5.225h-.001L12 21.415l-7.28-7.279l-1.23-1.232A6.228 6.228 0 0 1 12 3.818m3.285 11.485l3.811-3.812a4.228 4.228 0 1 0-5.98-5.98L12 6.627L10.883 5.51a4.228 4.228 0 1 0-5.98 5.98l1.232 1.232L12 18.587l3.285-3.285"/>
+                        </svg>
+
+                        <span class="badge position-absolute shop-cart-badge border border-white wishlist-counter">
+                            {{ wishlist_count }}
+                        </span>
+
+                    </a>
+
+                    <div class="card wishlist-box position-absolute border-0 custom-box-shadow-s-1 overflow-hidden border-radius-3xl">
+
+                        <div class="card-header d-flex justify-content-between align-items-center bg-white fs-7">
+                                <span>
+                                    <span class="wishlist-count">
+                                        {{ wishlist_count }}
+                                    </span>
+                                    کالا
+                                </span>
+
+                            <a href="{% url 'shop:wishlist' %}" class="text-info fw-bold">
+                                مشاهده علاقه‌مندی‌ها
+                                <i class="fa fa-angle-left ms-1"></i>
+                            </a>
+                        </div>
+
+                        <div class="card-body" id="wishlist-dropdown-body">
+                            {% include 'includes/wishlist_dropdown_items.html' %}
+                        </div>
+
+                    </div>
+
+                </div>
                                    <!--            Shopping Cart:start-->
                 <div class="shopping-cart-wrapper position-relative ms-2">
                     <!--            Shopping Cart Button:start-->
@@ -371,149 +413,8 @@
                     <!--            Shopping Cart Button:end-->
 
                     <!--                Shopping Cart Box:start-->
-                    <div class="card shopping-cart-box position-absolute border-0 custom-box-shadow-s-1 overflow-hidden border-radius-3xl">
-                        <!--                    Cart Header:start-->
-                        <div class="card-header d-flex justify-content-between align-items-center bg-white fs-7">
-                            <span><span class="countOfProducts" id="cart_info">{{ cart|length }}</span> کالا</span>
-                            <a href="{% url 'cart:cart_detail' %}" class="text-info fw-bold" title="">
-                                مشاهده سبد خرید
-                                <i class="fa fa-angle-left ms-1"></i>
-                            </a>
-                        </div>
-                        <!--                    Cart Header:end-->
-
-                        <!--                    Cart Body:start-->
-                            <!--                    Shopping Cart Item:start-->
-
-                            <div class="card-body cartParent">
-                                {% if cart|length == 0 %}
-                                    <p class="noProductInCart text-center fs-6">
-                                        محصولی در سبد خرید وجود ندارد!
-                                    </p>
-                                {% else %}
-
-                                    {% for item in cart %}
-                                        <div class="shopping-cart-item d-flex justify-content-between align-items-center py-3 border-bottom-gray-150 item"
-                                            data-item-id="{{ item.product.id }}">
-
-                                            <!-- سمت راست -->
-                                            <div class="shopping-cart-item-right me-3">
-
-                                                {% with image=item.product.product.images.first %}
-                                                    {% if image %}
-                                                        <img src="{{ image.image_file.url }}"
-                                                             alt="{{ item.product.product.name }}"
-                                                             class="object-contain">
-                                                    {% endif %}
-                                                {% endwith %}
-
-                                                <div class="shop-item-edit-box d-flex justify-content-between align-items-center px-3 pt-2 pb-1 border-radius-3xl">
-                                                    <span class="addition add_product">
-                                                        <i class="fas fa-plus"></i>
-                                                    </span>
-
-                                                    <span class="fs-5 quantity" id="quantity-{{ item.product.id }}">
-                                                        {{ item.quantity }}
-                                                    </span>
-
-                                                    <span class="decrease decrease_product">
-                                                        {% if item.quantity > 1 %}
-                                                            <i class="fas fa-minus"></i>
-                                                        {% else %}
-                                                            <i class="far fa-trash-alt"></i>
-                                                        {% endif %}
-                                                    </span>
-                                                </div>
-
-                                            </div>
-
-                                            <!-- سمت چپ -->
-                                            <div class="shopping-cart-item-left">
-
-                                                <h3 class="fs-6">
-                                                    {{ item.product.product.name }}
-                                                </h3>
-
-                                                {% if item.product.size %}
-                                                    <span class="d-block mt-1 fs-8">
-                                                        سایز:
-                                                        {{ item.product.size.size }}
-                                                    </span>
-                                                {% endif %}
-
-                                                {% if item.product.color %}
-                                                    <span class="d-block mt-1 fs-8">
-                                                        رنگ:
-                                                        {{ item.product.color.color }}
-                                                    </span>
-                                                {% endif %}
-
-                                                <span class="d-block mt-1 fs-8">
-                                                    <i class="far fa-check-circle text-success me-1"></i>
-                                                    موجود در انبار
-                                                </span>
-
-                                                <div class="pt-3">
-
-                                                {% if item.product.product.off > 0 %}
-                                                <div class="mb-1 old-price-wrapper"
-                                                     id="old-price-wrapper-{{ item.product.id }}">
-
-                                                <small class="text-danger text-decoration-line-through"
-                                                       id="old-price-{{ item.product.id }}">
-                                                    {% widthratio item.product.product.price 1 item.quantity as old_price %}
-                                                    {{ old_price|intcomma }} تومان
-                                                </small>
-
-                                                    <br>
-                                                </div>
-                                                {% endif %}
-
-                                                <span class="fs-4 fw-bold d-block item-total"
-                                                      id="total-price-{{ item.product.id }}">
-                                                    {{ item.total|intcomma }} تومان
-                                                </span>
-
-                                            </div>
-
-                                            </div>
-
-                                        </div>
-                                    {% endfor %}
-
-                                {% endif %}
-
-                            </div>
-                        <!--                    Cart Body:end-->
-
-                        <!--                    Cart Footer:start-->
-                        <div class="card-footer bg-white bottom-0 d-flex justify-content-between align-items-center">
-                            <!--                    Shopping Cart Footer Right:start-->
-                            <div class="card-footer-right">
-                                <span class="d-block text-muted fs-7">مبلغ قابل پرداخت :</span>
-                                <span class="fs-5 fw-bold d-block mt-1">
-                                    <span class="allPrices" id="products_price">
-                                            {{ cart.total_price|intcomma }}
-                                        </span>
-                                    هزار تومان</span>
-                            </div>
-                            <!--                    Shopping Cart Footer Right:end-->
-
-                            <!--                    Shopping Cart Footer Left:start-->
-                            {% if request.user.is_authenticated %}
-                            <div class="card-footer-left">
-                                <a href="{% url 'order:order' %}" class="btn custom-btn-danger border-radius-3xl fs-6" title="">ثبت
-                                    سفارش</a>
-                            </div>
-                            {% else %}
-                                                        <div class="card-footer-left">
-                                <a href="{% url 'order:login_choice' %}" class="btn custom-btn-danger border-radius-3xl fs-6" title="">ثبت
-                                    سفارش</a>
-                            </div>
-                            {% endif %}
-                            <!--                    Shopping Cart Footer Left:end-->
-                        </div>
-                        <!--                    Cart Footer:end-->
+                    <div id="cart-dropdown-wrapper">
+                        {% include "includes/cart_dropdown.html" %}
                     </div>
                     <!--                Shopping Cart Box:end-->
                 </div>

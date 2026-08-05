@@ -79,12 +79,17 @@ class Cart:
 
     def __iter__(self):
         products = ProductVariant.objects.filter(id__in=self.cart.keys())
-        dict_cart = self.cart.copy()
-        for product in products:
-            dict_cart[str(product.id)]['product'] = product
-        for item in dict_cart.values():
-            item['total'] = item['product'].product.off_price * item['quantity']
-            yield item
 
+        dict_cart = {
+            k: v.copy()
+            for k, v in self.cart.items()
+        }
+
+        for product in products:
+            dict_cart[str(product.id)]["product"] = product
+
+        for item in dict_cart.values():
+            item["total"] = item["product"].product.off_price * item["quantity"]
+            yield item
     def save(self):
         self.session.modified = True

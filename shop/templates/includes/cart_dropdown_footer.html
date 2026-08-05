@@ -1,0 +1,39 @@
+{% load humanize %}
+
+<div class="card-footer bg-white bottom-0 d-flex justify-content-between align-items-center">
+
+    <div class="card-footer-right">
+
+        <span class="d-block text-muted fs-7">
+            مبلغ قابل پرداخت :
+        </span>
+
+        <span class="fs-5 fw-bold d-block mt-1">
+
+            <span id="products_price">
+                {{ cart.total_price|intcomma }}
+            </span>
+
+            هزار تومان
+
+        </span>
+
+    </div>
+
+    {% if request.user.is_authenticated %}
+        <div class="card-footer-left">
+            <a href="{% url 'order:order' %}"
+               class="btn custom-btn-danger border-radius-3xl fs-6">
+                ثبت سفارش
+            </a>
+        </div>
+    {% else %}
+        <div class="card-footer-left">
+            <a href="{% url 'order:login_choice' %}"
+               class="btn custom-btn-danger border-radius-3xl fs-6">
+                ثبت سفارش
+            </a>
+        </div>
+    {% endif %}
+
+</div>

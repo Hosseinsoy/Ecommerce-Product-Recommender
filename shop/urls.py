@@ -15,5 +15,8 @@ urlpatterns = [
     path("category/<slug:slug>/", views.CategoryDetailView.as_view(), name="category_detail"),
     path("ajax/category-brands/", views.CategoryBrandsAjaxView.as_view(), name="category_brands"),
     path("category/<slug:slug>/ajax/", views.CategoryProductsAjaxView.as_view(), name="category_products_ajax"),
-
+    path("wishlist/toggle/<int:product_id>/", views.WishlistToggleView.as_view(), name="wishlist_toggle"),
+    path("wishlist/", views.WishlistView.as_view(), name="wishlist"),
+    path("wishlist/ajax/", views.WishlistAjaxView.as_view(), name="wishlist_ajax"),
+    path("wishlist/remove/", views.RemoveWishlistItemView.as_view(), name="remove_wishlist_item"),
 ]

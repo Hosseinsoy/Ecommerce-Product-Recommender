@@ -51,7 +51,28 @@
 <!--Index JS:start Only for this page-->
 <script src="{% static 'assets/js/index.js' %}"></script>
 <script src="{% static 'assets/js/vendors/jquery/jquery-3.6.0.min.js' %}"></script>
+<script>
+function getCookie(name) {
+    let cookieValue = null;
 
+    if (document.cookie && document.cookie !== "") {
+        const cookies = document.cookie.split(";");
+
+        for (let cookie of cookies) {
+            cookie = cookie.trim();
+
+            if (cookie.startsWith(name + "=")) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+
+    return cookieValue;
+}
+
+const csrftoken = getCookie("csrftoken");
+</script>
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
@@ -118,7 +139,83 @@ $(document).ready(function () {
     const csrfToken = "{{ csrf_token }}";
 </script>
 <script src="{% static 'assets/js/cart_info.js' %}"></script>
+<script>
 
+$(document).on("click", ".remove-wishlist-item", function () {
+
+    const btn = $(this);
+
+    const productId = btn.data("product-id");
+
+    $.ajax({
+
+        url: "/wishlist/remove/",
+
+        type: "POST",
+
+        data: {
+
+            product_id: productId,
+
+            csrfmiddlewaretoken: csrftoken
+
+        },
+
+        success: function (res) {
+
+            if (!res.success) return;
+
+            // بروزرسانی تعداد علاقه‌مندی
+            $(".wishlist-counter").text(res.wishlist_count);
+            $(".wishlist-count").text(res.wishlist_count);
+
+            // بروزرسانی محتوای باکس علاقه‌مندی
+            $("#wishlist-dropdown-body").html(res.wishlist_html);
+
+            // حذف حالت Active از قلب همان محصول در همه صفحات
+            $('.wishlist-btn[data-product="' + res.product_id + '"]').removeClass("active");
+
+            // فقط اگر داخل صفحه Wishlist هستیم
+            if ($("#wishlist-page").length) {
+
+                const item = $("#wishlist-product-" + res.product_id);
+
+                if (item.length) {
+
+                    item.fadeOut(250, function () {
+
+                        $(this).remove();
+
+                        if ($("#wishlist-page .product-item").length === 0) {
+
+                            $("#wishlist-page").html(`
+                                <h5 class="text-muted">
+                                    محصولی یافت نشد.
+                                </h5>
+                            `);
+
+                        }
+
+                    });
+
+                }
+
+            }
+
+        },
+
+        error: function (xhr) {
+
+            console.log(xhr.responseText);
+
+        }
+
+    });
+
+});
+
+</script>
+<script src="{% static 'js/cart_toggle.js' %}"></script>
 {% block scripts %}
 {% endblock %}
 </body>
