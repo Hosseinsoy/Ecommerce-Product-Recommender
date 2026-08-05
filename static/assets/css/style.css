@@ -7929,4 +7929,13 @@ p {
     opacity: 1;
     visibility: visible;
 }
+
+.cart-btn{
+    color:#777;
+    transition:.2s;
+}
+
+.cart-btn.active{
+    color:#dc3545 !important;
+}
 /*# sourceMappingURL=style.css.map */

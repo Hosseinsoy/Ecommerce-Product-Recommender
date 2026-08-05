@@ -15,7 +15,8 @@ $(document).on("click", ".cart-btn", function (e) {
         },
 
         success: function (res) {
-
+            console.log(res.status);
+            console.log(btn.hasClass("active"));
             if (!res.success) return;
 
             // تغییر وضعیت آیکون
@@ -24,6 +25,8 @@ $(document).on("click", ".cart-btn", function (e) {
             } else {
                 btn.removeClass("active");
             }
+
+            console.log(btn.attr("class"));
 
             // تعداد
             $("#cart_badge").text(res.cart_count);
