@@ -47,7 +47,13 @@ $(document).ready(function () {
 
                 $("#cart_badge").text(data.cart_count);
                 $("#cart_info").text(data.cart_count);
+                // اگر محصول حذف شد، آیکون سبد در لیست محصولات خاموش شود
+                if (data.item_count === 0) {
 
+                    $(`.cart-btn[data-product="${data.product_id}"]`)
+                        .removeClass("active");
+
+                }
                 // اگر داخل صفحه cart نیستیم
                 if ($("#quantity-" + item_id).length === 0) {
                     return;

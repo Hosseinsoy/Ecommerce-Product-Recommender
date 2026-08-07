@@ -1,34 +1,30 @@
 {% extends 'parent/base.html' %}
-{% block title %}Products{% endblock %}
-{% block content %}
-    <div class="header">
-    {% if query %}
-       <h1>نتیجه جستجو برای ({{ query }})</h1>
-        <p style="direction: rtl">{{ result.count }} کالا یافت شد.</p>
-    </div>
-    <div class="container">
+{% load static %}
 
-    <div class="big_detail">
-        {% for product in result %}
-            <div class="product">
-                <a href="{{ product.get_absolute_url }}"><img style="; height: 50%; border-radius: 10px" src="
-                    {{ product.images.first.image_file.url }}" alt="Not found"></a>
-                <a href="{{ product.get_absolute_url }}"><div style="text-align: center; margin: 5px;">{{ product.name }}</div></a>
-                <hr>
-                <div style="text-align: right; margin: 5px;">موجودی: {{ product.inventory }}</div>
-                {% if product.off != 0 %}
-                    <div style="color: red; text-align: right; direction: rtl; margin: 5px;"><del>{{ product.price }} تومان</del></div>
-                    <div style="text-align: right; direction: rtl; margin: 5px;">{{ product.off_price }} تومان</div>
-                {% else %}
-                    <div style="text-align: right; direction: rtl; margin: 5px;">{{ product.price }} تومان</div>
-                {% endif %}
-            <hr>
-                <div style="text-align: right; direction: rtl; margin: 5px;">{{ product.description | truncatewords:10 }} </div>
-            </div>
-            {% empty %}
-            نتیجه ای یافت نشد
-        {% endfor %}
-    </div>
-    </div>
-    {% endif %}
+{% block content %}
+
+<main class="container mt-xxxx-large">
+<div class="category-products my-3">
+    <p>
+        نتایج جستجو برای :
+        <span class="badge bg-info">
+            {{ query }}
+        </span>
+    </p>
+</div>
+    {% include "includes/product_page.html" %}
+
+</main>
+
+{% endblock %}
+
+
+{% block scripts %}
+
+<script>
+    const pageType = "search";
+</script>
+
+<script src="{% static 'js/filter_and_ordering.js' %}"></script>
+
 {% endblock %}

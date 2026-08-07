@@ -297,14 +297,99 @@
                     <!--            Logo:end-->
 
                     <!--            Search Form:start-->
-                    <form method="post" action="{% url 'shop:search' %}" class="position-relative">
-                        {% csrf_token %}
-                        <input name="query" class="form-control border-0 fs-6 fw-normal border-radius-3xl bg-gray-150"
-                               type="search" placeholder="جستجو">
-                        <button class="btn position-absolute" type="submit">
-                            <i class="fa-solid fa-magnifying-glass"></i>
-                        </button>
-                    </form>
+                    <div class="main-search position-relative">
+
+                        <form action="{% url 'shop:search' %}" class="position-relative">
+
+                            <input
+                                class="form-control border-0 border-radius-3xl bg-gray-150 fs-7"
+                                type="search"
+                                placeholder="جستجو"
+                                id="mainSearchInput"
+                                autocomplete="off"
+                                name="q"
+                            >
+
+                            <button class="btn position-absolute" type="submit">
+                                <i class="fab fa-sistrix fw-md fs-5 gray-500"></i>
+                            </button>
+
+                        </form>
+
+
+                        <div id="searchBoxResults"
+                             class="search-results custom-box-shadow-s-2"
+                             style="display:none;">
+
+                            <span class="py-2 px-3 d-block fs-7">
+                                نتایج جست و جو :
+                            </span>
+
+
+                            <div id="searchResultContainer">
+
+
+                            </div>
+
+
+
+                            <!-- جستجوهای پرطرفدار -->
+
+                            <div class="search-result-item position-relative border-bottom p-3 best-searching">
+
+                                <div class="d-flex">
+
+                                    <i class="fa fa-fire gray-500"></i>
+
+                                    <span class="d-inline-block fw-bold ms-2">
+                                        جست و جوهای پرطرفدار
+                                    </span>
+
+                                </div>
+
+
+                                <div class="searches mt-2">
+
+                                    <a href="#" class="badge bg-primary fs-7 rounded-pill">
+                                        لباس شویی
+                                    </a>
+
+                                    <a href="#" class="badge bg-primary fs-7 rounded-pill">
+                                        گوشی
+                                    </a>
+
+                                    <a href="#" class="badge bg-primary fs-7 rounded-pill">
+                                        لپ تاپ
+                                    </a>
+
+                                </div>
+
+                            </div>
+
+
+
+                            <div class="search-result-item position-relative border-bottom p-3">
+
+                                <div class="d-flex justify-content-between align-items-center ms-2 text-center">
+
+                                    <span class="d-inline-block fw-bold ms-1">
+                                        مشاهده همه نتایج
+                                    </span>
+
+                                    <i class="fa fa-arrow-left"></i>
+
+                                </div>
+
+                                <a href="{% url 'shop:search' %}"
+                                   class="stretched-link">
+                                </a>
+
+                            </div>
+
+
+                        </div>
+
+                    </div>
                     <!--            Search Form:end-->
                 </div>
                 <!--        Top Navbar Right:end-->

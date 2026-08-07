@@ -99,6 +99,7 @@ def update_quantity(request):
 
             "cart_body": cart_body,
             "cart_footer": cart_footer,
+            'product_id': product.product.id,
         })
 
     except Exception as e:

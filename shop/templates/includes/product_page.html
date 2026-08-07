@@ -38,8 +38,6 @@
                                                         value="{{ category_item.id }}"
                                                         {% if category_item.id in selected_categories %}
                                                             checked
-                                                        {% elif not selected_categories and category_item.slug == category.slug %}
-                                                            checked
                                                         {% endif %}>
                                                 </label>
                                             </li>
@@ -79,7 +77,8 @@
                                                         value="{{ brand.id }}"
                                                         {% if brand.id in selected_brands %}
                                                             checked
-                                                        {% endif %}>
+                                                        {% endif %}
+                                                    >
                                                 </label>
                                             </li>
                                         {% endfor %}
@@ -191,7 +190,7 @@
             </div>
         </div>
 
-        <!-- فقط این قسمت با Ajax رفرش می‌شود -->
+
         <div id="products-container">
             {% include "includes/products_list.html" %}
         </div>

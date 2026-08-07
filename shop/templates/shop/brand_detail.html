@@ -1,0 +1,85 @@
+{% extends 'parent/base.html' %}
+{% load humanize %}
+{% load static %}
+
+{% block title %}{{ brand.name }}{% endblock %}
+
+
+{% block content %}
+
+<!-- Main:start -->
+<main class="container mt-xxxx-large">
+
+
+    <!-- Brand Header:start -->
+    <section class="brand-detail-header mb-5">
+
+        <div class="brand-detail-card">
+
+
+            {% if brand.logo %}
+
+                <div class="brand-logo-wrapper">
+
+                    <img
+                        src="{{ brand.logo.url }}"
+                        alt="{{ brand.name }}"
+                        class="brand-logo">
+
+                </div>
+
+            {% endif %}
+
+
+
+            <div class="brand-info">
+
+                <h1 class="brand-title">
+                    {{ brand.name }}
+                </h1>
+
+
+                {% if brand.description %}
+
+                    <p class="brand-description">
+                        {{ brand.description }}
+                    </p>
+
+                {% else %}
+
+                    <p class="brand-description text-muted">
+                        محصولات برند {{ brand.name }}
+                    </p>
+
+                {% endif %}
+
+
+            </div>
+
+
+        </div>
+
+    </section>
+    <!-- Brand Header:end -->
+
+
+
+    {% include "includes/product_page.html" %}
+
+
+</main>
+<!-- Main:end -->
+
+
+{% endblock %}
+
+
+
+{% block scripts %}
+<script>
+    const pageType = "brand";
+</script>
+
+<script src="{% static 'js/filter_and_ordering.js' %}"></script>
+
+{% endblock %}

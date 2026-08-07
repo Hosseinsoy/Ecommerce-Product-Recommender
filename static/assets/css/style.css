@@ -7930,12 +7930,134 @@ p {
     visibility: visible;
 }
 
-.cart-btn{
-    color:#777;
-    transition:.2s;
+.cart-btn {
+    color: #07006F !important;
+    transition: .2s;
 }
 
-.cart-btn.active{
-    color:#dc3545 !important;
+.cart-btn.active {
+    color: #dc3545 !important;
+}
+
+.brand-detail-header {
+    margin-top: 30px;
+}
+
+
+.brand-detail-card {
+
+    background: #fff;
+
+    border-radius: 25px;
+
+    padding: 35px 40px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 30px;
+
+    box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+
+    border: 1px solid #f0f0f0;
+
+}
+
+
+
+.brand-logo-wrapper {
+
+    width: 120px;
+
+    height: 120px;
+
+    border-radius: 20px;
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    background: #fafafa;
+
+    overflow: hidden;
+
+}
+
+
+
+.brand-logo {
+
+    max-width: 90px;
+
+    max-height: 90px;
+
+    object-fit: contain;
+
+}
+
+
+
+.brand-info {
+
+    flex: 1;
+
+}
+
+
+
+.brand-title {
+
+    font-size: 2rem;
+
+    font-weight: 800;
+
+    margin-bottom: 15px;
+
+    color: #222;
+
+}
+
+
+
+.brand-description {
+
+    font-size: 1rem;
+
+    line-height: 2;
+
+    color: #666;
+
+    margin: 0;
+
+    max-width: 900px;
+
+}
+
+
+
+/* موبایل */
+
+@media(max-width:768px){
+
+    .brand-detail-card{
+
+        flex-direction: column;
+
+        text-align:center;
+
+        padding:25px;
+
+    }
+
+
+    .brand-title{
+
+        font-size:1.5rem;
+
+    }
+
 }
 /*# sourceMappingURL=style.css.map */
