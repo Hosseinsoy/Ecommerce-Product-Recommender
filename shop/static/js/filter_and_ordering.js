@@ -6,6 +6,13 @@ $(document).ready(function () {
         typeof pageType !== "undefined"
         && pageType === "search";
 
+    if(isSearchPage){
+
+        $("#flexSwitchCheckDefault")
+            .prop("checked", false);
+
+    }
+
     const isBrandPage =
         typeof pageType !== "undefined"
         && pageType === "brand";
@@ -50,7 +57,9 @@ $(document).ready(function () {
 
     let currentSort = "newest";
 
-    let searchQuery = "";
+    let searchQuery = new URLSearchParams(window.location.search).get("q") || "";
+
+    // let searchQuery = "";
 
     if (isSearchPage) {
 
@@ -65,23 +74,6 @@ $(document).ready(function () {
     function updateUrl(page = 1) {
 
         const params = new URLSearchParams();
-        const searchQuery = new URLSearchParams(window.location.search).get("q");
-
-        if(searchQuery){
-
-            params.set("q", searchQuery);
-
-        }
-
-
-        if(currentQuery){
-
-            params.set(
-                "q",
-                currentQuery
-            );
-
-}
 
         if(isSearchPage && searchQuery){
 
@@ -91,6 +83,7 @@ $(document).ready(function () {
             );
 
         }
+
 
         $(".checkbox-category:checked").each(function () {
             params.append("categories", $(this).val());
@@ -125,10 +118,7 @@ $(document).ready(function () {
 
 
 
-        if (
-            !isSearchPage &&
-            $("#flexSwitchCheckDefault").is(":checked")
-        ) {
+        if ($("#flexSwitchCheckDefault").is(":checked")) {
 
             params.set(
                 "only_available",
@@ -201,18 +191,12 @@ $(document).ready(function () {
 
 
 
-        let only_available = 0;
-
-
-        if (!isSearchPage) {
-
-            only_available =
-                $("#flexSwitchCheckDefault").is(":checked")
-                ? 1
-                : 0;
-
-        }
-            const searchQuery = new URLSearchParams(window.location.search).get("q");
+            let only_available =
+            $("#flexSwitchCheckDefault").is(":checked")
+            ? 1
+            : 0;
+            console.log("ONLY AVAILABLE:", only_available);
+            console.log("CURRENT SEARCH:", searchQuery);
 
 
         updateUrl(page);
@@ -236,7 +220,7 @@ $(document).ready(function () {
 
             data: {
 
-                q: new URLSearchParams(window.location.search).get("q"),
+                q: searchQuery,
 
                 page: page,
 

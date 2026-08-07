@@ -1237,9 +1237,29 @@ class SearchResultView(View):
         products = search_products(query)
 
 
+        # برندهای مرتبط با نتایج سرچ
+        brands = Brand.objects.filter(
+            products__in=products
+        ).distinct()
+
+
+        # دسته بندی‌های مرتبط با نتایج سرچ
+        categories = Category.objects.filter(
+            product__in=products
+        ).distinct()
+
+
+
         context = {
+
             "products": products,
+
             "query": query,
+
+            "brands": brands,
+
+            "categories": categories,
+
         }
 
 
@@ -1248,141 +1268,65 @@ class SearchResultView(View):
             "shop/search_result.html",
             context
         )
+
+
 class SearchProductsAjaxView(View):
 
     def get(self, request):
 
         query = request.GET.get("q", "").strip()
-        print("SEARCH QUERY:", query)
-        print("GET DATA:", request.GET)
 
 
-        products = Product.objects.all()
+        # اول سرچ
+        products = search_products(query)
 
 
-        # -------------------
-        # Search
-        # -------------------
-
-        if query:
-
-            products = products.filter(
-                Q(name__icontains=query) |
-                Q(description__icontains=query)
-            )
+        # فقط موجود
+        only_available = request.GET.get("only_available")
 
 
-        # -------------------
-        # Category
-        # -------------------
-
-        category_ids = request.GET.getlist(
-            "categories"
-        )
-
-
-        if category_ids:
-
-            products = products.filter(
-                category_id__in=category_ids
-            )
-
-
-
-        # -------------------
-        # Brand
-        # -------------------
-
-        brand_ids = request.GET.getlist(
-            "brands"
-        )
-
-
-        if brand_ids:
-
-            products = products.filter(
-                brand_id__in=brand_ids
-            )
-
-
-
-        # -------------------
-        # فقط موجودها
-        # -------------------
-
-        only_available = request.GET.get(
-            "only_available"
-        )
-
-        print(
-            "SEARCH BEFORE AVAILABLE:",
-            list(
-                products.filter(
-                    name__icontains=query
-                ).values_list(
-                    "name",
-                    "inventory"
-                )
-            )
-        )
         if only_available == "1":
-
             products = products.filter(
                 inventory__gt=0
             )
 
 
+        # دسته بندی
+        category_ids = request.GET.getlist("categories")
 
-        # -------------------
+        if category_ids:
+            products = products.filter(
+                category_id__in=category_ids
+            )
+
+
+        # برند
+        brand_ids = request.GET.getlist("brands")
+
+        if brand_ids:
+            products = products.filter(
+                brand_id__in=brand_ids
+            )
+
+
         # قیمت
-        # -------------------
-
-        min_price = request.GET.get(
-            "min_price"
-        )
-
-        max_price = request.GET.get(
-            "max_price"
-        )
+        min_price = request.GET.get("min_price")
+        max_price = request.GET.get("max_price")
 
 
         if min_price:
-
             products = products.filter(
                 off_price__gte=min_price
             )
 
 
         if max_price:
-
             products = products.filter(
                 off_price__lte=max_price
             )
 
 
-
-        # -------------------
-        # Optimize
-        # -------------------
-
-        products = (
-            products
-            .select_related(
-                "brand",
-                "category"
-            )
-            .prefetch_related(
-                "images",
-                "variants"
-            )
-        )
-
-
-
-        # -------------------
-        # Ordering
-        # -------------------
-
+        # مرتب سازی
         sort = request.GET.get(
             "sort",
             "newest"
@@ -1406,34 +1350,16 @@ class SearchProductsAjaxView(View):
         elif sort == "cheap":
 
             products = products.order_by(
-                "off_price",
-                "price"
+                "off_price"
             )
 
 
         elif sort == "expensive":
 
             products = products.order_by(
-                "-off_price",
-                "-price"
+                "-off_price"
             )
 
-
-
-        print(
-            "FINAL:",
-            list(
-                products.values_list(
-                    "name",
-                    flat=True
-                )
-            )
-        )
-
-
-        # -------------------
-        # Pagination
-        # -------------------
 
         paginator = Paginator(
             products,
@@ -1446,25 +1372,20 @@ class SearchProductsAjaxView(View):
         )
 
 
-
         html = render_to_string(
             "includes/products_list.html",
             {
                 "page_obj": page_obj,
                 "products": page_obj.object_list,
-                "paginator": paginator,
-                "is_paginated": page_obj.has_other_pages(),
             },
             request=request
         )
 
 
-        return JsonResponse(
-            {
-                "html": html,
-                "count": paginator.count
-            }
-        )
+        return JsonResponse({
+            "html": html,
+            "count": paginator.count
+        })
 
 
 class ProductListAjaxView(View):
