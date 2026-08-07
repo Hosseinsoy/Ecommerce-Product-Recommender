@@ -54,4 +54,11 @@ urlpatterns = [
         views.SearchProductsAjaxView.as_view(),
         name="search_products_ajax"
     ),
+
+    path(
+        "product/<int:product_id>/comment/add/",
+        views.AddProductCommentView.as_view(),
+        name="add_product_comment"
+    ),
 ]
+

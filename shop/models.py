@@ -90,7 +90,6 @@ class Product(models.Model):
         null=True,
         blank=True
     )
-    seller = models.ForeignKey('account.ShopSeller', default=1, on_delete=models.CASCADE, verbose_name='فروشنده', related_name='products')
     category = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name='دسته بندی')
     name = models.CharField(max_length=250, verbose_name='نام')
     description = models.TextField(max_length=1200, verbose_name='توضیحات')
@@ -165,6 +164,62 @@ class Product(models.Model):
                 print(test)
         else:
             ProductVariant.objects.get_or_create(product=self, size=None, color=None)
+
+
+class ProductSeller(models.Model):
+
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        related_name='sellers'
+    )
+
+    seller = models.ForeignKey(
+        'account.ShopSeller',
+        on_delete=models.CASCADE,
+        related_name='selling_products'
+    )
+
+    price = models.PositiveIntegerField(
+        verbose_name='قیمت فروشنده'
+    )
+
+    inventory = models.PositiveIntegerField(
+        default=0,
+        verbose_name='موجودی فروشنده'
+    )
+
+    warranty = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        verbose_name='گارانتی'
+    )
+
+    satisfaction = models.PositiveIntegerField(
+        default=0,
+        verbose_name='رضایت مشتری'
+    )
+
+    performance = models.CharField(
+        max_length=50,
+        default='عالی',
+        verbose_name='عملکرد'
+    )
+
+    shipping_type = models.CharField(
+        max_length=100,
+        default='ارسال شاپیک',
+        verbose_name='نوع ارسال'
+    )
+
+
+    class Meta:
+        unique_together = ('product', 'seller')
+
+
+    def __str__(self):
+        return f'{self.product.name} - {self.seller.shop_name}'
 
 
 class ProductVariant(models.Model):
@@ -247,3 +302,206 @@ class DiscountCode(models.Model):
         verbose_name = 'کد تخفیف'
         verbose_name_plural = 'کد های تخفیف'
 
+
+from django.db import models
+from django.conf import settings
+
+
+class ProductComment(models.Model):
+
+    product = models.ForeignKey(
+        'shop.Product',
+        on_delete=models.CASCADE,
+        related_name='comments',
+        verbose_name='محصول'
+    )
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='product_comments',
+        verbose_name='کاربر'
+    )
+
+    title = models.CharField(
+        max_length=200,
+        verbose_name='عنوان دیدگاه'
+    )
+
+    body = models.TextField(
+        max_length=2000,
+        verbose_name='متن دیدگاه'
+    )
+
+    # ---------------------------------
+    # امتیاز ستاره‌ای
+    # ---------------------------------
+
+    score = models.PositiveIntegerField(
+        default=5,
+        verbose_name='امتیاز'
+    )
+
+    # ---------------------------------
+    # پیشنهاد خرید
+    # ---------------------------------
+
+    is_recommended = models.BooleanField(
+        default=True,
+        verbose_name='پیشنهاد می‌کنم'
+    )
+
+    # ---------------------------------
+    # لایک و دیسلایک
+    # ---------------------------------
+
+    likes = models.PositiveIntegerField(
+        default=0,
+        verbose_name='تعداد پسند'
+    )
+
+    dislikes = models.PositiveIntegerField(
+        default=0,
+        verbose_name='تعداد نپسند'
+    )
+
+    # ---------------------------------
+    # آیا خریدار محصول بوده؟
+    # ---------------------------------
+
+    is_buyer = models.BooleanField(
+        default=False,
+        verbose_name='خریدار محصول'
+    )
+
+    # ---------------------------------
+    # زمان‌ها
+    # ---------------------------------
+
+    created = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='تاریخ ثبت'
+    )
+
+    updated = models.DateTimeField(
+        auto_now=True,
+        verbose_name='آخرین تغییر'
+    )
+
+    # ---------------------------------
+    # فعال / غیرفعال
+    # ---------------------------------
+
+    is_active = models.BooleanField(
+        default=True,
+        verbose_name='فعال'
+    )
+
+    # ---------------------------------
+    # موضوعات مثبت و منفی
+    # ---------------------------------
+
+    points = models.ManyToManyField(
+        'CommentPoint',
+        through='ProductCommentPoint',
+        related_name='comments',
+        blank=True,
+        verbose_name='موضوعات دیدگاه'
+    )
+
+    positive_points = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name="نکات مثبت"
+    )
+
+    negative_points = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name="نکات منفی"
+    )
+
+    class Meta:
+
+        ordering = ['-created']
+
+        verbose_name = 'دیدگاه'
+        verbose_name_plural = 'دیدگاه‌ها'
+
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'product'],
+                name='unique_user_product_comment'
+            )
+        ]
+
+    @property
+    def rating(self):
+        """
+        برای استفاده راحت‌تر در Template
+        """
+        return self.score
+
+    def __str__(self):
+        return f'{self.product.name} - {self.user}'
+
+
+class CommentPoint(models.Model):
+
+    title = models.CharField(
+        max_length=100,
+        verbose_name='موضوع'
+    )
+
+    def __str__(self):
+        return self.title
+
+    class Meta:
+        verbose_name = 'موضوع کامنت'
+        verbose_name_plural = 'موضوعات کامنت'
+
+
+class ProductCommentPoint(models.Model):
+
+    POINT_TYPE_CHOICES = (
+        ('positive', 'مثبت'),
+        ('negative', 'منفی'),
+    )
+
+    comment = models.ForeignKey(
+        ProductComment,
+        on_delete=models.PROTECT,
+        related_name='comment_points',
+        verbose_name='دیدگاه'
+    )
+
+    point = models.ForeignKey(
+        CommentPoint,
+        on_delete=models.PROTECT,
+        related_name='comment_relations',
+        verbose_name='موضوع'
+    )
+
+    point_type = models.CharField(
+        max_length=10,
+        choices=POINT_TYPE_CHOICES,
+        verbose_name='نوع'
+    )
+
+    class Meta:
+        verbose_name = 'موضوع دیدگاه محصول'
+        verbose_name_plural = 'موضوعات دیدگاه محصول'
+
+        constraints = [
+            models.UniqueConstraint(
+                fields=['comment', 'point'],
+                name='unique_comment_point'
+            )
+        ]
+
+    def __str__(self):
+        return (
+            f'{self.comment} - '
+            f'{self.point} - '
+            f'{self.get_point_type_display()}'
+        )

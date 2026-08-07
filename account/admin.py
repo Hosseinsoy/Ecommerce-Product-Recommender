@@ -11,27 +11,73 @@ class UserAddressInline(admin.StackedInline):
     model = UserAddress
     extra = 0
 
+
 @admin.register(ShopUser)
 class ShopUserAdmin(UserAdmin):
-    ordering = ('phone',)
-    list_display = ('phone', 'first_name', 'last_name', 'is_staff', 'is_active', 'date_joined')
-    add_form = ShpUserCreationForm
-    form = ShpUserChangedForm
-    inlines = [UserAddressInline]
 
-    fieldsets = [
-        (None, {'fields': ['phone', 'password']}),
-        ('Personal Information', {'fields': ['first_name', 'last_name', 'email', 'saved_products']}),
-        ('Permissions', {'fields': ['is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions']}),
-        ('Important Dates', {'fields': ['last_login', 'date_joined']}),
-    ]
+    model = ShopUser
 
-    add_fieldsets = [
-        (None, {'fields': ['phone', 'password1', 'password2']}),
-        ('Personal Information', {'fields': ['first_name', 'last_name', 'email']}),
-        ('Permissions', {'fields': ['is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions']}),
-        ('Important Dates', {'fields': ['last_login', 'date_joined']}),
-    ]
+    list_display = (
+        "phone",
+        "first_name",
+        "last_name",
+        "is_active",
+        "is_staff",
+    )
+
+    fieldsets = (
+        (None, {
+            "fields": (
+                "phone",
+                "password",
+            )
+        }),
+
+        ("اطلاعات شخصی", {
+            "fields": (
+                "first_name",
+                "last_name",
+                "email",
+            )
+        }),
+
+        ("مجوزها", {
+            "fields": (
+                "is_active",
+                "is_staff",
+                "is_superuser",
+                "groups",
+                "user_permissions",
+            )
+        }),
+
+    )
+
+
+    add_fieldsets = (
+        (
+            None,
+            {
+                "classes": ("wide",),
+                "fields": (
+                    "phone",
+                    "password1",
+                    "password2",
+                ),
+            },
+        ),
+    )
+
+
+    search_fields = (
+        "phone",
+        "first_name",
+        "last_name",
+    )
+
+    ordering = (
+        "phone",
+    )
 
 
 class CitiesInline(admin.StackedInline):
@@ -48,21 +94,76 @@ class ProvinceAdmin(admin.ModelAdmin):
 
 @admin.register(ShopSeller)
 class ShopSellerAdmin(UserAdmin):
-    ordering = ('shop_name',)
-    list_display = ('shop_name', 'shop_phone', 'shop_address', 'date_joined')
-    add_form = ShpSellerCreationForm
-    form = ShopSellerChangedForm
 
-    fieldsets = [
-        (None, {'fields': ['phone', 'password']}),
-        ('Personal Information', {'fields': ['first_name', 'last_name', 'email', 'shop_name', 'shop_phone', 'shop_address']}),
-        ('Permissions', {'fields': ['is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions']}),
-        ('Important Dates', {'fields': ['last_login', 'date_joined']}),
-    ]
+    model = ShopSeller
 
-    add_fieldsets = [
-        (None, {'fields': ['phone', 'password1', 'password2']}),
-        ('Personal Information', {'fields': ['first_name', 'last_name', 'email', 'shop_name', 'shop_phone', 'shop_address']}),
-        ('Permissions', {'fields': ['is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions']}),
-        ('Important Dates', {'fields': ['last_login', 'date_joined']}),
-    ]
+    list_display = (
+        "phone",
+        "shop_name",
+        "first_name",
+        "last_name",
+        "is_staff",
+    )
+
+    ordering = (
+        "phone",
+    )
+
+    search_fields = (
+        "phone",
+        "shop_name",
+        "first_name",
+        "last_name",
+    )
+
+
+    fieldsets = (
+
+        (
+            None,
+            {
+                "fields": (
+                    "phone",
+                    "password",
+                )
+            }
+        ),
+
+        (
+            "اطلاعات مالک",
+            {
+                "fields": (
+                    "first_name",
+                    "last_name",
+                    "email",
+                )
+            }
+        ),
+
+        (
+            "اطلاعات فروشگاه",
+            {
+                "fields": (
+                    "shop_name",
+                    "shop_email",
+                    "shop_phone",
+                    "shop_address",
+                    "logo",
+                )
+            }
+        ),
+
+        (
+            "مجوزها",
+            {
+                "fields": (
+                    "is_active",
+                    "is_staff",
+                    "is_superuser",
+                    "groups",
+                    "user_permissions",
+                )
+            }
+        ),
+
+    )

@@ -8060,4 +8060,227 @@ p {
     }
 
 }
+
+.product-image-wrapper {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.product-images {
+    width: 100%;
+    max-width: 430px;
+}
+
+.main-product-image {
+    width: 100%;
+    height: 430px;
+    overflow: hidden;
+}
+
+.product-main-img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain;
+}
+
+/* Product Image Box Fix */
+
+.product-images {
+    position: relative;
+}
+
+.main-product-image {
+    padding: 10px;
+    overflow: hidden;
+    background: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.product-main-img.xzoom {
+    width: 100%;
+    height: 500px;
+    object-fit: contain;
+    display: block;
+}
+
+
+/* xzoom main container */
+.xzoom-container {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+
+/* thumbnails */
+.xzoom-thumbs {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.xzoom-thumbs a {
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    padding: 5px;
+    display: block;
+}
+
+.xzoom-thumbs .xzoom-gallery {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+}
+
+/* Xzoom Main Box */
+.product-images .xzoom-container {
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 10px;
+    background: #fff;
+}
+
+
+/* Main image */
+.product-images .xzoom {
+    border-radius: 8px;
+}
+
+
+/* Xzoom preview box */
+.xzoom-preview {
+    border: 1px solid #e5e7eb !important;
+    border-radius: 10px !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,.15);
+}
+
+
+/* Thumbnails */
+.xzoom-thumbs a {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 5px;
+    transition: .2s;
+}
+
+.xzoom-thumbs a:hover {
+    border-color: #07006F;
+}
+
+.xzoom-gallery {
+    border-radius: 6px;
+}
+
+.partial-star {
+    position: relative;
+    display: inline-block;
+    color: #d1d1d1;
+}
+
+.partial-star::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 100%;
+    width: var(--star-percent);
+    overflow: hidden;
+    color: #ffc107;
+}
+.partial-star {
+    position: relative;
+    display: inline-block;
+}
+
+.partial-star > i {
+    display: block;
+}
+
+.partial-star-fill {
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.partial-star-fill i {
+    display: block;
+}
+.django-messages {
+    position: fixed;
+    top: 25px;
+    right: 25px;
+    z-index: 99999;
+    width: 380px;
+    max-width: calc(100% - 30px);
+}
+
+.django-message {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    padding: 15px 18px;
+    margin-bottom: 10px;
+
+    border-radius: 12px;
+
+    font-size: 14px;
+    font-weight: bold;
+
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+
+    animation: messageSlideIn 0.4s ease;
+}
+
+.django-message-error {
+    background: #f8d7da;
+    color: #842029;
+    border: 1px solid #f5c2c7;
+}
+
+.django-message-success {
+    background: #d1e7dd;
+    color: #0f5132;
+    border: 1px solid #badbcc;
+}
+
+.django-message-close {
+    margin-right: auto;
+
+    border: none;
+    background: transparent;
+
+    font-size: 22px;
+    line-height: 1;
+
+    cursor: pointer;
+
+    color: inherit;
+}
+
+@keyframes messageSlideIn {
+
+    from {
+        opacity: 0;
+        transform: translateX(50px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+}
+.django-message {
+    background-color: #ffffff !important;
+    opacity: 1 !important;
+}
+
 /*# sourceMappingURL=style.css.map */

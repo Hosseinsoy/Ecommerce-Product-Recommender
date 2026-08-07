@@ -27,6 +27,7 @@ class ShopUserManager(BaseUserManager):
 
 
 class ShopSeller(AbstractBaseUser, PermissionsMixin):
+    logo = models.ImageField(upload_to='images/%Y/%m/%d', null=True, blank=True, verbose_name='لوگو')
     phone = models.CharField(max_length=11, unique=True, verbose_name='شماره تلفن مالک')
     email = models.EmailField(unique=True, blank=True, null=True, verbose_name='ایمیل مالک')
     first_name = models.CharField(max_length=50, verbose_name='نام مالک')

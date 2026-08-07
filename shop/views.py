@@ -11,9 +11,10 @@ from django.views import View
 from django.views.generic import ListView
 from account.models import ShopUser
 from cart.cart import Cart
+from order.models import OrderItem
 from .forms import SearchForm
-from django.db.models import Min, Max, Q
-from .models import Category, Product, DiscountCode, Brand
+from django.db.models import Min, Max, Q, Avg, Count
+from .models import Category, Product, DiscountCode, Brand, ProductComment, CommentPoint, ProductCommentPoint
 from django.conf import settings
 from django_filters.views import FilterView
 from .filters import ProductFilter
@@ -225,12 +226,26 @@ class ProductListView(ListView):
 
         context["categories"] = Category.objects.all()
 
-        context["brands"] = Brand.objects.all()
-
-        context["selected_categories"] = [
+        selected_categories = [
             int(x)
             for x in self.request.GET.getlist("categories")
         ]
+
+        context["selected_categories"] = selected_categories
+
+        # -----------------------------
+        # برندها بر اساس دسته بندی
+        # -----------------------------
+
+        if selected_categories:
+
+            context["brands"] = Brand.objects.filter(
+                products__category_id__in=selected_categories
+            ).distinct()
+
+        else:
+
+            context["brands"] = Brand.objects.none()
 
         context["selected_brands"] = [
             int(x)
@@ -251,24 +266,176 @@ class ProductListView(ListView):
 
 
 def product_detail(request, id, slug):
+
     if 'discounted_cost' in request.session:
         del request.session['discounted_cost']
-    product = get_object_or_404(Product, id=id, slug=slug)
+
+    product = get_object_or_404(
+        Product,
+        id=id,
+        slug=slug
+    )
+
     categories = Category.objects.all()
-    related_products = Product.objects.filter(name__startswith=product.name.split(' ')[0]).exclude(id=id)
+
+    related_products = Product.objects.filter(
+        name__startswith=product.name.split(' ')[0]
+    ).exclude(id=id)
+
     product_orders = product.orders.all()
+
     recommended_products = []
+
     for order in product_orders:
         for p in order.order.items.all():
             if id != p.product.id:
                 recommended_products.append(p.product)
+
+    # =====================================================
+    # کامنت‌ها
+    # =====================================================
+
+    comments = (
+        product.comments
+        .select_related("user")
+        .filter(is_active=True)
+        .order_by("-created")
+    )
+
+    total_comments = comments.count()
+
+    # =====================================================
+    # موضوعات کامنت برای نمودار آماری
+    # =====================================================
+
+    comment_points = (
+        CommentPoint.objects
+        .annotate(
+            positive_count=Count(
+                "comment_relations",
+                filter=Q(
+                    comment_relations__comment__product=product,
+                    comment_relations__comment__is_active=True,
+                    comment_relations__comment__is_buyer=True,
+                    comment_relations__point_type="positive",
+                ),
+                distinct=True,
+            ),
+            negative_count=Count(
+                "comment_relations",
+                filter=Q(
+                    comment_relations__comment__product=product,
+                    comment_relations__comment__is_active=True,
+                    comment_relations__comment__is_buyer=True,
+                    comment_relations__point_type="negative",
+                ),
+                distinct=True,
+            ),
+        )
+    )
+
+
+    # محاسبه درصدهای نمودار
+    for point in comment_points:
+
+        point.total_count = (
+            point.positive_count +
+            point.negative_count
+        )
+
+        if total_comments > 0:
+
+            point.positive_percent = (
+                point.positive_count / total_comments
+            ) * 100
+
+            point.negative_percent = (
+                point.negative_count / total_comments
+            ) * 100
+
+            point.gray_percent = max(
+                0,
+                100
+                - point.positive_percent
+                - point.negative_percent
+            )
+
+        else:
+
+            point.positive_percent = 0
+            point.negative_percent = 0
+            point.gray_percent = 100
+
+    # =====================================================
+    # همه موضوعات برای فرم ثبت کامنت
+    # =====================================================
+
+    comment_points_list = CommentPoint.objects.all().order_by("id")
+
+    # =====================================================
+    # میانگین امتیاز فقط خریداران
+    # =====================================================
+
+    buyer_comments = comments.filter(
+        is_buyer=True
+    )
+
+    agg = buyer_comments.aggregate(
+        avg=Avg("score"),
+        count=Count("id")
+    )
+
+    if agg["avg"] is None:
+
+        average_rating = 0
+        rating_count = 0
+
+    else:
+
+        average_rating = agg["avg"]
+        rating_count = agg["count"]
+
+    # =====================================================
+    # ستاره‌ها
+    # =====================================================
+
+    full_stars = int(average_rating)
+
+    star_percentage = round(
+        (average_rating - full_stars) * 100
+    )
+
+    # =====================================================
+    # Context
+    # =====================================================
+
     context = {
-        'product': product,
-        'categories': categories,
-        'related_products': related_products,
-        'recommended_products': recommended_products,
+        "product": product,
+        "categories": categories,
+        "related_products": related_products,
+        "recommended_products": recommended_products,
+
+        "comments": comments,
+        "total_comments": total_comments,
+
+        # برای نمودار
+        "comment_points": comment_points,
+
+        # برای فرم ثبت کامنت
+        "comment_points_list": comment_points_list,
+
+        # امتیاز
+        "average_rating": average_rating,
+        "rating_count": rating_count,
+        "full_stars": full_stars,
+        "star_percentage": star_percentage,
     }
-    return render(request, 'shop/product_detail.html', context)
+
+    return render(
+        request,
+        "shop/product_detail.html",
+        context
+    )
 
 
 @login_required
@@ -487,6 +654,7 @@ class CategoryBrandsAjaxView(View):
             })
 
         return JsonResponse(data, safe=False)
+
 
 class CategoryProductsAjaxView(View):
 
@@ -1626,3 +1794,102 @@ class ProductListAjaxView(View):
             }
         )
 
+
+class AddProductCommentView(LoginRequiredMixin, View):
+
+    def post(self, request, product_id):
+
+        product = get_object_or_404(
+            Product,
+            id=product_id
+        )
+
+        title = request.POST.get("title")
+        body = request.POST.get("body")
+
+        score = request.POST.get(
+            "score",
+            5
+        )
+
+        # نکات مثبت و منفی آزاد
+        positive_points = request.POST.get(
+            "positive_points"
+        )
+
+        negative_points = request.POST.get(
+            "negative_points"
+        )
+
+        # --------------------------------
+        # بررسی خرید محصول توسط کاربر
+        # --------------------------------
+
+        is_buyer = OrderItem.objects.filter(
+            order__user=request.user,
+            order__paid=True,
+            product=product
+        ).exists()
+
+        # --------------------------------
+        # بررسی ثبت قبلی دیدگاه
+        # --------------------------------
+
+        existing_comment = ProductComment.objects.filter(
+            user=request.user,
+            product=product
+        ).first()
+
+        if existing_comment:
+
+            messages.warning(
+                request,
+                "شما قبلاً برای این محصول دیدگاه ثبت کرده‌اید. "
+                "هر کاربر فقط یک دیدگاه برای هر محصول می‌تواند ثبت کند. "
+                "برای تغییر دیدگاه خود می‌توانید آن را از پنل کاربری ویرایش کنید."
+            )
+
+            return redirect(
+                "shop:product_detail",
+                id=product.id,
+                slug=product.slug
+            )
+
+        # --------------------------------
+        # ایجاد کامنت
+        # --------------------------------
+
+        comment = ProductComment.objects.create(
+            product=product,
+            user=request.user,
+            title=title,
+            body=body,
+            score=score,
+            positive_points=positive_points,
+            negative_points=negative_points,
+            is_buyer=is_buyer
+        )
+
+        # --------------------------------
+        # ثبت موضوعات دیدگاه
+        # --------------------------------
+
+        for point in CommentPoint.objects.all():
+
+            point_type = request.POST.get(
+                f"point_type_{point.id}"
+            )
+
+            if point_type in ["positive", "negative"]:
+
+                ProductCommentPoint.objects.create(
+                    comment=comment,
+                    point=point,
+                    point_type=point_type
+                )
+
+        return redirect(
+            "shop:product_detail",
+            id=product.id,
+            slug=product.slug
+        )

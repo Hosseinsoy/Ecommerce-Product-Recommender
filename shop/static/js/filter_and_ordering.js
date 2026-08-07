@@ -318,7 +318,7 @@ $(document).ready(function () {
             // Category page فقط برندها را آپدیت کند
             // ==========================
 
-            if (isCategoryPage) {
+            if (isCategoryPage || isProductsPage){
 
 
                 const categories = [];
