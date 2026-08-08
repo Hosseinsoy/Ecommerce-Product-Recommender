@@ -13,8 +13,9 @@ from account.models import ShopUser
 from cart.cart import Cart
 from order.models import OrderItem
 from .forms import SearchForm
-from django.db.models import Min, Max, Q, Avg, Count
-from .models import Category, Product, DiscountCode, Brand, ProductComment, CommentPoint, ProductCommentPoint
+from django.db.models import Min, Max, Q, Avg, Count, F
+from .models import Category, Product, DiscountCode, Brand, ProductComment, CommentPoint, ProductCommentPoint, \
+    ProductQuestion, ProductAnswer
 from django.conf import settings
 from django_filters.views import FilterView
 from .filters import ProductFilter
@@ -276,11 +277,28 @@ def product_detail(request, id, slug):
         slug=slug
     )
 
+    # -----------------------------------------
+    # بررسی وجود محصول در سبد خرید
+    # -----------------------------------------
+
+    cart = Cart(request)
+
+    cart_product_ids = {
+        item["product"].product.id
+        for item in cart
+    }
+
+    product_in_cart = product.id in cart_product_ids
+
     categories = Category.objects.all()
 
-    related_products = Product.objects.filter(
-        name__startswith=product.name.split(' ')[0]
-    ).exclude(id=id)
+    related_products = (
+        Product.objects
+        .filter(
+            name__startswith=product.name.split(' ')[0]
+        )
+        .exclude(id=id)
+    )
 
     product_orders = product.orders.all()
 
@@ -291,22 +309,67 @@ def product_detail(request, id, slug):
             if id != p.product.id:
                 recommended_products.append(p.product)
 
-    # =====================================================
-    # کامنت‌ها
-    # =====================================================
+    # -----------------------------------------
+    # مرتب‌سازی کامنت‌ها
+    # -----------------------------------------
+
+    comment_sort = request.GET.get(
+        "comment_sort",
+        "newest"
+    )
 
     comments = (
         product.comments
         .select_related("user")
-        .filter(is_active=True)
-        .order_by("-created")
     )
 
-    total_comments = comments.count()
+    if comment_sort == "buyers":
 
-    # =====================================================
-    # موضوعات کامنت برای نمودار آماری
-    # =====================================================
+        comments = comments.filter(
+            is_buyer=True
+        ).order_by(
+            "-created"
+        )
+
+    elif comment_sort == "useful":
+
+        comments = comments.annotate(
+            usefulness=F("likes") - F("dislikes")
+        ).order_by(
+            "-usefulness",
+            "-created"
+        )
+
+    else:
+
+        comments = comments.order_by(
+            "-created"
+        )
+
+    # -----------------------------------------
+    # اگر درخواست AJAX بود
+    # -----------------------------------------
+
+    if request.GET.get("ajax") == "1":
+
+        html = render_to_string(
+            "includes/product_comments.html",
+            {
+                "comments": comments,
+                "product": product,
+            },
+            request=request
+        )
+
+        return JsonResponse({
+            "html": html
+        })
+
+    # -----------------------------------------
+    # ادامه اطلاعات صفحه
+    # -----------------------------------------
+
+    total_comments = comments.count()
 
     comment_points = (
         CommentPoint.objects
@@ -315,9 +378,8 @@ def product_detail(request, id, slug):
                 "comment_relations",
                 filter=Q(
                     comment_relations__comment__product=product,
-                    comment_relations__comment__is_active=True,
-                    comment_relations__comment__is_buyer=True,
                     comment_relations__point_type="positive",
+                    comment_relations__comment__is_active=True,
                 ),
                 distinct=True,
             ),
@@ -325,17 +387,21 @@ def product_detail(request, id, slug):
                 "comment_relations",
                 filter=Q(
                     comment_relations__comment__product=product,
-                    comment_relations__comment__is_active=True,
-                    comment_relations__comment__is_buyer=True,
                     comment_relations__point_type="negative",
+                    comment_relations__comment__is_active=True,
                 ),
                 distinct=True,
             ),
         )
     )
 
+    comment_points = [
+        point
+        for point in comment_points
+        if point.positive_count > 0
+        or point.negative_count > 0
+    ]
 
-    # محاسبه درصدهای نمودار
     for point in comment_points:
 
         point.total_count = (
@@ -346,11 +412,13 @@ def product_detail(request, id, slug):
         if total_comments > 0:
 
             point.positive_percent = (
-                point.positive_count / total_comments
+                point.positive_count /
+                total_comments
             ) * 100
 
             point.negative_percent = (
-                point.negative_count / total_comments
+                point.negative_count /
+                total_comments
             ) * 100
 
             point.gray_percent = max(
@@ -365,16 +433,6 @@ def product_detail(request, id, slug):
             point.positive_percent = 0
             point.negative_percent = 0
             point.gray_percent = 100
-
-    # =====================================================
-    # همه موضوعات برای فرم ثبت کامنت
-    # =====================================================
-
-    comment_points_list = CommentPoint.objects.all().order_by("id")
-
-    # =====================================================
-    # میانگین امتیاز فقط خریداران
-    # =====================================================
 
     buyer_comments = comments.filter(
         is_buyer=True
@@ -392,43 +450,66 @@ def product_detail(request, id, slug):
 
     else:
 
-        average_rating = agg["avg"]
         rating_count = agg["count"]
-
-    # =====================================================
-    # ستاره‌ها
-    # =====================================================
+        average_rating = agg["avg"]
 
     full_stars = int(average_rating)
 
-    star_percentage = round(
-        (average_rating - full_stars) * 100
+    decimal_part = (
+        average_rating -
+        full_stars
     )
 
-    # =====================================================
-    # Context
-    # =====================================================
+    star_percentage = round(
+        decimal_part * 100
+    )
+
+    comment_points_list = (
+        CommentPoint.objects.all()
+    )
+
+    questions = (
+        product.questions
+        .filter(is_active=True)
+        .prefetch_related(
+            "answers__user"
+        )
+        .select_related("user")
+        .order_by("-created")
+    )
+    if request.user.is_authenticated:
+        product_in_wishlist = request.user.saved_products.filter(
+            id=product.id
+        ).exists()
+    else:
+        wishlist = get_wishlist(request.session)
+        product_in_wishlist = product.id in wishlist
 
     context = {
+
         "product": product,
         "categories": categories,
         "related_products": related_products,
         "recommended_products": recommended_products,
 
         "comments": comments,
-        "total_comments": total_comments,
 
-        # برای نمودار
-        "comment_points": comment_points,
-
-        # برای فرم ثبت کامنت
-        "comment_points_list": comment_points_list,
-
-        # امتیاز
         "average_rating": average_rating,
         "rating_count": rating_count,
+
         "full_stars": full_stars,
+        "decimal_part": decimal_part,
         "star_percentage": star_percentage,
+
+        "comment_points": comment_points,
+        "total_comments": total_comments,
+
+        "comment_points_list": comment_points_list,
+
+        "comment_sort": comment_sort,
+        "questions": questions,
+        "product_in_cart": product_in_cart,
+        "product_in_wishlist": product_in_wishlist,
     }
 
     return render(
@@ -896,23 +977,31 @@ class WishlistToggleView(View):
 
     def post(self, request, product_id):
 
-        product = get_object_or_404(Product, id=product_id)
+        product = get_object_or_404(
+            Product,
+            id=product_id
+        )
 
         # -------------------------
         # کاربر لاگین کرده
         # -------------------------
+
         if request.user.is_authenticated:
 
             saved_products = request.user.saved_products
 
-            if saved_products.filter(id=product.id).exists():
+            if saved_products.filter(
+                id=product.id
+            ).exists():
 
                 saved_products.remove(product)
+
                 status = "removed"
 
             else:
 
                 saved_products.add(product)
+
                 status = "added"
 
             wishlist_products = saved_products.all()
@@ -920,40 +1009,62 @@ class WishlistToggleView(View):
         # -------------------------
         # مهمان
         # -------------------------
+
         else:
 
-            wishlist = get_wishlist(request.session)
+            wishlist = get_wishlist(
+                request.session
+            )
 
             if product.id in wishlist:
 
                 wishlist.remove(product.id)
+
                 status = "removed"
 
             else:
 
                 wishlist.append(product.id)
+
                 status = "added"
 
-            save_wishlist(request.session, wishlist)
+            save_wishlist(
+                request.session,
+                wishlist
+            )
 
-            wishlist_products = Product.objects.filter(id__in=wishlist)
+            wishlist_products = Product.objects.filter(
+                id__in=wishlist
+            )
+
+        wishlist_count = wishlist_products.count()
+
+        # -------------------------
+        # Render dropdown
+        # -------------------------
 
         wishlist_html = render_to_string(
             "includes/wishlist_dropdown_items.html",
             {
                 "wishlist_products": wishlist_products,
-                "wishlist_count": wishlist_products.count(),
+                "wishlist_count": wishlist_count,
             },
             request=request,
         )
 
         return JsonResponse({
+
+            "success": True,
+
             "status": status,
-            "wishlist_count": wishlist_products.count(),
+
+            "product_id": product.id,
+
+            "wishlist_count": wishlist_count,
+
             "wishlist_html": wishlist_html,
+
         })
-
-
 class WishlistView(ListView):
     model = Product
     template_name = "shop/wishlist.html"
@@ -1892,4 +2003,75 @@ class AddProductCommentView(LoginRequiredMixin, View):
             "shop:product_detail",
             id=product.id,
             slug=product.slug
+        )
+
+
+class AddProductQuestionView(LoginRequiredMixin, View):
+
+    def post(self, request, product_id):
+
+        product = get_object_or_404(
+            Product,
+            id=product_id
+        )
+
+        body = request.POST.get("body", "").strip()
+
+        if not body:
+            return redirect(
+                "shop:product_detail",
+                id=product.id,
+                slug=product.slug
+            )
+
+        ProductQuestion.objects.create(
+            product=product,
+            user=request.user,
+            body=body
+        )
+
+        return redirect(
+            "shop:product_detail",
+            id=product.id,
+            slug=product.slug
+        )
+
+
+class AddProductAnswerView(LoginRequiredMixin, View):
+
+    def post(self, request, question_id):
+
+        question = get_object_or_404(
+            ProductQuestion,
+            id=question_id,
+            is_active=True
+        )
+
+        body = request.POST.get("body", "").strip()
+
+        if not body:
+            return redirect(
+                "shop:product_detail",
+                id=question.product.id,
+                slug=question.product.slug
+            )
+
+        # اگر کاربر صاحب فروشگاه/فروشنده محصول باشد
+        is_seller = (
+            question.product.user == request.user
+            if hasattr(question.product, "user")
+            else False
+        )
+
+        ProductAnswer.objects.create(
+            question=question,
+            user=request.user,
+            body=body,
+            is_seller=is_seller
+        )
+
+        return redirect(
+            "shop:product_detail",
+            id=question.product.id,
+            slug=question.product.slug
         )

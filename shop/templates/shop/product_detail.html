@@ -41,8 +41,12 @@
              data-bs-placement="top"
              title="افزودن به علاقه مندی ها">
 
-            <a href="" class="gray-700">
+            <a href="javascript:void(0);"
+               class="gray-700 wishlist-btn {% if product_in_wishlist %}active{% endif %}"
+               data-product="{{ product.id }}">
+
                 <i class="fa fa-heart"></i>
+
             </a>
 
         </div>
@@ -494,12 +498,58 @@
 
             <div class="d-grid gap-2 mt-1 p-2">
 
-                <a href=""
-                   class="btn-auth text-center fs-6">
+                {% if product_in_cart %}
 
-                    افزودن به سبد خرید
+                    {% for item in cart %}
 
-                </a>
+                        {% if item.product.product.id == product.id %}
+
+                            <div
+                                id="product-detail-cart-control"
+                                class="product-detail-cart-quantity"
+                                data-product="{{ product.id }}"
+                                data-item-id="{{ item.product.id }}">
+
+                                <!-- کاهش / حذف - سمت چپ -->
+                                <span class="decrease product-detail-decrease c-pointer">
+                                    {% if item.quantity > 1 %}
+                                        <i class="fas fa-minus"></i>
+                                    {% else %}
+                                        <i class="far fa-trash-alt"></i>
+                                    {% endif %}
+                                </span>
+
+                                <!-- تعداد -->
+                                <span
+                                    class="fs-5 quantity"
+                                    id="quantity-{{ item.product.id }}">
+                                    {{ item.quantity }}
+                                </span>
+
+                                <!-- افزایش - سمت راست -->
+                                <span class="addition product-detail-add c-pointer">
+                                    <i class="fas fa-plus"></i>
+                                </span>
+
+                            </div>
+
+                        {% endif %}
+
+                    {% endfor %}
+
+                {% else %}
+
+                    <a
+                        href="javascript:void(0);"
+                        id="product-detail-cart-btn"
+                        class="btn-auth text-center fs-6"
+                        data-product="{{ product.id }}">
+
+                        افزودن به سبد خرید
+
+                    </a>
+
+                {% endif %}
 
             </div>
 
@@ -1334,10 +1384,26 @@
                                     <i class="fa fa-sort-amount-down pe-1"></i>
                                     مرتب سازی:
                                 </p>
-                                <a href="" class="fs-8 gray-600 mx-1 text-danger">جدیدترین</a>
-                                <a href="" class="fs-8 gray-600 mx-1">دیدگاه خریداران</a>
-                                <a href="" class="fs-8 gray-600 mx-1">مفیدترین</a>
+
+                                <a href="#"
+                                   class="comment-sort-link fs-8 gray-600 mx-1 text-danger"
+                                   data-sort="newest">
+                                    جدیدترین
+                                </a>
+
+                                <a href="#"
+                                   class="comment-sort-link fs-8 gray-600 mx-1"
+                                   data-sort="buyers">
+                                    دیدگاه خریداران
+                                </a>
+
+                                <a href="#"
+                                   class="comment-sort-link fs-8 gray-600 mx-1"
+                                   data-sort="useful">
+                                    مفیدترین
+                                </a>
                             </div>
+
                             <p class="fs-8 count-of-comments">
                                 {{ comments.count }} دیدگاه
                             </p>
@@ -1345,7 +1411,189 @@
                         <!--                        Comments Order:end-->
 
                         <!--                        Comments:start-->
-                        {% for comment in comments %}
+                        <div id="comments-container">
+                            {% include "includes/product_comments.html" %}
+                        </div>
+                        <!--                        Comments:end-->
+                    </div>
+                </div>
+            </div>
+            <!--            Product Comments:end-->
+
+            <div class="tab-pane fade" id="questions">
+                <div class="row">
+
+                    <div class="col-sm-12 col-md-12 col-lg-3 col-xl-3 mb-3">
+
+                        <div class="product-score">
+
+                            <!-- Product Questions:start -->
+                            <div class="stars">
+
+                                <!-- ثبت پرسش جدید:start -->
+                                <div class="mt-2">
+
+                                    <p class="fs-8">
+                                        ثبت پرسش جدید
+                                    </p>
+
+                                    <div class="d-grid gap-2 mt-3">
+
+                                        <a href=""
+                                           class="btn-auth2 fs-8"
+                                           data-bs-toggle="modal"
+                                           data-bs-target="#questionModal">
+
+                                            ثبت پرسش
+
+                                        </a>
+
+
+                                        <!-- Modal ثبت پرسش -->
+                                        <div class="modal fade"
+                                             id="questionModal"
+                                             tabindex="-1"
+                                             aria-labelledby="questionModalLabel"
+                                             aria-hidden="true">
+
+                                            <div class="modal-dialog modal-dialog-centered">
+
+                                                <div class="modal-content">
+
+                                                    <div class="modal-header">
+
+                                                        <h5 class="modal-title"
+                                                            id="questionModalLabel">
+
+                                                            پرسش خود را درباره این کالا ثبت کنید
+
+                                                        </h5>
+
+                                                        <button type="button"
+                                                                class="btn-close"
+                                                                data-bs-dismiss="modal"
+                                                                aria-label="Close">
+                                                        </button>
+
+                                                    </div>
+
+
+                                                    <div class="modal-body">
+
+                                                        <form method="post"
+                                                              action="{% url 'shop:add_product_question' product.id %}">
+
+                                                            {% csrf_token %}
+
+
+                                                            <textarea
+                                                                name="body"
+                                                                class="form-control border-radius-3xl"
+                                                                rows="4"
+                                                                required></textarea>
+
+
+                                                            <div class="row">
+
+                                                                <div class="col-sm-12 col-md-12 col-lg-6 col-xl-6 my-3">
+
+                                                                    <div class="d-grid gap-2">
+
+                                                                        <button
+                                                                            class="btn custom-btn-danger"
+                                                                            type="submit">
+
+                                                                            ثبت
+
+                                                                        </button>
+
+                                                                    </div>
+
+                                                                </div>
+
+
+                                                                <div class="col-sm-12 col-md-12 col-lg-6 col-xl-6">
+
+                                                                    <p class="fs-8 text-center my-2">
+
+                                                                        ثبت پرسش به معنای پذیرش
+
+                                                                        <a href=""
+                                                                           class="text-info">
+                                                                            قوانین
+                                                                        </a>
+
+                                                                        شاپیک میباشد.
+
+                                                                    </p>
+
+                                                                </div>
+
+                                                            </div>
+
+                                                        </form>
+
+                                                    </div>
+
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+                                        <!-- Modal ثبت پرسش:end -->
+
+                                    </div>
+
+                                </div>
+                                <!-- ثبت پرسش جدید:end -->
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-sm-12 col-md-12 col-lg-9 col-xl-9">
+
+{#                        <!-- Questions Order:start -->#}
+{#                        <div class="d-flex justify-content-between align-items-center mb-4">#}
+{##}
+{#                            <div>#}
+{##}
+{#                                <p class="d-inline fs-7">#}
+{##}
+{#                                    <i class="fa fa-sort-amount-down pe-1"></i>#}
+{##}
+{#                                    مرتب سازی:#}
+{##}
+{#                                </p>#}
+{##}
+{##}
+{#                                <a href=""#}
+{#                                   class="fs-8 gray-600 mx-1 text-danger">#}
+{##}
+{#                                    جدیدترین#}
+{##}
+{#                                </a>#}
+{##}
+{##}
+{#                                <a href=""#}
+{#                                   class="fs-8 gray-600 mx-1">#}
+{##}
+{#                                    مفیدترین#}
+{##}
+{#                                </a>#}
+{##}
+{#                            </div>#}
+{##}
+{#                        </div>#}
+{#                        <!-- Questions Order:end -->#}
+
+
+                        <!-- Questions:start -->
+
+                        {% for question in questions %}
 
                             <div class="comment-box mb-3">
 
@@ -1353,295 +1601,220 @@
 
                                     <p class="fw-bold">
 
-                                        <span class="badge bg-success">
-                                            {{ comment.score }}.0
-                                        </span>
+                                        <i class="fa fa-question-circle text-info pe-2"></i>
 
-                                        {{ comment.title }}
+                                        {{ question.body }}
 
                                     </p>
 
                                 </div>
 
 
-                                <div class="comment-details my-3 border-bottom-gray-150 pb-3 mx-5">
+                                {% for answer in question.answers.all %}
 
-                                    <span class="fs-8 gray-600">
-                                        {{ comment.created|date:"d F Y" }}
-                                    </span>
+                                    {% if answer.is_active %}
 
+                                        <div class="comment-details my-3 pb-3 mx-5">
 
-                                    <i class="fa fa-circle fs-11 gray-400"></i>
-
-
-                                    <span class="fs-8 gray-600">
-                                        {{ comment.user.first_name }} {{ comment.user.last_name }}
-                                    </span>
+                                            <span class="fs-8 gray-600">
+                                                پاسخ :
+                                            </span>
 
 
+                                            {% if answer.is_seller %}
 
-                                    {% if comment.is_buyer %}
+                                                <span class="badge bg-info">
+                                                    فروشنده
+                                                </span>
 
-                                    <span class="badge bg-gray-400">
-                                        خریدار
-                                    </span>
+                                            {% else %}
+
+                                                <span class="badge bg-secondary">
+                                                    خریدار
+                                                </span>
+
+                                            {% endif %}
+
+
+                                            <p class="my-2">
+
+                                                {{ answer.body }}
+
+                                            </p>
+
+                                        </div>
 
                                     {% endif %}
 
+                                {% empty %}
 
-                                </div>
-                                <div class="comment-text border-bottom-gray-150 mx-5">
+                                    <div class="comment-details my-3 pb-3 mx-5">
 
-                                            <p class="my-2 comment">
+                                        <p class="fs-8 gray-500">
 
-                                                {{ comment.body }}
-
-                                            </p>
-
-
-                                        </div>
-
-
-                                {% if comment.positive_points != 'None' %}
-                                    <div class="comment-text border-bottom-gray-150 mx-5">
-
-
-                                            <p class="text-success fs-7">
-
-                                                <i class="fa fa-thumbs-up pe-1"></i>
-
-                                                نکات مثبت
-
-                                            </p>
-
-
-
-                                            <p class="my-2 comment">
-
-                                                {{ comment.positive_points }}
-
-                                            </p>
-
-
-                                        </div>
-                                {% endif %}
-                                {% if comment.negative_points != 'None' %}
-                                    <div class="comment-text border-bottom-gray-150 mx-5">
-
-
-                                        <p class="text-danger fs-7">
-
-                                            <i class="fa fa-thumbs-down pe-1"></i>
-
-                                            نکات منفی
+                                            هنوز پاسخی برای این پرسش ثبت نشده است.
 
                                         </p>
 
-
-                                            <p class="my-2 comment">
-
-                                                {{ comment.negative_points }}
-
-                                            </p>
-
-
-                                        </div>
-                                {% endif %}
-
-
-
-
-                                <div class="border-bottom-gray-300 mt-3 pb-2">
-
-                                    <p class="text-end fs-8 gray-600">
-
-                                        آیا این دیدگاه مفید بود؟
-
-
-                                        <span class="px-1 c-pointer">
-
-                                            {{ comment.likes }}
-
-                                            <i class="fa fa-thumbs-up ps-1"></i>
-
-                                        </span>
-
-
-
-                                        <span class="px-1 c-pointer">
-
-                                            {{ comment.dislikes }}
-
-                                            <i class="fa fa-thumbs-down ps-1"></i>
-
-                                        </span>
-
-
-                                    </p>
-
-
-                                </div>
-
-
-                            </div>
-
-
-                            {% empty %}
-
-                            <p class="text-center gray-600">
-
-                                هنوز دیدگاهی ثبت نشده است.
-
-                            </p>
-
-
-                            {% endfor %}
-                        <!--                        Comments:end-->
-                    </div>
-                </div>
-            </div>
-            <!--            Product Comments:end-->
-
-            <!--            Product Questions:start-->
-            <div class="tab-pane fade" id="questions">
-                <div class="row">
-                    <div class="col-sm-12 col-md-12 col-lg-3 col-xl-3 mb-3">
-                        <div class="product-score">
-                            <!--                            Product Stars:start-->
-                            <div class="stars">
-                                <!--                                Product Insert New Comment:start-->
-                                <div class="mt-2">
-                                    <p class="fs-8">ثبت پرسش جدید</p>
-                                    <div class="d-grid gap-2 mt-3">
-                                        <a href="" class="btn-auth2 fs-8" data-bs-toggle="modal"
-                                           data-bs-target="#questionModal">ثبت پرسش</a>
-
-                                        <!-- Modal -->
-                                        <div class="modal fade" id="questionModal" tabindex="-1"
-                                             aria-labelledby="exampleModalLabel" aria-hidden="true">
-                                            <div class="modal-dialog modal-dialog-centered">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <h5 class="modal-title">پرسش خود را درباره این کالا ثبت
-                                                            کنید</h5>
-                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                                aria-label="Close"></button>
-                                                    </div>
-                                                    <div class="modal-body">
-                                                        <textarea class="form-control border-radius-3xl"
-                                                                  rows="4"></textarea>
-                                                        <div class="row">
-                                                            <div class="col-sm-12 col-md-12 col-lg-6 col-xl-6 my-3">
-                                                                <div class="d-grid gap-2">
-                                                                    <button class="btn custom-btn-danger" type="button">
-                                                                        ثبت
-                                                                    </button>
-                                                                </div>
-                                                            </div>
-                                                            <div class="col-sm-12 col-md-12 col-lg-6 col-xl-6">
-                                                                <p class="fs-8 text-center my-2">
-                                                                    ثبت پرسش به معنای پذیرش
-                                                                    <a href="" class="text-info">قوانین</a>
-                                                                    شاپیک میباشد.
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
                                     </div>
-                                </div>
-                                <!--                                Product Insert New Comment:end-->
-                            </div>
-                            <!--                            Product Stars:end-->
-                        </div>
-                    </div>
-                    <div class="col-sm-12 col-md-12 col-lg-9 col-xl-9">
-                        <!--                        Comments Order:start-->
-                        <div class="d-flex justify-content-between align-items-center mb-4">
-                            <div>
-                                <p class="d-inline fs-7">
-                                    <i class="fa fa-sort-amount-down pe-1"></i>
-                                    مرتب سازی:
-                                </p>
-                                <a href="" class="fs-8 gray-600 mx-1 text-danger">جدیدترین</a>
-                                <a href="" class="fs-8 gray-600 mx-1">مفیدترین</a>
-                            </div>
-                        </div>
-                        <!--                        Comments Order:end-->
 
-                        <!--                        Comments:start-->
-                        <div class="comment-box mb-3">
-                            <div class="comment-title">
-                                <p class="fw-bold">
-                                    <i class="fa fa-question-circle text-info pe-2"></i>
-                                    آیا هارد قابل ارتقاس؟
-                                </p>
-                            </div>
-                            <div class="comment-details my-3 pb-3 mx-5">
-                                <span class="fs-8 gray-600">پاسخ : </span>
-                                <span class="badge bg-info">آیتی صنف</span>
-                                <p class="my-2">
-                                    بله قابل ارتقا میباشد.
-                                </p>
-                            </div>
-                            <div class="border-bottom-gray-150 mt-3 pb-2 mx-5">
-                                <p class="text-end fs-8 gray-600">
-                                    آیا این پرسش مفید بود؟
-                                    <span class="px-1 c-pointer">0<i class="fa fa-thumbs-up ps-1"></i></span>
-                                    <span class="px-1 c-pointer">0<i class="fa fa-thumbs-down ps-1"></i></span>
-                                </p>
-                            </div>
-                            <div class="put-answer mt-2 border-bottom-gray-300 pb-3">
-                                <a href="" class="text-info fs-7" data-bs-toggle="modal"
-                                   data-bs-target="#answerModal">
-                                    ثبت پاسخ جدید
-                                    <i class="fa fa-angle-left ps-2"></i>
-                                </a>
+                                {% endfor %}
 
-                                <!-- Modal -->
-                                <div class="modal fade" id="answerModal" tabindex="-1"
-                                     aria-labelledby="exampleModalLabel" aria-hidden="true">
-                                    <div class="modal-dialog modal-dialog-centered">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title">به این پرسش پاسخ دهید</h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                        aria-label="Close"></button>
-                                            </div>
-                                            <div class="modal-body">
-                                                <p class="my-3">آیا هاردش قابل ارتقاس؟</p>
-                                                <p class="mb-1">پاسخ شما:</p>
-                                                <textarea class="form-control border-radius-3xl" rows="4"></textarea>
-                                                <div class="row">
-                                                    <div class="col-sm-12 col-md-12 col-lg-6 col-xl-6 my-3">
-                                                        <div class="d-grid gap-2">
-                                                            <button class="btn custom-btn-danger" type="button">ثبت
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-sm-12 col-md-12 col-lg-6 col-xl-6">
-                                                        <p class="fs-8 text-center my-2">
-                                                            ثبت پاسخ به معنای پذیرش
-                                                            <a href="" class="text-info">قوانین</a>
-                                                            شاپیک میباشد.
+
+                                <!-- ثبت پاسخ -->
+                                <div class="put-answer mt-2 border-bottom-gray-300 pb-3">
+
+                                    <a href=""
+                                       class="text-info fs-7"
+                                       data-bs-toggle="modal"
+                                       data-bs-target="#answerModal-{{ question.id }}">
+
+                                        ثبت پاسخ جدید
+
+                                        <i class="fa fa-angle-left ps-2"></i>
+
+                                    </a>
+
+
+                                    <!-- Modal ثبت پاسخ -->
+                                    <div class="modal fade"
+                                         id="answerModal-{{ question.id }}"
+                                         tabindex="-1"
+                                         aria-labelledby="answerModalLabel-{{ question.id }}"
+                                         aria-hidden="true">
+
+                                        <div class="modal-dialog modal-dialog-centered">
+
+                                            <div class="modal-content">
+
+                                                <div class="modal-header">
+
+                                                    <h5 class="modal-title"
+                                                        id="answerModalLabel-{{ question.id }}">
+
+                                                        به این پرسش پاسخ دهید
+
+                                                    </h5>
+
+
+                                                    <button type="button"
+                                                            class="btn-close"
+                                                            data-bs-dismiss="modal"
+                                                            aria-label="Close">
+                                                    </button>
+
+                                                </div>
+
+
+                                                <div class="modal-body">
+
+                                                    <p class="my-3">
+
+                                                        {{ question.body }}
+
+                                                    </p>
+
+
+                                                    <form method="post"
+                                                          action="{% url 'shop:add_product_answer' question.id %}">
+
+                                                        {% csrf_token %}
+
+
+                                                        <p class="mb-1">
+
+                                                            پاسخ شما:
+
                                                         </p>
-                                                    </div>
+
+
+                                                        <textarea
+                                                            name="body"
+                                                            class="form-control border-radius-3xl"
+                                                            rows="4"
+                                                            required></textarea>
+
+
+                                                        <div class="row">
+
+                                                            <div class="col-sm-12 col-md-12 col-lg-6 col-xl-6 my-3">
+
+                                                                <div class="d-grid gap-2">
+
+                                                                    <button
+                                                                        class="btn custom-btn-danger"
+                                                                        type="submit">
+
+                                                                        ثبت
+
+                                                                    </button>
+
+                                                                </div>
+
+                                                            </div>
+
+
+                                                            <div class="col-sm-12 col-md-12 col-lg-6 col-xl-6">
+
+                                                                <p class="fs-8 text-center my-2">
+
+                                                                    ثبت پاسخ به معنای پذیرش
+
+                                                                    <a href=""
+                                                                       class="text-info">
+                                                                        قوانین
+                                                                    </a>
+
+                                                                    بلوشاپ میباشد.
+
+                                                                </p>
+
+                                                            </div>
+
+                                                        </div>
+
+                                                    </form>
+
                                                 </div>
+
                                             </div>
+
                                         </div>
+
                                     </div>
+                                    <!-- Modal ثبت پاسخ:end -->
+
                                 </div>
+
                             </div>
-                        </div>
-                        <!--                        Comments:end-->
+
+                        {% empty %}
+
+                            <div class="text-center py-4">
+
+                                <p class="gray-500 fs-8">
+
+                                    هنوز پرسشی برای این محصول ثبت نشده است.
+
+                                </p>
+
+                            </div>
+
+                        {% endfor %}
+
+                        <!-- Questions:end -->
+
                     </div>
+
                 </div>
             </div>
-            <!--            Product Questions:end-->
+
+            <!-- Product Questions:end -->
         </div>
     </section>
     <!--    Product Tabs:end-->
 </main>
+{% endblock %}
+{% block scripts %}
+<script src="{% static 'js/product_comments_sort.js' %}"></script>
 {% endblock %}

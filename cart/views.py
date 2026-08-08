@@ -51,60 +51,129 @@ def cart_detail(request):
 
 @require_POST
 def update_quantity(request):
+
     item_id = request.POST.get("item_id")
     action = request.POST.get("action")
 
     try:
-        product = get_object_or_404(ProductVariant, id=item_id)
+
+        product = get_object_or_404(
+            ProductVariant,
+            id=item_id
+        )
+
         cart = Cart(request)
 
+        # --------------------------------
+        # تغییر تعداد
+        # --------------------------------
+
         if action == "add":
+
             cart.add(product)
+
         elif action == "decrease":
+
             cart.decrease(product)
 
+        # --------------------------------
+        # اطلاعات همین آیتم
+        # --------------------------------
+
         if str(item_id) in cart.cart:
+
             item_count = cart.cart[str(item_id)]["quantity"]
-            total_price = item_count * product.product.off_price
-            old_total_price = item_count * product.product.price
+
+            total_price = (
+                item_count *
+                product.product.off_price
+            )
+
+            old_total_price = (
+                item_count *
+                product.product.price
+            )
+
         else:
+
             item_count = 0
             total_price = 0
             old_total_price = 0
 
+        # --------------------------------
+        # رندر مجدد بدنه سبد
+        # --------------------------------
+
         cart_body = render_to_string(
             "includes/cart_dropdown_items.html",
-            {"cart": cart},
+            {
+                "cart": cart
+            },
             request=request,
         )
+
+        # --------------------------------
+        # رندر مجدد فوتر سبد
+        # --------------------------------
 
         cart_footer = render_to_string(
             "includes/cart_dropdown_footer.html",
-            {"cart": cart},
+            {
+                "cart": cart
+            },
             request=request,
         )
 
+        # --------------------------------
+        # پاسخ AJAX
+        # --------------------------------
+
         return JsonResponse({
+
+            "success": True,
+
+            # تعداد کل آیتم‌های سبد
             "cart_count": len(cart),
+
+            # تعداد همین محصول
             "item_count": item_count,
 
+            # شناسه Variant
+            "variant_id": product.id,
+
+            # شناسه Product اصلی
+            "product_id": product.product.id,
+
+            # قیمت همین آیتم
             "total_price": total_price,
+
             "old_total_price": old_total_price,
 
             "off": product.product.off,
 
+            # قیمت‌های کل سبد
             "products_price": cart.total_price(),
+
             "final_price": cart.final_price(),
+
             "post_price": cart.post_price(),
 
+            # HTML جدید سبد
             "cart_body": cart_body,
+
             "cart_footer": cart_footer,
-            'product_id': product.product.id,
+
         })
 
     except Exception as e:
-        return JsonResponse({"error": str(e)}, status=500)
 
+        return JsonResponse(
+            {
+                "success": False,
+                "error": str(e)
+            },
+            status=500
+        )
 @require_POST
 def remove_item(request):
     item_id = request.POST.get('item_id')
@@ -136,42 +205,90 @@ class CartToggleView(View):
 
     def post(self, request, product_id):
 
-        product = get_object_or_404(Product, id=product_id)
+        product = get_object_or_404(
+            Product,
+            id=product_id
+        )
 
         product_variant = product.variants.first()
 
         cart = Cart(request)
 
         if str(product_variant.id) in cart.cart:
+
             cart.remove(product_variant)
+
             status = "removed"
+
+            item_count = 0
+
         else:
+
             cart.add(product_variant)
+
             status = "added"
+
+            item_count = cart.cart[
+                str(product_variant.id)
+            ]["quantity"]
+
+        # -----------------------------------------
+        # بدنه سبد خرید
+        # -----------------------------------------
+
         cart_body = render_to_string(
             "includes/cart_dropdown_items.html",
-            {"cart": cart},
+            {
+                "cart": cart
+            },
             request=request,
         )
+
+        # -----------------------------------------
+        # فوتر سبد خرید
+        # -----------------------------------------
 
         cart_footer = render_to_string(
             "includes/cart_dropdown_footer.html",
-            {"cart": cart},
+            {
+                "cart": cart
+            },
             request=request,
         )
-        return JsonResponse({
-            "success": True,
-            "status": status,
-            "product_id": product_variant.id,
 
+        # -----------------------------------------
+        # پاسخ AJAX
+        # -----------------------------------------
+
+        return JsonResponse({
+
+            "success": True,
+
+            "status": status,
+
+            # شناسه Product
+            "product_id": product.id,
+
+            # شناسه ProductVariant
+            "item_id": product_variant.id,
+
+            # تعداد همین محصول
+            "item_count": item_count,
+
+            # تعداد کل آیتم‌های سبد
             "cart_count": len(cart),
 
-            "cart_body": cart_body,
-            "cart_footer": cart_footer,
-
+            # قیمت‌ها
             "products_price": cart.total_price(),
+
             "post_price": cart.post_price(),
+
             "final_price": cart.final_price(),
+
+            # HTML سبد
+            "cart_body": cart_body,
+
+            "cart_footer": cart_footer,
 
             "is_empty": len(cart) == 0,
         })

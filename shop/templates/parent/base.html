@@ -25,20 +25,31 @@
 
 {% if messages %}
     <div id="django-messages" class="django-messages">
+
         {% for message in messages %}
+
             <div class="django-message django-message-{{ message.tags }}">
-                <i class="fa fa-exclamation-circle me-2"></i>
-                <span>{{ message }}</span>
+
+                <i class="fa fa-exclamation-circle django-message-icon"></i>
+
+                <span class="django-message-text">
+                    {{ message }}
+                </span>
 
                 <button type="button"
                         class="django-message-close"
-                        onclick="this.parentElement.remove()">
+                        onclick="this.parentElement.remove()"
+                        aria-label="بستن">
                     ×
                 </button>
+
             </div>
+
         {% endfor %}
+
     </div>
 {% endif %}
+
 {% block content %}
 {% endblock %}
 <footer>
@@ -133,11 +144,15 @@ $(document).ready(function () {
 <script src="{% static 'assets/js/cart_info.js' %}"></script>
 <script>
 
-$(document).on("click", ".remove-wishlist-item", function () {
+$(document).on("click", ".remove-wishlist-item", function (e) {
+
+    e.preventDefault();
 
     const btn = $(this);
 
     const productId = btn.data("product-id");
+
+    console.log("REMOVE WISHLIST:", productId);
 
     $.ajax({
 
@@ -146,57 +161,138 @@ $(document).on("click", ".remove-wishlist-item", function () {
         type: "POST",
 
         data: {
+            product_id: productId
+        },
 
-            product_id: productId,
-
-            csrfmiddlewaretoken: csrftoken
-
+        headers: {
+            "X-CSRFToken": getCookie("csrftoken")
         },
 
         success: function (res) {
 
-            if (!res.success) return;
+            console.log("WISHLIST REMOVE RESPONSE:", res);
 
-            // بروزرسانی تعداد علاقه‌مندی
-            $(".wishlist-counter").text(res.wishlist_count);
-            $(".wishlist-count").text(res.wishlist_count);
-
-            // بروزرسانی محتوای باکس علاقه‌مندی
-            $("#wishlist-dropdown-body").html(res.wishlist_html);
-
-            // حذف حالت Active از قلب همان محصول در همه صفحات
-            $('.wishlist-btn[data-product="' + res.product_id + '"]').removeClass("active");
-
-            // فقط اگر داخل صفحه Wishlist هستیم
-            if ($("#wishlist-page").length) {
-
-                const item = $("#wishlist-product-" + res.product_id);
-
-                if (item.length) {
-
-                    item.fadeOut(250, function () {
-
-                        $(this).remove();
-
-                        if ($("#wishlist-page .product-item").length === 0) {
-
-                            $("#wishlist-page").html(`
-                                <h5 class="text-muted">
-                                    محصولی یافت نشد.
-                                </h5>
-                            `);
-
-                        }
-
-                    });
-
-                }
-
+            if (!res.success) {
+                return;
             }
+
+            // تعداد
+            $(".wishlist-counter").text(
+                res.wishlist_count
+            );
+
+            $(".wishlist-count").text(
+                res.wishlist_count
+            );
+
+            // محتوای جدید Dropdown
+            $("#wishlist-dropdown-body").html(
+                res.wishlist_html
+            );
+
+            // خاموش کردن قلب محصول
+            $('.wishlist-btn[data-product="' +
+                res.product_id +
+            '"]').removeClass("active");
 
         },
 
         error: function (xhr) {
+
+            console.log(
+                "WISHLIST REMOVE ERROR:",
+                xhr.status
+            );
+
+            console.log(
+                xhr.responseText
+            );
+
+        }
+
+    });
+
+});
+// ==========================================
+// افزودن / حذف علاقه‌مندی - Product Detail
+// ==========================================
+
+$(document).on("click", ".wishlist-btn", function (e) {
+
+    e.preventDefault();
+
+    const btn = $(this);
+    const productId = btn.data("product");
+
+    $.ajax({
+
+        url: `/wishlist/toggle/${productId}/`,
+        type: "POST",
+
+        headers: {
+            "X-CSRFToken": getCookie("csrftoken")
+        },
+
+        success: function (res) {
+
+            if (!res.success && !res.status) {
+                return;
+            }
+
+            // -----------------------------
+            // تغییر وضعیت قلب
+            // -----------------------------
+
+            if (res.status === "added") {
+
+                btn.addClass("active");
+
+            } else if (res.status === "removed") {
+
+                btn.removeClass("active");
+
+            }
+
+            // -----------------------------
+            // تعداد علاقه‌مندی
+            // -----------------------------
+
+            $(".wishlist-counter").text(
+                res.wishlist_count
+            );
+
+            $(".wishlist-count").text(
+                res.wishlist_count
+            );
+
+            // -----------------------------
+            // آپدیت باکس علاقه‌مندی
+            // -----------------------------
+
+            if (res.wishlist_html) {
+
+                $("#wishlist-dropdown-body").html(
+                    res.wishlist_html
+                );
+
+            }
+
+            // -----------------------------
+            // هماهنگ کردن قلب همین محصول
+            // در تمام قسمت‌های صفحه
+            // -----------------------------
+
+            $('.wishlist-btn[data-product="' + res.product_id + '"]')
+                .toggleClass("active", res.status === "added");
+
+        },
+
+        error: function (xhr) {
+
+            console.log(
+                "WISHLIST AJAX ERROR:",
+                xhr.status
+            );
 
             console.log(xhr.responseText);
 

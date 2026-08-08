@@ -151,7 +151,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
 AUTH_USER_MODEL = 'account.ShopUser'
 
-LOGIN_URL = '/account/login/'
+LOGIN_URL = '/account/login/verification'
 LOGIN_REDIRECT_URL = '/'
 # LOGOUT_REDIRECT_URL = 'account/login/'
 

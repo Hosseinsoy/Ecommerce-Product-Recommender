@@ -8283,4 +8283,209 @@ p {
     opacity: 1 !important;
 }
 
-/*# sourceMappingURL=style.css.map */
+/* کنترل سبد خرید صفحه جزئیات محصول */
+.product-detail-cart-controls {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+
+    width: 150px !important;
+    height: 45px !important;
+
+    margin: 0 auto !important;
+    padding: 0 !important;
+
+    border: 1px solid #dee2e6 !important;
+    border-radius: 14px !important;
+
+    background: #fff !important;
+    box-sizing: border-box !important;
+
+    overflow: hidden !important;
+}
+
+
+/* + و - / سطل */
+.product-detail-cart-controls .addition,
+.product-detail-cart-controls .decrease {
+    flex: 0 0 45px !important;
+
+    width: 45px !important;
+    height: 43px !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    cursor: pointer !important;
+
+    border: 0 !important;
+    background: transparent !important;
+
+    color: #07006F !important;
+}
+
+
+/* تعداد */
+.product-detail-cart-controls .quantity {
+    flex: 1 1 auto !important;
+
+    min-width: 0 !important;
+    width: auto !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    text-align: center !important;
+    line-height: 43px !important;
+
+    font-size: 18px !important;
+}
+
+
+/* آیکون‌ها */
+.product-detail-cart-controls .addition i,
+.product-detail-cart-controls .decrease i {
+    margin: 0 !important;
+    padding: 0 !important;
+
+    font-size: 19px !important;
+}
+
+
+/* هاور */
+.product-detail-cart-controls .addition:hover,
+.product-detail-cart-controls .decrease:hover {
+    background: #f5f5f5 !important;
+}
+
+.product-detail-cart-quantity {
+    width: 100%;
+    height: 52px;
+
+    border: 1px solid #dee2e6;
+    border-radius: 18px;
+    background: #fff;
+
+    display: flex;
+    flex-direction: row;
+    direction: ltr;
+
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 0 14px;
+    box-sizing: border-box;
+
+    margin: 0 auto;
+}
+
+.product-detail-cart-quantity .decrease,
+.product-detail-cart-quantity .addition {
+    width: 36px;
+    height: 36px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex: 0 0 36px;
+
+    cursor: pointer;
+
+    color: #00006f;
+    font-size: 20px;
+}
+
+.product-detail-cart-quantity .quantity {
+    flex: 1;
+
+    text-align: center;
+
+    color: #00006f;
+    font-size: 18px;
+    line-height: 36px;
+}
+
+.login-phone-input {
+    width: 100%;
+    height: 60px;
+
+    padding: 0 20px;
+
+    border: 1px solid #ddd;
+    border-radius: 8px;
+
+    background: #fff;
+
+    color: #222;
+    font-size: 18px;
+
+    text-align: right;
+
+    outline: none;
+
+    transition: all 0.2s ease;
+}
+
+.login-phone-input::placeholder {
+    color: #999;
+    opacity: 1;
+}
+
+.login-phone-input:focus {
+    border-color: #07006F;
+    box-shadow: 0 0 0 2px rgba(7, 0, 111, 0.08);
+}
+
+.django-message-close {
+    border: none !important;
+    outline: none !important;
+    background: transparent !important;
+
+    width: auto !important;
+    height: auto !important;
+
+    min-width: 0 !important;
+    min-height: 0 !important;
+
+    padding: 0 !important;
+    margin: 0 !important;
+
+    color: #07006F !important;
+
+    font-size: 22px !important;
+    line-height: 1 !important;
+
+    cursor: pointer;
+
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+
+    box-shadow: none !important;
+    appearance: none !important;
+    -webkit-appearance: none !important;
+}
+
+.django-message-close:hover {
+    background: transparent !important;
+    color: #07006F !important;
+}
+
+.django-message-icon {
+    color: #07006F;
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.django-message-text {
+    flex: 1;
+}

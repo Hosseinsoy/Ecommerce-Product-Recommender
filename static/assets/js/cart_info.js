@@ -47,6 +47,74 @@ $(document).ready(function () {
 
                 $("#cart_badge").text(data.cart_count);
                 $("#cart_info").text(data.cart_count);
+
+                // ==========================================
+                // سینک باکس سبد خرید در Product Detail
+                // ==========================================
+
+                const productDetailControl = $("#product-detail-cart-control");
+
+                if (productDetailControl.length) {
+
+                    const detailProductId =
+                        productDetailControl.data("product");
+
+                    // اگر محصولی که تغییر کرده همان محصول صفحه است
+                    if (String(detailProductId) === String(data.product_id)) {
+
+                        // --------------------------------------
+                        // محصول از سبد حذف شده
+                        // --------------------------------------
+
+                        if (data.item_count === 0) {
+
+                            productDetailControl.replaceWith(`
+                
+                                <a
+                                    href="javascript:void(0);"
+                                    id="product-detail-cart-btn"
+                                    class="btn-auth text-center fs-6"
+                                    data-product="${data.product_id}">
+                
+                                    افزودن به سبد خرید
+                
+                                </a>
+                
+                            `);
+
+                        }
+
+                        // --------------------------------------
+                        // محصول هنوز داخل سبد است
+                        // --------------------------------------
+
+                        else {
+
+                            productDetailControl
+                                .find(".quantity")
+                                .text(data.item_count);
+
+                            const decreaseButton =
+                                productDetailControl.find(
+                                    ".product-detail-decrease"
+                                );
+
+                            if (data.item_count > 1) {
+
+                                decreaseButton.html(
+                                    '<i class="fas fa-minus"></i>'
+                                );
+
+                            } else {
+
+                                decreaseButton.html(
+                                    '<i class="far fa-trash-alt"></i>'
+                                );
+                            }
+                        }
+                    }
+                }
+
                 // اگر محصول حذف شد، آیکون سبد در لیست محصولات خاموش شود
                 if (data.item_count === 0) {
 

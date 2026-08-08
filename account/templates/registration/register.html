@@ -1,37 +1,253 @@
-{% extends 'parent/base.html' %}
-{% block title %}Register{% endblock %}
-{% block content %}
-    <div class="header">
-    {% if shopping %}
-       <h1>برای ثبت سفارش ثبت نام کنید</h1>
-    {% else %}
-       <h1>برای ثبت نام اطلاعات زیر را وارد کنید</h1>
-    {% endif %}
-    </div>
-    <div class="container">
-    <div class="big_detail">
-        <div class="register_box">
-            <form method="post">
-                {% csrf_token %}
-                {{ form.as_p }}
-                <input type="submit" value="ثبت نام و ادامه خرید">
-            </form>
-            <br><br><br>
+{% load static %}
+
+<!DOCTYPE html>
+<html dir="rtl" lang="fa">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>ثبت نام | سبزشاپ</title>
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet"
+          href="{% static 'assets/css/vendors/bootstrap/bootstrap.rtl.css' %}">
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet"
+          href="{% static 'assets/css/vendors/fontawesome/fontawesome.min.css' %}">
+
+    <!-- استایل اصلی -->
+    <link rel="stylesheet"
+          href="{% static 'assets/css/style.css' %}">
+        <link rel="stylesheet"
+          href="{% static 'assets/css/vendors/fontawesome/all.css' %}">
+
+</head>
+
+
+<body class="body-login">
+
+
+<div class="login-wrapper
+            d-flex
+            justify-content-center
+            align-content-center
+            flex-row
+            w-100
+            vh-100">
+
+
+    <!-- ========================================= -->
+    <!-- ستون فرم -->
+    <!-- ========================================= -->
+
+    <div class="col-md-6
+                col-12
+                d-flex
+                h-100
+                bg-white
+                align-items-center
+                justify-content-center
+                p-4">
+
+
+        <div class="login-form text-center">
+
+
+            <!-- لوگو -->
+
+            <a href="{% url 'shop:home' %}">
+
+                <img
+                    src="{% static 'assets/img/logo-md.png' %}"
+                    alt="لوگو"
+                    class="mb-3">
+
+            </a>
+
+
+            <!-- عنوان -->
+
+            <h1 class="fw-bold fs-3 mb-3">
+
+                ثبت نام
+
+            </h1>
+
+
+            <!-- توضیح -->
+
             {% if shopping %}
-                <a href="{% url 'order:login_choice' %}" style="text-decoration: none"><div style="cursor: pointer; border: 2px solid black; font-size: 14px; font-weight: bold;border-radius: 8px; padding: 10px; margin: auto; width: fit-content;">حساب کاربری دارید | وارد شوید</div></a>
+
+                <p class="text-start">
+
+                    برای ادامه ثبت سفارش اطلاعات خود را وارد کنید
+
+                </p>
+
             {% else %}
-                <a href="{% url 'account:login_choice' %}" style="text-decoration: none"><div style="cursor: pointer; border: 2px solid black; font-size: 14px; font-weight: bold;border-radius: 8px; padding: 10px; margin: auto; width: fit-content;">حساب کاربری دارید | وارد شوید</div></a>
+
+                <p class="text-start">
+
+                    برای تکمیل ثبت نام اطلاعات زیر را وارد کنید
+
+                </p>
+
             {% endif %}
+
+
+            <!-- ========================================= -->
+            <!-- فرم ثبت نام -->
+            <!-- ========================================= -->
+
+            <form method="post"
+                  class="mb-3">
+
+
+                {% csrf_token %}
+
+
+                <div class="input-group mb-3">
+                    {{ form.first_name }}
+                </div>
+                {% for error in form.first_name.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+                
+                <div class="input-group mb-3">
+                    {{ form.last_name }}
+                </div>
+                {% for error in form.last_name.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+                
+                <div class="input-group mb-3">
+                    {{ form.email }}
+                </div>
+                {% for error in form.email.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+
+
+                <button
+                    type="submit"
+                    class="btn-auth w-100 fw-bold">
+
+                    {% if shopping %}
+                        ثبت نام و ادامه خرید
+                    {% else %}
+                        ثبت نام و ادامه
+                    {% endif %}
+
+                </button>
+            <br>
+
+
+            </form>
+
+
+            <!-- ========================================= -->
+            <!-- پیام ها -->
+            <!-- ========================================= -->
+
+            {% if messages %}
+
+                <div id="django-messages"
+                     class="django-messages">
+
+                    {% for message in messages %}
+
+                        <div class="django-message
+                                    django-message-{{ message.tags }}">
+
+                            <i class="fa fa-exclamation-circle
+                                      django-message-icon"></i>
+
+                            <span class="django-message-text">
+
+                                {{ message }}
+
+                            </span>
+
+
+                            <button
+                                type="button"
+                                class="django-message-close"
+                                onclick="this.parentElement.remove()"
+                                aria-label="بستن">
+
+                                ×
+
+                            </button>
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+            {% endif %}
+
+
+            <!-- ========================================= -->
+            <!-- ورود -->
+            <!-- ========================================= -->
+
+            <p class="mt-4">
+
+                حساب کاربری دارید؟
+
+                <a
+                    href="{% url 'account:verification_login' %}"
+                    class="auth">
+
+                    ورود با شماره موبایل
+
+                </a>
+
+            </p>
+
+
+            <!-- قوانین -->
+
+            <p class="mt-3">
+
+                ثبت نام شما به معنای پذیرش شرایط و قوانین است.
+
+            </p>
+
+
         </div>
-        {% for message in messages %}
-        <div style="text-align: center; color: red">{{ message }}</div>
-    {% endfor %}
-    </div>
 
     </div>
-<script>
-    // Set this before starting a new verification code process (e.g., in your Django view or a new verification button click)
-    sessionStorage.setItem('isNewLogin', 'true');
-</script>
 
-{% endblock %}
+
+    <!-- ========================================= -->
+    <!-- ستون تصویر -->
+    <!-- ========================================= -->
+
+    <div class="col-md-6
+                d-none
+                d-md-block
+                p-0">
+
+
+        <img
+            src="{% static 'assets/img/station.svg' %}"
+            class="w-100 h-100 object-fit-cover"
+            alt="background">
+
+
+    </div>
+
+
+</div>
+
+
+</body>
+
+</html>

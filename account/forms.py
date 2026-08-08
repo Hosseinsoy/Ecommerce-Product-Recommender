@@ -88,7 +88,11 @@ class ShopSellerChangedForm(UserChangeForm):
 
 
 class PhoneVerificationForm(forms.Form):
-    phone = forms.CharField(max_length=11, label='شماره تلفن')
+    phone = forms.CharField(max_length=11, label='شماره تلفن', widget=forms.TextInput(attrs={
+            'class': 'login-phone-input',
+            'placeholder': 'شماره موبایل',
+            'autocomplete': 'tel',
+        }))
 
     def clean_phone(self):
         phone = self.cleaned_data.get('phone')
@@ -118,7 +122,11 @@ class ChangePhoneForm(forms.Form):
 
 
 class CodeVerificationForm(forms.Form):
-    code = forms.CharField(max_length=6, label='کد تایید')
+    code = forms.CharField(max_length=6, label='کد تایید', widget=forms.TextInput(attrs={
+            'class': 'login-phone-input',
+            'placeholder': 'کد تائید',
+            'autocomplete': 'tel',
+        }))
 
     def clean_code(self):
         code = self.cleaned_data.get('code')
@@ -145,31 +153,54 @@ class UsernamePasswordLoginForm(forms.Form):
 
 
 class RegisterForm(forms.ModelForm):
-    password1 = forms.CharField(widget=forms.PasswordInput, label='گذرواژه')
-    password2 = forms.CharField(widget=forms.PasswordInput, label='تکرار گذرواؤه')
 
     class Meta:
         model = ShopUser
-        fields = ['phone', 'first_name', 'last_name', 'password1', 'password2']
 
-    def clean_password2(self):
-        password1 = self.cleaned_data.get('password1')
-        password2 = self.cleaned_data.get('password2')
-        if password1 and password2 and password1 != password2:
-            raise forms.ValidationError('عدم تطابق گذرواژه با تکرار آن')
-        return password2
+        fields = [
+            'first_name',
+            'last_name',
+            'email',
+        ]
 
-    def clean_phone(self):
-        phone = self.cleaned_data.get('phone')
-        if ShopUser.objects.filter(phone=phone).exists() or ShopSeller.objects.filter(phone=phone).exists():
-            raise forms.ValidationError('این شماره تلفن از قبل وجود دارد')
-        elif not phone.isdigit():
-            raise forms.ValidationError('شماره تلفن باید عدد باشد.')
-        elif len(phone) != 11:
-            raise forms.ValidationError('شماره تلفن باید 11 رقم باشد.')
-        elif not phone.startswith('09'):
-            raise forms.ValidationError('شماره تلفن باید با 09 شروع شود.')
-        return phone
+        widgets = {
+            'first_name': forms.TextInput(
+                attrs={
+                    'class': 'login-phone-input',
+                    'placeholder': 'نام',
+                    'autocomplete': 'given-name',
+                }
+            ),
+
+            'last_name': forms.TextInput(
+                attrs={
+                    'class': 'login-phone-input',
+                    'placeholder': 'نام خانوادگی',
+                    'autocomplete': 'family-name',
+                }
+            ),
+
+            'email': forms.EmailInput(
+                attrs={
+                    'class': 'login-phone-input',
+                    'placeholder': 'ایمیل (اختیاری)',
+                    'autocomplete': 'email',
+                }
+            ),
+        }
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+
+        if not email:
+            return None
+
+        if ShopUser.objects.filter(email=email).exists():
+            raise forms.ValidationError(
+                'این ایمیل قبلاً استفاده شده است.'
+            )
+
+        return email
 
 
 class CreateAddressForm(forms.Form):

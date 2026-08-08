@@ -505,3 +505,99 @@ class ProductCommentPoint(models.Model):
             f'{self.point} - '
             f'{self.get_point_type_display()}'
         )
+
+
+class ProductQuestion(models.Model):
+
+    product = models.ForeignKey(
+        'shop.Product',
+        on_delete=models.CASCADE,
+        related_name='questions',
+        verbose_name='محصول'
+    )
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='product_questions',
+        verbose_name='کاربر'
+    )
+
+    body = models.TextField(
+        max_length=1000,
+        verbose_name='متن پرسش'
+    )
+
+    # لایک و دیسلایک پرسش
+    likes = models.PositiveIntegerField(
+        default=0,
+        verbose_name='تعداد پسند'
+    )
+
+    dislikes = models.PositiveIntegerField(
+        default=0,
+        verbose_name='تعداد نپسند'
+    )
+
+    created = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='تاریخ ثبت'
+    )
+
+    is_active = models.BooleanField(
+        default=True,
+        verbose_name='فعال'
+    )
+
+    class Meta:
+        ordering = ['-created']
+        verbose_name = 'پرسش محصول'
+        verbose_name_plural = 'پرسش‌های محصول'
+
+    def __str__(self):
+        return f'{self.product.name} - {self.user}'
+
+
+class ProductAnswer(models.Model):
+
+    question = models.ForeignKey(
+        ProductQuestion,
+        on_delete=models.CASCADE,
+        related_name='answers',
+        verbose_name='پرسش'
+    )
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='product_answers',
+        verbose_name='کاربر'
+    )
+
+    body = models.TextField(
+        max_length=1500,
+        verbose_name='متن پاسخ'
+    )
+
+    is_seller = models.BooleanField(
+        default=False,
+        verbose_name='پاسخ فروشنده'
+    )
+
+    created = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='تاریخ ثبت'
+    )
+
+    is_active = models.BooleanField(
+        default=True,
+        verbose_name='فعال'
+    )
+
+    class Meta:
+        ordering = ['created']
+        verbose_name = 'پاسخ پرسش'
+        verbose_name_plural = 'پاسخ‌های پرسش'
+
+    def __str__(self):
+        return f'پاسخ به پرسش {self.question_id} - {self.user}'

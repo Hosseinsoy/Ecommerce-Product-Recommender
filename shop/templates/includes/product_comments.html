@@ -1,0 +1,155 @@
+{% for comment in comments %}
+
+    <div class="comment-box mb-3">
+
+        <div class="comment-title">
+
+            <p class="fw-bold">
+
+                <span class="badge bg-success">
+                    {{ comment.score }}.0
+                </span>
+
+                {{ comment.title }}
+
+            </p>
+
+        </div>
+
+
+        <div class="comment-details my-3 border-bottom-gray-150 pb-3 mx-5">
+
+            <span class="fs-8 gray-600">
+                {{ comment.created|date:"d F Y" }}
+            </span>
+
+
+            <i class="fa fa-circle fs-11 gray-400"></i>
+
+
+            <span class="fs-8 gray-600">
+                {{ comment.user.first_name }} {{ comment.user.last_name }}
+            </span>
+
+
+
+            {% if comment.is_buyer %}
+
+            <span class="badge bg-gray-400">
+                خریدار
+            </span>
+
+            {% endif %}
+
+
+        </div>
+        <div class="comment-text border-bottom-gray-150 mx-5">
+
+                    <p class="my-2 comment">
+
+                        {{ comment.body }}
+
+                    </p>
+
+
+                </div>
+
+
+        {% if comment.positive_points != 'None' %}
+            <div class="comment-text border-bottom-gray-150 mx-5">
+
+
+                    <p class="text-success fs-7">
+
+                        <i class="fa fa-thumbs-up pe-1"></i>
+
+                        نکات مثبت
+
+                    </p>
+
+
+
+                    <p class="my-2 comment">
+
+                        {{ comment.positive_points }}
+
+                    </p>
+
+
+                </div>
+        {% endif %}
+        {% if comment.negative_points != 'None' %}
+            <div class="comment-text border-bottom-gray-150 mx-5">
+
+
+                <p class="text-danger fs-7">
+
+                    <i class="fa fa-thumbs-down pe-1"></i>
+
+                    نکات منفی
+
+                </p>
+
+
+                    <p class="my-2 comment">
+
+                        {{ comment.negative_points }}
+
+                    </p>
+
+
+                </div>
+        {% endif %}
+
+
+
+
+{#                                <div class="border-bottom-gray-300 mt-3 pb-2">#}
+{##}
+{#                                    <p class="text-end fs-8 gray-600">#}
+{##}
+{#                                        آیا این دیدگاه مفید بود؟#}
+{##}
+{#                                        <span#}
+{#                                            class="px-1 c-pointer comment-vote"#}
+{#                                            data-comment-id="{{ comment.id }}"#}
+{#                                            data-vote-type="like">#}
+{##}
+{#                                            <span class="comment-likes">#}
+{#                                                {{ comment.votes.all|length }}#}
+{#                                            </span>#}
+{##}
+{#                                            <i class="fa fa-thumbs-up ps-1"></i>#}
+{##}
+{#                                        </span>#}
+{##}
+{##}
+{#                                        <span#}
+{#                                            class="px-1 c-pointer comment-vote"#}
+{#                                            data-comment-id="{{ comment.id }}"#}
+{#                                            data-vote-type="dislike">#}
+{##}
+{#                                            <span class="comment-dislikes">#}
+{#                                                {{ comment.dislikes }}</span>#}
+{##}
+{#                                            <i class="fa fa-thumbs-down ps-1"></i>#}
+{##}
+{#                                        </span>#}
+{##}
+{#                                    </p>#}
+{##}
+{#                                </div>#}
+
+    </div>
+
+
+    {% empty %}
+
+    <p class="text-center gray-600">
+
+        هنوز دیدگاهی ثبت نشده است.
+
+    </p>
+
+
+    {% endfor %}

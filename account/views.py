@@ -65,70 +65,127 @@ def login_choice(request):
 def verification_login(request):
     if request.user.is_authenticated:
         return HttpResponseNotFound('صفحه مورد نظر یافت نشد')
+
     if request.method == 'POST':
         form = PhoneVerificationForm(request.POST)
+
         if form.is_valid():
             phone = form.cleaned_data['phone']
-            if ShopUser.objects.filter(phone=phone).exists():
-                verification_code = ''.join(random.choices('0987654321', k=6))
-                request.session['code_create_time'] = datetime.datetime.now().isoformat()
-                request.session['verification_code'] = verification_code
-                request.session['phone'] = phone
-                request.session['login'] = 'login'
-                # send_sms_normal(phone, f"{verification_code}\nکد ورود به سبزشاپ:")
-                print(verification_code)
-                return redirect('account:verification_code')
-            else:
-                messages.error(request, 'کاربری با همچین شماره تلفنی یافت نشد.')
+
+            verification_code = ''.join(
+                random.choices('0123456789', k=6)
+            )
+
+            # ذخیره اطلاعات تأیید در session
+            request.session['code_create_time'] = datetime.datetime.now().isoformat()
+            request.session['verification_code'] = verification_code
+            request.session['phone'] = phone
+
+            # فعلاً ارسال پیامک نداریم
+            print(f'VERIFICATION CODE for {phone}: {verification_code}')
+
+            return redirect('account:verification_code')
 
     else:
         form = PhoneVerificationForm()
-    return render(request, 'registration/verification_login.html', {'form': form})
+
+    return render(
+        request,
+        'registration/verification_login.html',
+        {'form': form}
+    )
 
 
 def verification_code(request):
     if request.user.is_authenticated:
         return HttpResponseNotFound('صفحه مورد نظر یافت نشد')
+
     if request.method == 'POST':
         form = CodeVerificationForm(request.POST)
+
         if form.is_valid():
-            if 'verification_code' in request.session and 'phone' in request.session:
-                phone = request.session['phone']
-                code = request.session['verification_code']
-            else:
-                phone = 'invalid'
-                code = 'invalid'
+
             form_code = form.cleaned_data['code']
-            if code == form_code:
-                code_time = datetime.datetime.fromisoformat(request.session['code_create_time'])
-                if datetime.datetime.now() - code_time > datetime.timedelta(minutes=2):
-                    messages.error(request, 'کد منقضی شده است')
-                    del request.session['phone']
-                    del request.session['verification_code']
-                    del request.session['code_create_time']
-                else:
-                    user = ShopUser.objects.get(phone=phone)
-                    user.backend = 'account.backends.ShopUserBackend'
-                    login(request, user)
-                    del request.session['phone']
-                    del request.session['verification_code']
-                    del request.session['code_create_time']
-                    messages.success(request, 'با موفقیت وارد شدید')
-                    if 'shopping' in request.session:
-                        del request.session['shopping']
-                        return redirect('order:create_order')
-                    else:
-                        return redirect('account:profile')
-            else:
+
+            phone = request.session.get('phone')
+            code = request.session.get('verification_code')
+            code_create_time = request.session.get('code_create_time')
+
+            # اطلاعات تأیید وجود ندارد
+            if not phone or not code or not code_create_time:
+                messages.error(request, 'کد تأیید نامعتبر است.')
+                return redirect('account:verification_login')
+
+            # بررسی کد
+            if code != form_code:
                 messages.error(request, 'کد تایید نادرست است')
+                return render(
+                    request,
+                    'registration/verification_code.html',
+                    {'form': form}
+                )
+
+            # بررسی زمان انقضا
+            code_time = datetime.datetime.fromisoformat(code_create_time)
+
+            if datetime.datetime.now() - code_time > datetime.timedelta(minutes=2):
+
+                messages.error(request, 'کد منقضی شده است')
+
+                request.session.pop('phone', None)
+                request.session.pop('verification_code', None)
+                request.session.pop('code_create_time', None)
+
+                return redirect('account:verification_login')
+
+            # ==========================================
+            # کد صحیح است
+            # ==========================================
+
+            user = ShopUser.objects.filter(phone=phone).first()
+
+            # ==========================================
+            # کاربر قبلاً وجود دارد
+            # ==========================================
+
+            if user:
+
+                user.backend = 'account.backends.ShopUserBackend'
+                login(request, user)
+
+                # پاک کردن اطلاعات موقت
+                request.session.pop('phone', None)
+                request.session.pop('verification_code', None)
+                request.session.pop('code_create_time', None)
+
+                messages.success(request, 'با موفقیت وارد شدید')
+
+                if 'shopping' in request.session:
+                    del request.session['shopping']
+                    return redirect('order:create_order')
+
+                return redirect('account:profile')
+
+            # ==========================================
+            # کاربر جدید است
+            # ==========================================
+
+            request.session['verified_phone'] = phone
+
+            # اطلاعات کد دیگر لازم نیست
+            request.session.pop('phone', None)
+            request.session.pop('verification_code', None)
+            request.session.pop('code_create_time', None)
+
+            return redirect('account:register')
     else:
         form = CodeVerificationForm()
-        if 'login' in request.session:
-            context = {'form': form, 'login': True}
-        else:
-            context = {'form': form, 'login': False}
-        del request.session['login']
-    return render(request, 'registration/verification_code.html', context)
+
+    return render(
+        request,
+        'registration/verification_code.html',
+        {'form': form}
+    )
 
 
 def regenerate_verification_code(request):
@@ -173,25 +230,100 @@ def username_password_login(request):
 
 
 def register(request):
+
     if request.user.is_authenticated:
         return HttpResponseNotFound('صفحه مورد نظر یافت نشد')
+
+    phone = request.session.get('verified_phone')
+
+    if not phone:
+        messages.error(
+            request,
+            'ابتدا شماره تلفن خود را تأیید کنید.'
+        )
+        return redirect('account:verification_login')
+
     if request.method == 'POST':
+
         form = RegisterForm(request.POST)
+
         if form.is_valid():
-            phone = form.cleaned_data['phone']
-            verification_code = ''.join(random.choices('0987654321', k=6))
-            request.session['code_create_time'] = datetime.datetime.now().isoformat()
-            print(verification_code)
-            # send_sms_normal(phone, f"{verification_code}\nکد ورود به سبزشاپ:")
-            request.session['verification_code'] = verification_code
-            request.session['phone'] = phone
-            request.session['first_name'] = form.cleaned_data['first_name']
-            request.session['last_name'] = form.cleaned_data['last_name']
-            request.session['password'] = form.cleaned_data['password1']
-            return redirect('account:register_verification_code')
+
+            first_name = form.cleaned_data['first_name']
+            last_name = form.cleaned_data['last_name']
+            email = form.cleaned_data.get('email')
+
+            # بررسی مجدد شماره
+            if ShopUser.objects.filter(phone=phone).exists():
+
+                messages.error(
+                    request,
+                    'این شماره تلفن قبلاً ثبت شده است.'
+                )
+
+                request.session.pop(
+                    'verified_phone',
+                    None
+                )
+
+                return redirect(
+                    'account:verification_login'
+                )
+
+            # ساخت کاربر
+            user = ShopUser.objects.create(
+                phone=phone,
+                first_name=first_name,
+                last_name=last_name,
+                email=email
+            )
+
+            # عدم استفاده از پسورد
+            user.set_unusable_password()
+            user.save()
+
+            # ورود خودکار
+            user.backend = 'account.backends.ShopUserBackend'
+            login(request, user)
+
+            # پاک کردن شماره تأییدشده
+            request.session.pop(
+                'verified_phone',
+                None
+            )
+
+            messages.success(
+                request,
+                'اکانت شما با موفقیت ساخته شد | خوش آمدید'
+            )
+
+            if 'shopping' in request.session:
+
+                request.session.pop(
+                    'shopping',
+                    None
+                )
+
+                return redirect(
+                    'order:create_order'
+                )
+
+            return redirect(
+                'account:profile'
+            )
+
     else:
+
         form = RegisterForm()
-    return render(request, 'registration/register.html', {'form': form, 'shopping': False})
+
+    return render(
+        request,
+        'registration/register.html',
+        {
+            'form': form,
+            'shopping': 'shopping' in request.session,
+        }
+    )
 
 
 def register_verification_code(request):
