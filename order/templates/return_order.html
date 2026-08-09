@@ -1,54 +1,1560 @@
-<div class="return_order_box" style="direction:rtl; display: none; position: fixed; backdrop-filter: blur(25px); background: rgba(255, 255, 255, 0.5); left: 0; top: 0; width: 100%; height: 100%; z-index: 9999;">
-    <div style="height: 550px; overflow-y:auto; position: relative; margin: auto; top: 10%; width: 50%; padding: 20px; background: white; border: darkblue solid 5px; border-radius: 15px;">
-        <span class="close_button" style="cursor: pointer; float: left; font-size: 24px;">&times;</span>
-        <form method="post" action="{% url 'order:return_product' order.id %}" enctype="multipart/form-data">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <hr>
-            <div id="dynamic-fields">
+<div
+    class="return_order_box"
+    dir="rtl"
+    style="
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        background: rgba(15, 23, 42, 0.45);
+        backdrop-filter: blur(8px);
+        padding: 30px 15px;
+        overflow-y: auto;
+    "
+>
+    <div
+        class="return-modal"
+        style="
+            width: min(850px, 100%);
+            margin: 30px auto;
+            background: #fff;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0,0,0,.2);
+            overflow: hidden;
+        "
+    >
 
+        <!-- HEADER -->
+        <div class="return-modal-header">
+
+            <div>
+                <h2>درخواست مرجوعی سفارش</h2>
+
+                <div class="return-order-number">
+                    سفارش شماره {{ order.id }}
+                </div>
             </div>
-        </form>
+
+            <span class="close_button return-close-button">
+                &times;
+            </span>
+
+        </div>
+
+
+        <!-- CONTENT -->
+        <div class="return-modal-content">
+
+            <div class="return-info-box">
+                محصولاتی را که قصد مرجوع کردن آنها را دارید انتخاب کنید.
+            </div>
+
+
+            <form
+                method="post"
+                action="{% url 'order:return_product' order.id %}"
+                enctype="multipart/form-data"
+                id="return-product-form"
+            >
+
+                {% csrf_token %}
+
+
+                <!-- PRODUCT SELECTION -->
+
+                <div class="return-section-title">
+                    انتخاب محصولات
+                </div>
+
+
+                <div class="return-products-grid">
+
+                    {% for item in order.items.all %}
+
+                        <label class="return-product-card">
+
+                        <input
+                            type="checkbox"
+                            class="return-product-checkbox"
+                            name="return_products"
+                            value="{{ item.product.id }}"
+                            data-product-id="{{ item.product.id }}"
+                            data-product-name="{{ item.product.name }}"
+                            data-max-quantity="{{ item.quantity }}"
+                        >
+
+
+                            <span class="return-custom-checkbox"></span>
+
+
+                            <!-- IMAGE -->
+
+                            <div class="return-product-image-wrapper">
+
+                                {% if item.product.images.first %}
+
+                                    <img
+                                        src="{{ item.product.images.first.image_file.url }}"
+                                        alt="{{ item.product.name }}"
+                                        class="return-product-image"
+                                    >
+
+                                {% else %}
+
+                                    <div class="return-no-image">
+                                        بدون تصویر
+                                    </div>
+
+                                {% endif %}
+
+                            </div>
+
+
+                            <!-- NAME -->
+
+                            <div class="return-product-name">
+                                {{ item.product.name }}
+                            </div>
+
+
+                            <!-- QUANTITY -->
+
+                            <div class="return-purchased-quantity">
+
+                                تعداد خریداری شده:
+                                <strong>{{ item.quantity }}</strong>
+
+                            </div>
+
+                        </label>
+
+                    {% endfor %}
+
+                </div>
+
+
+                <!-- DYNAMIC FIELDS -->
+
+                <div
+                    id="dynamic-fields"
+                    class="return-dynamic-fields"
+                ></div>
+
+
+                <!-- SUBMIT -->
+
+                <div class="return-submit-wrapper">
+
+                    <button
+                        type="submit"
+                        id="submit-return-request"
+                        class="return-submit-button"
+                        disabled
+                    >
+                        ثبت درخواست مرجوعی
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
     </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script>
-    $(document).ready(function() {
-    // Event listener for changes on any checkbox within the multiple choice field
-    $('input[name="return_products"]').change(function() {
-        // Initialize an array to store selected product IDs
-        let selectedProducts = [];
 
-        // Loop through all checkboxes with the name 'return_products'
-        $('input[name="return_products"]:checked').each(function() {
-            selectedProducts.push($(this).val()); // Add the value (product ID) of each checked checkbox to the array
+<style>
+
+/* =========================================
+   MODAL
+========================================= */
+
+.return_order_box {
+    direction: rtl;
+}
+
+.return-modal {
+    direction: rtl;
+}
+
+.return-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 25px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.return-modal-header h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 800;
+    color: #111827;
+}
+
+.return-order-number {
+    margin-top: 6px;
+    color: #6b7280;
+    font-size: 13px;
+}
+
+.return-close-button {
+    width: 38px;
+    height: 38px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    cursor: pointer;
+
+    font-size: 25px;
+    color: #6b7280;
+
+    background: #f3f4f6;
+
+    transition: .2s ease;
+}
+
+.return-close-button:hover {
+    background: #e5e7eb;
+    color: #111827;
+}
+
+.return-modal-content {
+    padding: 25px;
+}
+
+
+/* =========================================
+   INFO
+========================================= */
+
+.return-info-box {
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+
+    border-radius: 16px;
+
+    padding: 15px;
+    margin-bottom: 20px;
+
+    color: #374151;
+    font-size: 14px;
+
+    line-height: 2;
+}
+
+
+/* =========================================
+   SECTION TITLE
+========================================= */
+
+.return-section-title {
+    font-size: 16px;
+    font-weight: 800;
+
+    margin-bottom: 15px;
+
+    color: #111827;
+}
+
+
+/* =========================================
+   PRODUCTS GRID
+========================================= */
+
+.return-products-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(auto-fit, minmax(230px, 1fr));
+
+    gap: 15px;
+}
+
+
+/* =========================================
+   PRODUCT CARD
+========================================= */
+
+.return-product-card {
+    position: relative;
+
+    display: block;
+
+    cursor: pointer;
+
+    border: 2px solid #e5e7eb;
+    border-radius: 18px;
+
+    padding: 15px;
+
+    background: #fff;
+
+    transition:
+        border-color .2s ease,
+        background-color .2s ease,
+        box-shadow .2s ease,
+        transform .2s ease;
+}
+
+.return-product-card:hover {
+    border-color: #b8b5d8;
+    box-shadow: 0 6px 20px rgba(7, 0, 111, .08);
+}
+
+
+/* =========================================
+   REAL CHECKBOX
+========================================= */
+
+.return-product-checkbox {
+    position: absolute;
+
+    top: 15px;
+    right: 15px;
+
+    width: 1px;
+    height: 1px;
+
+    opacity: 0;
+
+    pointer-events: none;
+}
+
+
+/* =========================================
+   CUSTOM CHECKBOX
+========================================= */
+
+.return-custom-checkbox {
+    position: absolute;
+
+    top: 15px;
+    right: 15px;
+
+    width: 20px;
+    height: 20px;
+
+    border: 2px solid #cbd5e1;
+
+    border-radius: 6px;
+
+    background: #fff;
+
+    box-sizing: border-box;
+
+    transition: .2s ease;
+
+    z-index: 2;
+}
+
+.return-product-card:hover .return-custom-checkbox {
+    border-color: #07006f;
+}
+
+
+/* checked */
+
+.return-product-checkbox:checked
+~ .return-custom-checkbox {
+
+    background: #07006f;
+
+    border-color: #07006f;
+}
+
+
+/* check mark */
+
+.return-product-checkbox:checked
+~ .return-custom-checkbox::after {
+
+    content: "";
+
+    position: absolute;
+
+    width: 5px;
+    height: 10px;
+
+    left: 6px;
+    top: 2px;
+
+    border: solid white;
+
+    border-width: 0 2px 2px 0;
+
+    transform: rotate(45deg);
+}
+
+
+/* =========================================
+   PRODUCT IMAGE
+========================================= */
+
+.return-product-image-wrapper {
+    height: 150px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    margin-bottom: 12px;
+}
+
+.return-product-image {
+    max-width: 100%;
+    max-height: 145px;
+
+    object-fit: contain;
+
+    border-radius: 12px;
+}
+
+.return-no-image {
+    width: 100%;
+    height: 120px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    color: #9ca3af;
+
+    background: #f8fafc;
+
+    border-radius: 12px;
+
+    font-size: 13px;
+}
+
+
+/* =========================================
+   PRODUCT NAME
+========================================= */
+
+.return-product-name {
+    font-weight: 700;
+
+    color: #111827;
+
+    min-height: 45px;
+
+    padding-right: 30px;
+
+    line-height: 1.8;
+}
+
+
+/* =========================================
+   PURCHASED QUANTITY
+========================================= */
+
+.return-purchased-quantity {
+    margin-top: 8px;
+
+    color: #6b7280;
+
+    font-size: 13px;
+}
+
+
+/* =========================================
+   DYNAMIC FIELDS
+========================================= */
+
+.return-dynamic-fields {
+    margin-top: 25px;
+}
+
+
+/* =========================================
+   RETURN FIELDS CARD
+========================================= */
+
+.return-fields {
+    border: 1px solid #e5e7eb;
+
+    border-radius: 18px;
+
+    padding: 20px;
+
+    margin-bottom: 15px;
+
+    background: #f8fafc;
+}
+
+.return-fields-title {
+    font-weight: 800;
+
+    color: #111827;
+
+    margin-bottom: 15px;
+
+    font-size: 15px;
+}
+
+.return-fields-grid {
+    display: grid;
+
+    grid-template-columns: 1fr;
+
+    gap: 15px;
+}
+
+
+/* =========================================
+   FORM FIELD
+========================================= */
+
+.return-form-field {
+    display: flex;
+
+    flex-direction: column;
+}
+
+.return-form-field label {
+    display: block;
+
+    margin-bottom: 7px;
+
+    font-size: 13px;
+
+    font-weight: 700;
+
+    color: #374151;
+}
+
+.return-form-input,
+.return-form-textarea {
+
+    width: 100%;
+
+    box-sizing: border-box;
+
+    border: 1px solid #d1d5db;
+
+    border-radius: 10px;
+
+    padding: 10px 12px;
+
+    background: #fff;
+
+    font-family: inherit;
+
+    font-size: 14px;
+
+    color: #111827;
+
+    outline: none;
+
+    transition: .2s ease;
+}
+
+.return-form-input:focus,
+.return-form-textarea:focus {
+
+    border-color: #07006f;
+
+    box-shadow:
+        0 0 0 3px rgba(7, 0, 111, .08);
+}
+
+.return-form-textarea {
+
+    resize: vertical;
+
+    min-height: 100px;
+}
+
+.return-form-help {
+
+    display: block;
+
+    margin-top: 5px;
+
+    color: #6b7280;
+
+    font-size: 11px;
+}
+
+
+/* =========================================
+   Return Product - File Input
+   ========================================= */
+
+.return-file-wrapper {
+    width: 100% !important;
+
+    display: flex !important;
+    align-items: center !important;
+
+    gap: 10px !important;
+
+    direction: rtl !important;
+    margin-top: 10px !important;
+}
+
+/* خود input اصلی کاملاً مخفی */
+.return-file-input {
+    position: absolute !important;
+
+    width: 1px !important;
+    height: 1px !important;
+
+    padding: 0 !important;
+    margin: -1px !important;
+
+    overflow: hidden !important;
+
+    clip: rect(0, 0, 0, 0) !important;
+    clip-path: inset(50%) !important;
+
+    white-space: nowrap !important;
+
+    border: 0 !important;
+}
+
+
+/* دکمه انتخاب تصویر */
+
+.return-file-button {
+    position: relative !important;
+
+    flex: 0 0 140px !important;
+    width: 140px !important;
+    height: 44px !important;
+
+    box-sizing: border-box !important;
+    margin: 0 !important;
+    padding: 0 !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    background: #fff !important;
+    color: #07006f !important;
+
+    border: 1px solid #07006f !important;
+    border-radius: 11px !important;
+
+    font-family: inherit !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+
+    line-height: 1 !important;
+    text-align: center !important;
+
+    cursor: pointer;
+    user-select: none;
+}
+
+
+/* متن دقیقاً وسط دکمه */
+.return-file-button span:not(.return-file-camera) {
+    display: block !important;
+    width: 100% !important;
+
+    text-align: center !important;
+    line-height: 1 !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+
+/* آیکون جدا از محاسبه مرکز */
+.return-file-camera {
+    position: absolute !important;
+
+    right: 12px !important;
+    top: 50% !important;
+
+    transform: translateY(-50%) !important;
+
+    width: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+
+    font-size: 15px !important;
+    line-height: 1 !important;
+}
+
+.return-file-button span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    line-height: 1;
+}
+
+.return-file-camera {
+    font-size: 16px;
+    line-height: 1;
+}
+/* Hover */
+
+.return-file-button:hover {
+    background: #07006f !important;
+    color: #fff !important;
+    border-color: #07006f !important;
+
+    box-shadow: 0 5px 15px rgba(7, 0, 111, 0.18);
+
+    transform: translateY(-1px);
+}
+
+
+/* Click */
+.return-file-button:active {
+    background: #05005c !important;
+    color: #fff !important;
+    transform: translateY(0);
+}
+
+/* آیکون دوربین */
+
+.return-file-camera {
+    font-size: 16px;
+    line-height: 1;
+}
+
+
+/* نام فایل */
+
+.return-file-selected {
+    flex: 1;
+    min-width: 0;
+
+    height: 44px;
+
+    padding: 0 13px;
+
+    display: flex;
+    align-items: center;
+
+    gap: 8px;
+
+    background: #f8f9fc;
+
+    border: 1px solid #e5e7eb;
+    border-radius: 11px;
+
+    color: #9ca3af;
+
+    font-family: inherit;
+    font-size: 12px;
+
+    overflow: hidden;
+}
+
+
+/* آیکون تصویر */
+
+.return-file-selected-icon {
+    flex-shrink: 0;
+
+    font-size: 15px;
+
+    opacity: 0.7;
+}
+
+
+/* اسم فایل */
+
+.return-file-selected-name {
+    min-width: 0;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+}
+
+
+/* وقتی فایل انتخاب شد */
+
+.return-file-input:focus-visible + .return-file-button {
+    outline: 3px solid rgba(7, 0, 111, 0.12);
+    outline-offset: 2px;
+}
+
+
+/* موبایل */
+
+@media (max-width: 576px) {
+
+    .return-file-wrapper {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .return-file-button {
+        width: 100%;
+    }
+
+    .return-file-selected {
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+}
+
+/* =========================================
+   SUBMIT
+========================================= */
+
+.return-submit-wrapper {
+
+    margin-top: 25px;
+
+    padding-top: 20px;
+
+    border-top: 1px solid #e5e7eb;
+
+    display: flex;
+
+    justify-content: flex-end;
+}
+
+.return-submit-button {
+
+    border: none;
+
+    border-radius: 12px;
+
+    padding: 11px 25px;
+
+    background: #07006f;
+
+    color: #fff;
+
+    font-family: inherit;
+
+    font-size: 14px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition: .2s ease;
+}
+
+.return-submit-button:not(:disabled):hover {
+
+    background: #0b008c;
+
+    transform: translateY(-1px);
+
+    box-shadow:
+        0 6px 16px rgba(7, 0, 111, .18);
+}
+
+.return-submit-button:disabled {
+
+    opacity: .45;
+
+    cursor: not-allowed;
+}
+
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 768px) {
+
+    .return-modal-content {
+        padding: 18px;
+    }
+
+    .return-modal-header {
+        padding: 17px 18px;
+    }
+
+    .return-modal-header h2 {
+        font-size: 17px;
+    }
+
+    .return-products-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .return-submit-wrapper {
+        justify-content: stretch;
+    }
+
+    .return-submit-button {
+        width: 100%;
+    }
+}
+
+</style>
+
+
+<script>
+
+$(document).ready(function () {
+
+    /* =========================================================
+       باز کردن پنجره درخواست مرجوعی
+    ========================================================= */
+
+    $(document).on('click', '#return_order', function (e) {
+
+        e.preventDefault();
+
+        $.ajax({
+
+            type: 'GET',
+
+            url: '{% url "order:return_order" order.id %}',
+
+            success: function (data) {
+
+                if (data.redirect) {
+
+                    window.location.href = data.redirect_url;
+
+                    return;
+                }
+
+                /*
+                 * اگر Modal قبلی هنوز در DOM بود حذفش کن
+                 * تا هیچ Modal تکراری نداشته باشیم.
+                 */
+
+                $('.return_order_box').remove();
+
+                /*
+                 * Modal جدید را اضافه می‌کنیم.
+                 */
+
+                $('body').append(data.template);
+
+                /*
+                 * Modal تازه ساخته شده را پیدا می‌کنیم.
+                 */
+
+                const $modal = $('.return_order_box');
+
+                $modal.show();
+
+                /*
+                 * وضعیت اولیه دکمه ثبت
+                 */
+
+                updateReturnSubmitButton();
+            },
+
+            error: function (xhr, status, error) {
+
+                console.error(
+                    'Return order AJAX error:',
+                    error
+                );
+
+                alert(
+                    'خطایی رخ داد. لطفاً دوباره تلاش کنید.'
+                );
+            }
+
         });
 
-        // Debugging: Check if the array has the selected product IDs
-        console.log('Selected products:', selectedProducts);
-
-        // If any product is selected, make an AJAX call
-        if (selectedProducts.length > 0) {
-            $.ajax({
-                url: "{% url 'order:return_product' order.id %}",
-                type: 'GET',
-                data: {
-                    'selected_products': selectedProducts.join(',') // Send the selected product IDs as a comma-separated string
-                },
-                success: function(response) {
-                    $('#dynamic-fields').html(response.template); // Populate the dynamic fields with the response
-                },
-                error: function(xhr, status, error) {
-                    console.log('AJAX Error:', error); // Log any AJAX errors for debugging
-                }
-            });
-        } else {
-            // Handle the case where no products are selected (e.g., clear the dynamic fields)
-            $('#dynamic-fields').empty();
-            console.log('No product selected');
-        }
     });
+
+
+    /* =========================================================
+       انتخاب / لغو انتخاب محصول
+    ========================================================= */
+
+    $(document).on(
+        'change',
+        '.return-product-checkbox',
+        function () {
+
+            const $checkbox = $(this);
+
+            const productId =
+                String($checkbox.data('product-id'));
+
+            const productName =
+                String($checkbox.data('product-name'));
+
+            const maxQuantity =
+                Number($checkbox.data('max-quantity'));
+
+            const $card =
+                $checkbox.closest('.return-product-card');
+
+            const $dynamicFields =
+                $('#dynamic-fields');
+
+
+            if ($checkbox.is(':checked')) {
+
+                /*
+                 * ظاهر کارت انتخاب شده
+                 */
+
+                $card.css({
+
+                    'border-color': '#07006f',
+
+                    'background-color': '#f5f3ff',
+
+                    'box-shadow':
+                        '0 0 0 3px rgba(7, 0, 111, 0.06)'
+
+                });
+
+
+                /*
+                 * ساخت فیلدهای همان محصول
+                 */
+
+                addReturnFields(
+                    productId,
+                    productName,
+                    maxQuantity
+                );
+
+
+            } else {
+
+                /*
+                 * برگرداندن ظاهر کارت
+                 */
+
+                $card.css({
+
+                    'border-color': '#e5e7eb',
+
+                    'background-color': '#fff',
+
+                    'box-shadow': 'none'
+
+                });
+
+
+                /*
+                 * حذف اطلاعات مرجوعی همان محصول
+                 */
+
+                $dynamicFields
+                    .find(
+                        '.return-fields[data-product-id="' +
+                        productId +
+                        '"]'
+                    )
+                    .remove();
+
+            }
+
+
+            updateReturnSubmitButton();
+
+        }
+    );
+
+
+    /* =========================================================
+       ساخت فیلدهای محصول
+    ========================================================= */
+
+    function addReturnFields(
+        productId,
+        productName,
+        maxQuantity
+    ) {
+
+        const $dynamicFields =
+            $('#dynamic-fields');
+
+
+        /*
+         * اگر قبلاً برای این محصول فیلد ساخته شده،
+         * دوباره نساز.
+         */
+
+        if (
+            $dynamicFields.find(
+                '.return-fields[data-product-id="' +
+                productId +
+                '"]'
+            ).length
+        ) {
+
+            return;
+
+        }
+
+
+        const html = `
+
+            <div
+                class="return-fields"
+                data-product-id="${productId}"
+            >
+
+                <div
+                    style="
+                        display:flex;
+                        align-items:center;
+                        gap:10px;
+                        margin-bottom:18px;
+                        padding-bottom:12px;
+                        border-bottom:1px solid #e5e7eb;
+                    "
+                >
+
+                    <div
+                        style="
+                            width:38px;
+                            height:38px;
+                            flex-shrink:0;
+                            display:flex;
+                            align-items:center;
+                            justify-content:center;
+                            border-radius:11px;
+                            background:rgba(7,0,111,.08);
+                            color:#07006F;
+                            font-size:18px;
+                        "
+                    >
+                        ↩
+                    </div>
+
+
+                    <div>
+
+                        <div
+                            style="
+                                color:#6b7280;
+                                font-size:11px;
+                                margin-bottom:2px;
+                            "
+                        >
+                            اطلاعات مرجوعی محصول
+                        </div>
+
+
+                        <div
+                            style="
+                                color:#111827;
+                                font-size:15px;
+                                font-weight:800;
+                            "
+                        >
+                            ${productName}
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="return-fields-grid">
+
+
+                    <!-- تعداد -->
+
+                    <div class="return-form-field">
+
+                        <label
+                            for="quantity_${productId}"
+                        >
+                            تعداد مرجوعی
+                        </label>
+
+
+                        <input
+                            id="quantity_${productId}"
+                            type="number"
+                            name="quantity_${productId}"
+                            min="1"
+                            max="${maxQuantity}"
+                            required
+                            class="return-form-input"
+                        >
+
+
+                        <small class="return-form-help">
+
+                            حداکثر تعداد قابل مرجوعی:
+                            ${maxQuantity}
+
+                        </small>
+
+                    </div>
+
+
+                    <!-- توضیحات -->
+
+                    <div class="return-form-field">
+
+                        <label
+                            for="explanation_${productId}"
+                        >
+                            توضیحات
+                        </label>
+
+
+                        <textarea
+                            id="explanation_${productId}"
+                            name="explanation_${productId}"
+                            required
+                            class="return-form-textarea"
+                            rows="4"
+                            placeholder="دلیل مرجوع کردن این کالا را بنویسید..."
+                        ></textarea>
+
+                    </div>
+
+
+                    <!-- تصویر -->
+
+                    <div class="return-form-field">
+
+                        <label>
+                            تصویر محصول
+                        </label>
+
+
+                        <div class="return-file-wrapper">
+
+
+                            <input
+                                type="file"
+                                id="photo_${productId}"
+                                name="photo_${productId}"
+                                class="return-file-input"
+                                accept="image/*"
+                                required
+                            >
+
+
+                            <label
+                                for="photo_${productId}"
+                                class="return-file-button"
+                            >
+
+                                <span class="return-file-camera">
+                                    📷
+                                </span>
+
+                                <span>
+                                    انتخاب تصویر
+                                </span>
+
+                            </label>
+
+
+                            <div class="return-file-selected">
+
+                                <span
+                                    class="return-file-selected-icon"
+                                >
+                                    🖼️
+                                </span>
+
+
+                                <span
+                                    class="return-file-selected-name"
+                                >
+                                    تصویری انتخاب نشده
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                </div>
+
+            </div>
+
+        `;
+
+
+        $dynamicFields.append(html);
+
+    }
+
+
+    /* =========================================================
+       نمایش نام فایل انتخاب شده
+    ========================================================= */
+
+    $(document).on(
+        'change',
+        '.return-file-input',
+        function () {
+
+            const input = this;
+
+            const $wrapper =
+                $(input).closest('.return-file-wrapper');
+
+            const $name =
+                $wrapper.find(
+                    '.return-file-selected-name'
+                );
+
+
+            if (
+                input.files &&
+                input.files.length > 0
+            ) {
+
+                $name
+                    .text(input.files[0].name)
+                    .css('color', '#07006f');
+
+            } else {
+
+                $name
+                    .text('تصویری انتخاب نشده')
+                    .css('color', '#777');
+
+            }
+
+        }
+    );
+
+
+    /* =========================================================
+       فعال / غیرفعال کردن دکمه ثبت
+    ========================================================= */
+
+    function updateReturnSubmitButton() {
+
+        const $submitButton =
+            $('#submit-return-request');
+
+
+        const selectedCount =
+            $('.return-product-checkbox:checked').length;
+
+
+        if (selectedCount > 0) {
+
+            $submitButton
+                .prop('disabled', false)
+                .css({
+
+                    'opacity': '1',
+
+                    'cursor': 'pointer'
+
+                });
+
+        } else {
+
+            $submitButton
+                .prop('disabled', true)
+                .css({
+
+                    'opacity': '.45',
+
+                    'cursor': 'not-allowed'
+
+                });
+
+        }
+
+    }
+
+
+    /* =========================================================
+       بستن Modal با ضربدر
+    ========================================================= */
+
+    $(document).on(
+        'click',
+        '.return_order_box .close_button',
+        function (e) {
+
+            e.preventDefault();
+
+            /*
+             * hide نکن؛ remove کن.
+             * چون Modal با AJAX دوباره ساخته می‌شود.
+             */
+
+            $('.return_order_box').remove();
+
+        }
+    );
+
+
+    /* =========================================================
+       بستن Modal با کلیک روی فضای بیرون
+    ========================================================= */
+
+    $(document).on(
+        'click',
+        '.return_order_box',
+        function (e) {
+
+            if (
+                $(e.target).is('.return_order_box')
+            ) {
+
+                $('.return_order_box').remove();
+
+            }
+
+        }
+    );
+
+
+    /* =========================================================
+       اعتبارسنجی فرم قبل از ارسال
+    ========================================================= */
+
+    $(document).on(
+        'submit',
+        '#return-product-form',
+        function (e) {
+
+            const $form = $(this);
+
+            const $selected =
+                $form.find(
+                    '.return-product-checkbox:checked'
+                );
+
+
+            /*
+             * هیچ محصولی انتخاب نشده
+             */
+
+            if ($selected.length === 0) {
+
+                e.preventDefault();
+
+                alert(
+                    'حداقل یک محصول را برای مرجوعی انتخاب کنید.'
+                );
+
+                return;
+
+            }
+
+
+            let valid = true;
+
+
+            /*
+             * بررسی تک تک محصولات انتخاب شده
+             */
+
+            $selected.each(function () {
+
+                const productId =
+                    String(
+                        $(this).data('product-id')
+                    );
+
+
+                const $fields =
+                    $form.find(
+                        '.return-fields[data-product-id="' +
+                        productId +
+                        '"]'
+                    );
+
+
+                /*
+                 * اگر فیلدهای محصول ساخته نشده باشند
+                 */
+
+                if ($fields.length === 0) {
+
+                    valid = false;
+
+                    return false;
+
+                }
+
+
+                const quantity =
+                    $fields.find(
+                        'input[name="quantity_' +
+                        productId +
+                        '"]'
+                    ).val();
+
+
+                const explanation =
+                    $fields.find(
+                        'textarea[name="explanation_' +
+                        productId +
+                        '"]'
+                    ).val();
+
+
+                const photo =
+                    $fields.find(
+                        'input[name="photo_' +
+                        productId +
+                        '"]'
+                    )[0];
+
+
+                if (
+                    !quantity ||
+                    Number(quantity) < 1 ||
+                    Number(quantity) >
+                        Number(
+                            $(this).data(
+                                'max-quantity'
+                            )
+                        ) ||
+                    !explanation ||
+                    !explanation.trim() ||
+                    !photo ||
+                    !photo.files ||
+                    photo.files.length === 0
+                ) {
+
+                    valid = false;
+
+                    return false;
+
+                }
+
+            });
+
+
+            /*
+             * اگر اطلاعات ناقص بود
+             */
+
+            if (!valid) {
+
+                e.preventDefault();
+
+                alert(
+                    'لطفاً اطلاعات تمام محصولات انتخاب‌شده را کامل کنید.'
+                );
+
+            }
+
+        }
+    );
+
 });
 
 </script>

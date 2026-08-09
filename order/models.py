@@ -89,8 +89,12 @@ class ReturnOrder(models.Model):
     cost = models.CharField(default='', max_length=7, verbose_name='مبلغ قابل بازگشت به خریدار')
     accepted = models.BooleanField(default=False, verbose_name='پذیرش مرجوعی')
     created = jmodels.jDateTimeField(auto_now_add=True, verbose_name='تاریخ ایجاد')
+
     def total_cost(self):
-        return sum(item.product.off_price for item in self.return_products.all())
+        return sum(
+            item.product.off_price * item.quantity
+            for item in self.return_products.all()
+        )
 
     class Meta:
         ordering = ['created']

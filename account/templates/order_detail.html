@@ -1,115 +1,787 @@
 {% extends 'parent/base.html' %}
-{% block title %}Profile{% endblock %}
+
+{% block title %}
+    جزئیات سفارش
+{% endblock %}
+
 {% block content %}
-    <div class="header">
-       <h1>جزئیات سفارش</h1>
-    </div>
-    <div class="container">
-    <div style="width: 100%; margin-right: 0" class="big_detail">
-        <br>
-        <div class="order_detail">
-        <div class="order_detail_template">
-            <div class="unit_price">شماره سفارش: {{ order.id }}</div>
-            <div class="unit_price">نام تحویل گیرنده: {{ order.name }}</div>
-            <div class="unit_price">آدرس تحویل: {{ order.address }}</div>
-            <div class="unit_price">وضعیت سفارش: {{ order.status }}</div>
-            <div class="unit_price">محصولات خریداری شده:</div>
-                {% for product in order.items.all %}
-                    <div class="product">
-                        <a href="{{ product.product.get_absolute_url }}"><img style="; height: 50%; border-radius: 10px" src="
-                        {{ product.product.images.first.image_file.url }}" alt="Not found"></a>
-                        <a href="{{ product.product.get_absolute_url }}"><div style="text-align: center; margin: 5px;">{{ product.name }}</div></a>
-                        <hr>
-                        <div style="text-align: right; margin: 5px;">موجودی: {{ product.product.inventory }}</div>
-                    {% if product.size %}
-                        <div style="text-align: right; margin: 5px;">اندازه: {{ product.size }}</div>
-                    {% endif %}
-                    {% if product.color %}
-                        <div style="text-align: right; margin: 5px;">رنگ: {{ product.color }}</div>
-                    {% endif %}
-                        {% if product.product.off != 0 %}
-                            <div style="color: red; text-align: right; direction: rtl; margin: 5px;"><del>{{ product.product.price }} تومان</del></div>
-                            <div style="text-align: right; direction: rtl; margin: 5px;">{{ product.product.off_price }} تومان</div>
-                        {% else %}
-                            <div style="text-align: right; direction: rtl; margin: 5px;">{{ product.product.price }} تومان</div>
-                        {% endif %}
-                        <hr>
-                        <div style="text-align: right; direction: rtl; margin: 5px;">{{ product.product.description | truncatewords:10 }} </div>
-                    </div>
-                {% endfor %}
+
+<style>
+    .order-detail-page {
+        direction: rtl;
+        width: 100%;
+        box-sizing: border-box;
+
+        /* فاصله واقعی از هدر */
+        margin-top: 200px;
+
+        padding: 0 20px 50px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .order-detail-container {
+        width: 100%;
+        max-width: 1200px;
+        margin: 0 auto;
+        position: relative;
+        z-index: 1;
+    }
+
+    .order-detail-card {
+        width: 100%;
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 25px;
+        overflow: hidden;
+    }
+
+    .order-detail-header {
+        padding: 20px 25px;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .order-detail-header h1 {
+        margin: 0;
+        font-size: 24px;
+    }
+
+    /* =========================
+       ORDER INFORMATION
+       ========================= */
+
+    .order-information {
+        padding: 20px;
+        background: #fafafa;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .order-information-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .order-information-item {
+        background: #fff;
+        border: 1px solid #e5e5e5;
+        border-radius: 15px;
+        padding: 12px 15px;
+    }
+
+    .order-information-title {
+        color: #777;
+        font-size: 13px;
+        margin-bottom: 5px;
+    }
+
+    .order-information-value {
+        font-weight: bold;
+    }
+
+    /* =========================
+       TABS
+       ========================= */
+
+    .order-tabs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        padding: 15px 20px;
+        border-bottom: 1px solid #ddd;
+        background: #fff;
+    }
+
+    .order-tab-button {
+        border: 1px solid #ddd;
+        background: #f7f7f7;
+        border-radius: 12px;
+        padding: 10px 18px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: 0.2s;
+    }
+
+    .order-tab-button:hover {
+        background: #eee;
+    }
+
+    .order-tab-button.active {
+        background: #07006f;
+        color: white;
+        border-color: #07006f;
+    }
+
+    .order-tab-content {
+        display: none;
+        padding: 25px;
+    }
+
+    .order-tab-content.active {
+        display: block;
+    }
+
+    /* =========================
+       PRODUCTS
+       ========================= */
+
+    .order-products {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 20px;
+    }
+
+    .order-product-card {
+        border: 1px solid #ddd;
+        border-radius: 20px;
+        padding: 15px;
+        background: #fff;
+    }
+
+    .order-product-image {
+        width: 100%;
+        height: 220px;
+        object-fit: contain;
+        border-radius: 15px;
+        display: block;
+        margin-bottom: 12px;
+    }
+
+    .order-product-name {
+        font-weight: bold;
+        font-size: 16px;
+        margin-bottom: 12px;
+    }
+
+    .order-product-info {
+        font-size: 13px;
+        color: #555;
+        margin-top: 7px;
+    }
+
+    .order-product-price {
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid #eee;
+    }
+
+    .order-product-unit-price {
+        font-size: 13px;
+        color: #555;
+    }
+
+    .order-product-total-price {
+        margin-top: 5px;
+        font-weight: bold;
+        font-size: 15px;
+    }
+
+    .order-product-description {
+        margin-top: 10px;
+        color: #777;
+        font-size: 13px;
+        line-height: 1.8;
+    }
+
+    /* =========================
+       TAB ACTIONS
+       ========================= */
+
+    .order-action-box {
+        max-width: 600px;
+        margin: 0 auto;
+        text-align: center;
+        padding: 30px;
+        border: 1px solid #ddd;
+        border-radius: 20px;
+    }
+
+    .order-action-box h3 {
+        margin-bottom: 15px;
+    }
+
+    .order-action-button {
+        display: inline-block;
+        text-decoration: none;
+        border: none;
+        border-radius: 12px;
+        padding: 11px 22px;
+        cursor: pointer;
+        background: #07006f;
+        color: white;
+        font-size: 14px;
+    }
+
+    .order-action-button:hover {
+        color: white;
+        opacity: 0.9;
+    }
+
+    .order-return-button {
+        background: #dc3545;
+    }
+
+    .return-status-box {
+        border: 1px solid #ddd;
+        border-radius: 15px;
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+
+    /* =========================
+       RESPONSIVE
+       ========================= */
+
+    @media (max-width: 992px) {
+        .order-products {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 768px) {
+        .order-information-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .order-products {
+            grid-template-columns: 1fr;
+        }
+
+        .order-detail-page {
+            padding-top: 80px;
+        }
+    }
+</style>
+
+
+<div class="order-detail-page">
+
+    <div class="order-detail-container">
+
+        <div class="order-detail-card">
+
+            <!-- HEADER -->
+            <div class="order-detail-header">
+                <h1>
+                    جزئیات سفارش شماره {{ order.id }}
+                </h1>
             </div>
+
+
+            <!-- ORDER INFORMATION -->
+            <div class="order-information">
+
+                <div class="order-information-grid">
+
+                    <div class="order-information-item">
+                        <div class="order-information-title">
+                            شماره سفارش
+                        </div>
+                        <div class="order-information-value">
+                            {{ order.id }}
+                        </div>
+                    </div>
+
+                    <div class="order-information-item">
+                        <div class="order-information-title">
+                            نام تحویل گیرنده
+                        </div>
+                        <div class="order-information-value">
+                            {{ order.name }}
+                        </div>
+                    </div>
+
+                    <div class="order-information-item">
+                        <div class="order-information-title">
+                            شماره تلفن
+                        </div>
+                        <div class="order-information-value">
+                            {{ order.phone }}
+                        </div>
+                    </div>
+
+                    <div class="order-information-item">
+                        <div class="order-information-title">
+                            وضعیت سفارش
+                        </div>
+                        <div class="order-information-value">
+                            {{ order.status }}
+                        </div>
+                    </div>
+
+                    <div class="order-information-item">
+                        <div class="order-information-title">
+                            تاریخ ثبت سفارش
+                        </div>
+                        <div class="order-information-value">
+                            {{ order.created|date:"Y/m/d" }}
+                        </div>
+                    </div>
+
+                    <div class="order-information-item">
+                        <div class="order-information-title">
+                            مبلغ نهایی
+                        </div>
+                        <div class="order-information-value">
+                            {{ order.final_cost }} تومان
+                        </div>
+                    </div>
+
+                    <div class="order-information-item"
+                         style="grid-column: 1 / -1;">
+
+                        <div class="order-information-title">
+                            آدرس تحویل
+                        </div>
+
+                        <div class="order-information-value">
+                            {{ order.address }}
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- TABS -->
+            <div class="order-tabs">
+
+                <button
+                    type="button"
+                    class="order-tab-button active"
+                    data-tab="products"
+                >
+                    محصولات سفارش
+                </button>
+
+                <button
+                    type="button"
+                    class="order-tab-button"
+                    data-tab="invoice"
+                >
+                    گرفتن فاکتور
+                </button>
+
+                <button
+                    type="button"
+                    class="order-tab-button"
+                    data-tab="return"
+                >
+                    درخواست مرجوعی سفارش
+                </button>
+                <button
+                    type="button"
+                    class="order-tab-button"
+                    data-tab="return-status"
+                >
+                    پیگیری درخواست های مرجوعی
+                </button>
+
+            </div>
+
+
+            <!-- =========================
+                 TAB: PRODUCTS
+                 ========================= -->
+
+            <div
+                class="order-tab-content active"
+                id="order-tab-products"
+            >
+
+                <div class="order-products">
+
+                    {% for item in order.items.all %}
+
+                        <div class="order-product-card">
+
+                            {% if item.product.images.first %}
+
+                                <a href="{{ item.product.get_absolute_url }}">
+
+                                    <img
+                                        class="order-product-image"
+                                        src="{{ item.product.images.first.image_file.url }}"
+                                        alt="{{ item.product.name }}"
+                                    >
+
+                                </a>
+
+                            {% endif %}
+
+
+                            <div class="order-product-name">
+                                {{ item.product.name }}
+                            </div>
+
+
+                            {% if item.size %}
+
+                                <div class="order-product-info">
+                                    اندازه:
+                                    {{ item.size }}
+                                </div>
+
+                            {% endif %}
+
+
+                            {% if item.color %}
+
+                                <div class="order-product-info">
+                                    رنگ:
+                                    {{ item.color }}
+                                </div>
+
+                            {% endif %}
+
+
+                            <div class="order-product-info">
+                                تعداد:
+                                {{ item.quantity }}
+                            </div>
+
+
+                            <div class="order-product-price">
+
+                                <div class="order-product-unit-price">
+
+                                    قیمت واحد:
+
+                                    {% if item.price %}
+                                        {{ item.price }}
+                                    {% else %}
+                                        {{ item.product.off_price }}
+                                    {% endif %}
+
+                                    تومان
+
+                                </div>
+
+                                <div class="order-product-total-price">
+
+                                    قیمت کل:
+
+                                    {% if item.price %}
+                                        {{ item.get_cost }}
+                                    {% else %}
+                                        {{ item.product.off_price|add:"0" }}
+                                    {% endif %}
+
+                                    تومان
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="order-product-description">
+
+                                {{ item.product.description|truncatewords:15 }}
+
+                            </div>
+
+                        </div>
+
+                    {% empty %}
+
+                        <div class="text-danger text-center">
+                            محصولی برای این سفارش ثبت نشده است.
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+            </div>
+
+
+            <!-- =========================
+                 TAB: INVOICE
+                 ========================= -->
+
+            <div
+                class="order-tab-content"
+                id="order-tab-invoice"
+            >
+
+                <div class="order-action-box">
+
+                    <h3>
+                        فاکتور خرید
+                    </h3>
+
+                    <p>
+                        برای دریافت فاکتور این سفارش روی دکمه زیر کلیک کنید.
+                    </p>
+
+                    <a
+                        href="{% url 'order:invoice_pdf' order.id %}"
+                        class="order-action-button"
+                    >
+                        دریافت فاکتور
+                    </a>
+
+                </div>
+
+            </div>
+
+
+            <!-- =========================
+                 TAB: RETURN
+                 ========================= -->
+
+            <div
+                class="order-tab-content"
+                id="order-tab-return"
+            >
+
+                <div class="order-action-box">
+
+                    <h3>
+                        درخواست مرجوعی سفارش
+                    </h3>
+
+                    <p>
+                        در صورت واجد شرایط بودن سفارش، می‌توانید درخواست
+                        مرجوعی ثبت کنید.
+                    </p>
+                    <br>
+
+                    <button
+                        type="button"
+                        id="return_order"
+                        class="order-action-button order-return-button"
+                    >
+                        ایجاد درخواست مرجوعی
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- =========================
+                 TAB: RETURN STATUS
+                 ========================= -->
+
+            <div
+                class="order-tab-content"
+                id="order-tab-return-status"
+            >
+
+                <div id="return-status-container">
+
+                    <div class="order-action-box">
+
+                        <h3>
+                            پیگیری درخواست های مرجوعی
+                        </h3>
+
+                        <p>
+                            برای مشاهده وضعیت درخواست‌های مرجوعی روی دکمه زیر
+                            کلیک کنید.
+                        </p>
+                        <br>
+                        <button
+                            type="button"
+                            id="show_returns"
+                            class="order-action-button"
+                        >
+                            مشاهده درخواست های مرجوعی
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
         </div>
-        </div>
-    <div class="pdf_small_right">
-    <a style="color: black; text-decoration: none" href="{% url 'order:invoice_pdf' order.id %}">
-    گرفتن فاکتور
-    </a>
-    <br>
-    <br>
-    <div style="cursor: pointer" id="return_order">
-    ایجاد درخواست مرجوعی
-    </div>
-    <div style="cursor: pointer" id="show_returns">
-        پیگیری درخواست های مرجوعی
-    </div>
-    </div>
+
     </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</div>
+
+
+<script
+    src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js">
+</script>
+
+
 <script>
-    $(document).ready(function () {
-    $('#return_order').click(function () {
-        $.ajax({
-            type: 'GET',
-            url: '{% url "order:return_order" order.id %}',
-            success: function (data) {
-                        if (data.redirect) {
-                            window.location.href = data.redirect_url;
-                        }else {
-                            $('body').append(data.template);
-                            $('.return_order_box').show();
-                        }
-            },
-        });
+
+$(document).ready(function () {
+
+    /* =========================
+       TAB SWITCHING
+       ========================= */
+
+    $('.order-tab-button').on('click', function () {
+
+        const tabName = $(this).data('tab');
+
+        /*
+         * همه تب‌ها مخفی شوند
+         */
+        $('.order-tab-button').removeClass('active');
+
+        $('.order-tab-content').removeClass('active');
+
+
+        /*
+         * تب انتخاب‌شده فعال شود
+         */
+        $(this).addClass('active');
+
+        $('#order-tab-' + tabName).addClass('active');
+
     });
 
-    $(document).on('click', '.close_button', function () {
-        $('.return_order_box').hide();
-    });
 
-    $(document).on('click', '.return_order_box', function (e) {
-        if ($(e.target).is('.return_order_box')) {
-            $('.return_order_box').hide();
+   /* =========================
+   RETURN ORDER
+========================= */
+
+$('#return_order').on('click', function () {
+
+    $.ajax({
+
+        type: 'GET',
+
+        url: '{% url "order:return_order" order.id %}',
+
+        success: function (data) {
+
+            if (data.redirect) {
+
+                window.location.href = data.redirect_url;
+
+                return;
+            }
+
+            // حذف Modal قبلی اگر از قبل در DOM وجود دارد
+            $('.return_order_box').remove();
+
+            // اضافه کردن فقط یک Modal جدید
+            $('body').append(data.template);
+
+            // نمایش Modal جدید
+            $('.return_order_box').show();
+
+        },
+
+        error: function () {
+
+            alert('خطایی رخ داد. لطفا دوباره تلاش کنید.');
+
         }
-    });
-    $('#show_returns').click(function () {
-        $.ajax({
-            type: 'GET',
-            url: '{% url "order:show_returns" order.id %}',
-            success: function (data) {
-                        if (data.redirect) {
-                            window.location.href = data.redirect_url;
-                        }else {
-                            $('body').append(data.template);
-                            $('.show_return_orders_box').show();
-                        }
-            },
-        });
+
     });
 
-    $(document).on('click', '.close_button', function () {
-        $('.show_return_orders_box').hide();
-    });
-
-    $(document).on('click', '.show_return_orders_box', function (e) {
-        if ($(e.target).is('.show_return_orders_box')) {
-            $('.show_return_orders_box').hide();
-        }
-    });
 });
 
 
+/* =========================
+   SHOW RETURNS
+========================= */
 
+$('#show_returns').on('click', function () {
+
+    $.ajax({
+
+        type: 'GET',
+
+        url: '{% url "order:show_returns" order.id %}',
+
+        success: function (data) {
+
+            if (data.redirect) {
+
+                window.location.href = data.redirect_url;
+
+                return;
+            }
+
+            // حذف Modal قبلی
+            $('.show_return_orders_box').remove();
+
+            // اضافه کردن Modal جدید
+            $('body').append(data.template);
+
+            // نمایش Modal
+            $('.show_return_orders_box').show();
+
+        },
+
+        error: function () {
+
+            alert('خطایی رخ داد. لطفا دوباره تلاش کنید.');
+
+        }
+
+    });
+
+});
+
+
+/* =========================
+   CLOSE RETURN MODALS
+========================= */
+
+$(document).on(
+    'click',
+    '.return_order_box .close_button',
+    function () {
+
+        $('.return_order_box').remove();
+
+    }
+);
+
+
+$(document).on(
+    'click',
+    '.show_return_orders_box .close_button',
+    function () {
+
+        $('.show_return_orders_box').remove();
+
+    }
+);
+
+
+$(document).on(
+    'click',
+    '.return_order_box',
+    function (e) {
+
+        if ($(e.target).is('.return_order_box')) {
+
+            $('.return_order_box').remove();
+
+        }
+
+    }
+);
+
+
+$(document).on(
+    'click',
+    '.show_return_orders_box',
+    function (e) {
+
+        if ($(e.target).is('.show_return_orders_box')) {
+
+            $('.show_return_orders_box').remove();
+
+        }
+
+    }
+);
+});
+    
 </script>
 
 {% endblock %}

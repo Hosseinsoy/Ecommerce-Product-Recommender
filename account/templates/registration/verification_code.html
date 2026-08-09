@@ -63,17 +63,32 @@
                  alt="لوگو"
                  class="mb-3">
             </a>
-
-            <!-- عنوان -->
+            
             <h1 class="fw-bold fs-3 mb-3">
-                کد تایید
+                کد تایید را وارد کنید
             </h1>
-
-
-            <!-- توضیح -->
-            <p class="text-start">
-                کد تایید ارسال شده را وارد کنید
-            </p>
+            
+            {% if account_exists %}
+            
+                <p class="verification-description">
+                    حساب کاربری با شماره
+                    <strong>{{ phone }}</strong>
+                    وجود دارد.
+                    <br>
+                    کد ارسال شده را وارد کنید.
+                </p>
+            
+            {% else %}
+            
+                <p class="verification-description">
+                    حساب کاربری با شماره
+                    <strong>{{ phone }}</strong>
+                    وجود ندارد؛
+                    <br>
+                    برای ساخت حساب جدید، کد ارسال شده را وارد کنید.
+                </p>
+            
+            {% endif %}
 
 
             <!-- ========================================= -->
@@ -81,25 +96,70 @@
             <!-- ========================================= -->
 
             <form method="post"
-                  class="mb-3">
-
+                  class="mb-3"
+                  id="verification-form">
+            
                 {% csrf_token %}
-
-
-                {{ form.as_p }}
-            <br>
-
-
-                <!-- دکمه تایید -->
+            
+                <div class="code-fields" dir="ltr">
+            
+                    <input type="text"
+                           class="code-input"
+                           maxlength="1"
+                           inputmode="numeric"
+                           autocomplete="one-time-code">
+            
+                    <input type="text"
+                           class="code-input"
+                           maxlength="1"
+                           inputmode="numeric">
+            
+                    <input type="text"
+                           class="code-input"
+                           maxlength="1"
+                           inputmode="numeric">
+            
+                    <input type="text"
+                           class="code-input"
+                           maxlength="1"
+                           inputmode="numeric">
+            
+                    <input type="text"
+                           class="code-input"
+                           maxlength="1"
+                           inputmode="numeric">
+            
+                    <input type="text"
+                           class="code-input"
+                           maxlength="1"
+                           inputmode="numeric">
+            
+                </div>
+            
+                <input type="hidden"
+                       name="code"
+                       id="id_code">
+            
+                {% if form.code.errors %}
+            
+                    <div class="text-danger mt-2">
+            
+                        {% for error in form.code.errors %}
+                            <div>{{ error }}</div>
+                        {% endfor %}
+            
+                    </div>
+            
+                {% endif %}
+            
                 <button type="submit"
-                        class="btn-auth w-100 fw-bold">
-
-                    تایید و ادامه
-
+                        class="verification-btn w-100 mt-3">
+            
+                    ادامه
+            
                 </button>
-
+            
             </form>
-
             <!-- ========================================= -->
             <!-- پیام ها -->
             <!-- ========================================= -->
@@ -154,7 +214,7 @@
                  class="mt-3">
 
 
-                <a href="{% url 'account:verification_login' %}"
+                <a href="{% url 'account:regenerate_verification_code' %}"
                    class="auth">
 
                     ارسال مجدد کد تایید
@@ -494,7 +554,93 @@ document.addEventListener("DOMContentLoaded", function () {
 
     });
 </script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
 
+    const form = document.getElementById("verification-form");
+    const inputs = document.querySelectorAll(".code-input");
+    const hiddenCode = document.getElementById("id_code");
+
+    inputs.forEach(function (input, index) {
+
+        input.addEventListener("input", function (e) {
+
+            // فقط عدد
+            this.value = this.value.replace(/\D/g, "");
+
+            // رفتن به خانه بعدی
+            if (this.value && index < inputs.length - 1) {
+                inputs[index + 1].focus();
+            }
+
+        });
+
+
+        input.addEventListener("keydown", function (e) {
+
+            // Backspace
+            if (e.key === "Backspace" && !this.value && index > 0) {
+                inputs[index - 1].focus();
+            }
+
+            // رفتن به خانه بعدی با ArrowRight
+            if (e.key === "ArrowRight" && index < inputs.length - 1) {
+                inputs[index + 1].focus();
+            }
+
+            // رفتن به خانه قبلی با ArrowLeft
+            if (e.key === "ArrowLeft" && index > 0) {
+                inputs[index - 1].focus();
+            }
+
+        });
+
+
+        // Paste کردن کل کد ۶ رقمی
+        input.addEventListener("paste", function (e) {
+
+            e.preventDefault();
+
+            const pastedText = (
+                e.clipboardData || window.clipboardData
+            ).getData("text");
+
+            const code = pastedText
+                .replace(/\D/g, "")
+                .slice(0, 6);
+
+            code.split("").forEach(function (digit, i) {
+
+                if (inputs[i]) {
+                    inputs[i].value = digit;
+                }
+
+            });
+
+            if (code.length > 0) {
+                inputs[Math.min(code.length, 6) - 1].focus();
+            }
+
+        });
+
+    });
+
+
+    // قبل از ارسال فرم، ۶ خانه را به یک code تبدیل کن
+    form.addEventListener("submit", function (e) {
+
+        let code = "";
+
+        inputs.forEach(function (input) {
+            code += input.value;
+        });
+
+        hiddenCode.value = code;
+
+    });
+
+});
+</script>
 </body>
 
 </html>

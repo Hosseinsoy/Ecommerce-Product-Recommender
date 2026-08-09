@@ -14,8 +14,10 @@ from django.utils.text import slugify
 from django.views.decorators.csrf import csrf_exempt
 
 from account.models import ShopUser, UserAddress, City, ShopSeller
-from order.models import Order, OrderItem
-from shop.models import Product, Image, ProductFeature, ProductSizeVariant, ProductVariant, ProductColorVariant
+from cart.cart import Cart
+from order.models import Order, OrderItem, ReturnProduct, ReturnOrder
+from shop.models import Product, Image, ProductFeature, ProductSizeVariant, ProductVariant, ProductColorVariant, \
+    ProductComment, CommentPoint
 from sms.send_sms import send_sms_normal
 from account.forms import PhoneVerificationForm, CodeVerificationForm, UsernamePasswordLoginForm, RegisterForm, \
     CreateAddressForm, EditShopUserForm, ChangePhoneForm, NewProduct, UploadImageForm, \
@@ -32,20 +34,126 @@ def clear_verification_code(request):
     return JsonResponse({'error': 'Invalid request'}, status=400)
 
 
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
+from django.db.models import Sum
+
 @login_required
 def profile(request):
+
     user = request.user
-    saved_products = ShopUser.objects.get(id=user.id).saved_products.all()
-    if Order.objects.filter(user=user).exists():
-        user_orders = Order.objects.filter(user=user)
-    else:
-        user_orders = None
+
+
+    saved_products = user.saved_products.all()
+
+
+    user_orders = Order.objects.filter(
+        user=user
+    ).prefetch_related(
+        'items__product'
+    )
+
+
+    addresses = user.addresses.all()
+
+
+
+    return_products = ReturnProduct.objects.filter(
+        return_order__order__user=user
+    ).select_related(
+        'product',
+        'return_order',
+        'return_order__order'
+    )
+
+
+
+    cart = Cart(request)
+
+
+
+    total_orders_cost = user_orders.aggregate(
+        total=Sum('final_cost')
+    )['total'] or 0
+
+
+
+    default_address = addresses.first()
+
+
+
+    # ==============================
+    # User Comments
+    # ==============================
+
+    user_comments = ProductComment.objects.filter(
+        user=request.user,
+        is_active=True
+    ).select_related(
+        'product'
+    ).prefetch_related(
+        'comment_points__point'
+    )
+
+
+
+    # ==============================
+    # Comment Points
+    # ==============================
+
+    comment_points_list = CommentPoint.objects.all()
+
+
+
     context = {
+
         'user': user,
+
+
+        # summary
+
         'user_orders': user_orders,
+
         'saved_products': saved_products,
+
+        'addresses': addresses,
+
+        'return_products': return_products,
+
+
+        'total_orders_cost': total_orders_cost,
+
+        'cart_count': len(cart),
+
+        'wishlist_count': saved_products.count(),
+
+        'orders_count': user_orders.count(),
+
+        'default_address': default_address,
+
+
+
+        # products summary
+
+        'summary_products': saved_products[:3],
+
+
+
+        # comments
+
+        'user_comments': user_comments,
+
+        'comment_points_list': comment_points_list,
+
     }
-    return render(request, 'profile.html', context)
+
+
+
+    return render(
+        request,
+        'profile.html',
+        context
+    )
 
 
 def logout_view(request):
@@ -95,12 +203,42 @@ def verification_login(request):
         {'form': form}
     )
 
+def merge_guest_wishlist(request, user):
+
+    wishlist = request.session.get('wishlist', [])
+
+    if not wishlist:
+        return
+
+    # فقط محصولاتی که واقعاً وجود دارند
+    product_ids = Product.objects.filter(
+        id__in=wishlist
+    ).values_list('id', flat=True)
+
+    # انتقال به علاقه‌مندی‌های کاربر
+    user.saved_products.add(*product_ids)
+
+    # پاک کردن wishlist مهمان
+    request.session['wishlist'] = []
+    request.session.modified = True
+
 
 def verification_code(request):
     if request.user.is_authenticated:
         return HttpResponseNotFound('صفحه مورد نظر یافت نشد')
 
+    phone = request.session.get('phone')
+
+    # بررسی وجود داشتن اکانت با این شماره
+    account_exists = False
+
+    if phone:
+        account_exists = ShopUser.objects.filter(
+            phone=phone
+        ).exists()
+
     if request.method == 'POST':
+
         form = CodeVerificationForm(request.POST)
 
         if form.is_valid():
@@ -113,30 +251,67 @@ def verification_code(request):
 
             # اطلاعات تأیید وجود ندارد
             if not phone or not code or not code_create_time:
-                messages.error(request, 'کد تأیید نامعتبر است.')
-                return redirect('account:verification_login')
+
+                messages.error(
+                    request,
+                    'کد تأیید نامعتبر است.'
+                )
+
+                return redirect(
+                    'account:verification_login'
+                )
+
+            # دوباره بررسی وجود اکانت
+            account_exists = ShopUser.objects.filter(
+                phone=phone
+            ).exists()
 
             # بررسی کد
             if code != form_code:
-                messages.error(request, 'کد تایید نادرست است')
+
+                messages.error(
+                    request,
+                    'کد تایید نادرست است'
+                )
+
                 return render(
                     request,
                     'registration/verification_code.html',
-                    {'form': form}
+                    {
+                        'form': form,
+                        'account_exists': account_exists,
+                        'phone': phone,
+                    }
                 )
 
             # بررسی زمان انقضا
-            code_time = datetime.datetime.fromisoformat(code_create_time)
+            code_time = datetime.datetime.fromisoformat(
+                code_create_time
+            )
 
-            if datetime.datetime.now() - code_time > datetime.timedelta(minutes=2):
+            if (
+                datetime.datetime.now() - code_time
+                > datetime.timedelta(minutes=2)
+            ):
 
-                messages.error(request, 'کد منقضی شده است')
+                messages.error(
+                    request,
+                    'کد منقضی شده است'
+                )
 
                 request.session.pop('phone', None)
-                request.session.pop('verification_code', None)
-                request.session.pop('code_create_time', None)
+                request.session.pop(
+                    'verification_code',
+                    None
+                )
+                request.session.pop(
+                    'code_create_time',
+                    None
+                )
 
-                return redirect('account:verification_login')
+                return redirect(
+                    'account:verification_login'
+                )
 
             # ==========================================
             # کد صحیح است
@@ -144,27 +319,44 @@ def verification_code(request):
 
             user = ShopUser.objects.filter(phone=phone).first()
 
-            # ==========================================
-            # کاربر قبلاً وجود دارد
-            # ==========================================
-
             if user:
 
                 user.backend = 'account.backends.ShopUserBackend'
+
                 login(request, user)
+
+                # انتقال علاقه‌مندی‌های مهمان به حساب کاربر
+                merge_guest_wishlist(request, user)
 
                 # پاک کردن اطلاعات موقت
                 request.session.pop('phone', None)
                 request.session.pop('verification_code', None)
                 request.session.pop('code_create_time', None)
 
-                messages.success(request, 'با موفقیت وارد شدید')
-
                 if 'shopping' in request.session:
-                    del request.session['shopping']
+                    request.session.pop('shopping', None)
                     return redirect('order:create_order')
 
-                return redirect('account:profile')
+
+                messages.success(
+                    request,
+                    'با موفقیت وارد شدید'
+                )
+
+                if 'shopping' in request.session:
+
+                    request.session.pop(
+                        'shopping',
+                        None
+                    )
+
+                    return redirect(
+                        'order:create_order'
+                    )
+
+                return redirect(
+                    'account:profile'
+                )
 
             # ==========================================
             # کاربر جدید است
@@ -172,19 +364,35 @@ def verification_code(request):
 
             request.session['verified_phone'] = phone
 
-            # اطلاعات کد دیگر لازم نیست
-            request.session.pop('phone', None)
-            request.session.pop('verification_code', None)
-            request.session.pop('code_create_time', None)
+            request.session.pop(
+                'phone',
+                None
+            )
+            request.session.pop(
+                'verification_code',
+                None
+            )
+            request.session.pop(
+                'code_create_time',
+                None
+            )
 
-            return redirect('account:register')
+            return redirect(
+                'account:register'
+            )
+
     else:
+
         form = CodeVerificationForm()
 
     return render(
         request,
         'registration/verification_code.html',
-        {'form': form}
+        {
+            'form': form,
+            'account_exists': account_exists,
+            'phone': phone,
+        }
     )
 
 
@@ -274,9 +482,11 @@ def register(request):
             user = ShopUser.objects.create(
                 phone=phone,
                 first_name=first_name,
-                last_name=last_name,
-                email=email
+                last_name=last_name
             )
+
+            # انتقال علاقه‌مندی‌های مهمان
+            merge_guest_wishlist(request, user)
 
             # عدم استفاده از پسورد
             user.set_unusable_password()
@@ -372,11 +582,22 @@ def register_verification_code(request):
 
 @login_required
 def order_detail(request, order_id):
-    order = Order.objects.get(id=order_id)
-    if request.user == order.user:
-        return render(request, 'order_detail.html', {'order': order})
-    else:
-        return HttpResponseNotFound('صفحه مورد نظر یافت نشد')
+    order = get_object_or_404(
+        Order.objects.prefetch_related('items__product'),
+        pk=order_id,
+        user=request.user
+    )
+
+    return_orders = ReturnOrder.objects.filter(
+        order=order
+    ).prefetch_related(
+        'return_products__product'
+    )
+
+    return render(request, 'order_detail.html', {
+        'order': order,
+        'return_orders': return_orders,
+    })
 
 
 @login_required

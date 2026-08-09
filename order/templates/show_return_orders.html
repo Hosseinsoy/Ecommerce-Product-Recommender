@@ -1,26 +1,833 @@
-<div class="show_return_orders_box" style="direction:rtl; display: none; position: fixed; backdrop-filter: blur(25px); background: rgba(255, 255, 255, 0.5); left: 0; top: 0; width: 100%; height: 100%; z-index: 9999;">
-    <div style="height: 550px; overflow-y:auto; position: relative; margin: auto; top: 10%; width: 50%; padding: 20px; background: white; border: darkblue solid 5px; border-radius: 15px;">
-        <span class="close_button" style="cursor: pointer; float: left; font-size: 24px;">&times;</span>
-        {% for return in orders %}
-            <div>شماره سفارش: {{ return.order.id }}</div>
-            <div>تاریخ ایجاد درخواست: {{ return.created | date }}</div>
-            {% if return.accepted %}
-                <div>وضعیت درخواست: پذیرفته شد</div>
-                <div style="color: green">درخواست مرجوعی شما پذیرفته شد. لطفا کالاهای نام برده را با بسته بندی دریافتی به آدرس زیر پست کنید</div>
-            {% else %}
-                <div>وضعیت درخواست: در حال بررسی</div>
-            {% endif %}
-            <div>کالا های مرجوعی: </div>
-            {% for product in return.return_products.all %}
-                <div>نام محصول: {{ product.product.name }}</div>
-                <div>تعداد: {{ product.quantity }}</div>
-                <div>توضیحات: {{ product.explanation }}</div>
-                <div>تصویر ارسالی: </div>
-                <img style="border-bottom:2px solid black; width: 50%" src="{{ product.photo.url }}">
-            {% endfor %}
-            <hr>
+<div
+    class="show_return_orders_box"
+    dir="rtl"
+    style="
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        background: rgba(15, 23, 42, 0.48);
+        backdrop-filter: blur(10px);
+        padding: 25px 15px;
+        overflow-y: auto;
+    "
+>
+
+    <div
+        class="return-orders-modal"
+        style="
+            width: min(850px, 100%);
+            margin: 25px auto;
+            background: #ffffff;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 25px 70px rgba(0,0,0,.22);
+        "
+    >
+
+        <!-- HEADER -->
+        <div class="return-orders-header">
+
+            <div>
+                <h2>
+                    پیگیری درخواست‌های مرجوعی
+                </h2>
+
+                <p>
+                    وضعیت و جزئیات درخواست‌های مرجوعی این سفارش
+                </p>
+            </div>
+
+            <span class="close_button">
+                &times;
+            </span>
+
+        </div>
+
+
+        <!-- CONTENT -->
+        <div class="return-orders-content">
+
+            {% for return in orders %}
+
+                <div class="return-order-card">
+
+                    <!-- RETURN HEADER -->
+                    <div class="return-order-top">
+
+                        <div>
+
+                            <span class="return-order-label">
+                                درخواست مرجوعی
+                            </span>
+
+                            <h3>
+                                سفارش شماره {{ return.order.id }}
+                            </h3>
+
+                        </div>
+
+
+                        {% if return.accepted %}
+
+                            <span class="return-status accepted">
+                                پذیرفته شد
+                            </span>
+
+                        {% else %}
+
+                            <span class="return-status pending">
+                                در حال بررسی
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <!-- DATE -->
+                    <div class="return-order-date">
+
+                        <span class="return-date-icon">
+                            🗓
+                        </span>
+
+                        <span>
+                            تاریخ ایجاد درخواست:
+                        </span>
+
+                        <strong>
+                            {{ return.created|date:"Y/m/d - H:i" }}
+                        </strong>
+
+                    </div>
+
+
+                    <!-- ACCEPTED MESSAGE -->
+                    {% if return.accepted %}
+
+                        <div class="return-accepted-message">
+
+                            <div class="return-message-icon">
+                                ✓
+                            </div>
+
+                            <div>
+
+                                <strong>
+                                    درخواست مرجوعی شما پذیرفته شد
+                                </strong>
+
+                                <p>
+                                    لطفاً کالاهای نام‌برده را با بسته‌بندی دریافتی
+                                    به آدرس اعلام‌شده ارسال کنید.
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                    {% endif %}
+
+
+                    <!-- PRODUCTS -->
+                    <div class="return-products-section">
+
+                        <div class="return-section-title">
+                            کالاهای درخواست‌شده برای مرجوعی
+                        </div>
+
+
+                        {% for product in return.return_products.all %}
+
+                            <div class="returned-product-card">
+
+                                <!-- PRODUCT INFO -->
+                                <div class="returned-product-main">
+
+                                    {% if product.photo %}
+
+                                        <img
+                                            src="{{ product.photo.url }}"
+                                            alt="{{ product.product.name }}"
+                                            class="returned-product-image"
+                                        >
+
+                                    {% endif %}
+
+
+                                    <div class="returned-product-info">
+
+                                        <h4>
+                                            {{ product.product.name }}
+                                        </h4>
+
+                                        <div class="returned-product-quantity">
+                                            تعداد مرجوعی:
+                                            <strong>
+                                                {{ product.quantity }}
+                                            </strong>
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+
+                                <!-- EXPLANATION -->
+                                <div class="returned-product-explanation">
+
+                                    <span>
+                                        دلیل مرجوعی
+                                    </span>
+
+                                    <p>
+                                        {{ product.explanation }}
+                                    </p>
+
+                                </div>
+
+
+                                <!-- PHOTO -->
+                                {% if product.photo %}
+
+                                    <div class="returned-product-photo-section">
+
+                                        <span>
+                                            تصویر ارسالی
+                                        </span>
+
+                                        <a
+                                            href="{{ product.photo.url }}"
+                                            target="_blank"
+                                            class="returned-product-photo-link"
+                                        >
+                                            مشاهده تصویر
+                                        </a>
+
+                                    </div>
+
+                                {% endif %}
+
+                            </div>
+
+                        {% empty %}
+
+                            <div class="return-empty-products">
+                                کالایی برای این درخواست ثبت نشده است.
+                            </div>
+
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
             {% empty %}
-            <div style="color: red">درخواست مرجوعی برای این سفارش ثبت نشده است</div>
-        {% endfor %}
+
+                <div class="return-orders-empty">
+
+                    <div class="return-empty-icon">
+                        ↩
+                    </div>
+
+                    <strong>
+                        درخواست مرجوعی ثبت نشده است
+                    </strong>
+
+                    <p>
+                        برای این سفارش هنوز هیچ درخواست مرجوعی ایجاد نشده است.
+                    </p>
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
     </div>
+
 </div>
+
+
+<style>
+
+/* =========================================================
+   RETURN ORDERS MODAL
+   ========================================================= */
+
+.show_return_orders_box {
+    font-family: inherit;
+}
+
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.return-orders-header {
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 22px 26px;
+
+    border-bottom: 1px solid #e5e7eb;
+
+    background: #ffffff;
+}
+
+.return-orders-header h2 {
+
+    margin: 0;
+
+    color: #111827;
+
+    font-size: 20px;
+    font-weight: 800;
+}
+
+.return-orders-header p {
+
+    margin: 6px 0 0;
+
+    color: #6b7280;
+
+    font-size: 13px;
+}
+
+
+/* CLOSE */
+
+.return-orders-header .close_button {
+
+    width: 40px;
+    height: 40px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background: #f3f4f6;
+
+    color: #6b7280;
+
+    font-size: 25px;
+
+    cursor: pointer;
+
+    transition: .2s ease;
+}
+
+.return-orders-header .close_button:hover {
+
+    background: #07006F;
+    color: #ffffff;
+
+}
+
+
+/* =========================================================
+   CONTENT
+   ========================================================= */
+
+.return-orders-content {
+
+    padding: 25px;
+
+    background: #f8fafc;
+}
+
+
+/* =========================================================
+   RETURN ORDER CARD
+   ========================================================= */
+
+.return-order-card {
+
+    margin-bottom: 20px;
+
+    padding: 20px;
+
+    background: #ffffff;
+
+    border: 1px solid #e5e7eb;
+
+    border-radius: 20px;
+
+    box-shadow: 0 4px 15px rgba(0,0,0,.04);
+}
+
+
+/* =========================================================
+   TOP
+   ========================================================= */
+
+.return-order-top {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 15px;
+
+    padding-bottom: 15px;
+
+    border-bottom: 1px solid #eef0f4;
+}
+
+.return-order-label {
+
+    display: block;
+
+    margin-bottom: 5px;
+
+    color: #6b7280;
+
+    font-size: 12px;
+}
+
+.return-order-top h3 {
+
+    margin: 0;
+
+    color: #111827;
+
+    font-size: 17px;
+
+    font-weight: 800;
+}
+
+
+/* =========================================================
+   STATUS
+   ========================================================= */
+
+.return-status {
+
+    flex-shrink: 0;
+
+    padding: 7px 13px;
+
+    border-radius: 999px;
+
+    font-size: 12px;
+
+    font-weight: 700;
+}
+
+.return-status.accepted {
+
+    background: #ecfdf3;
+
+    color: #15803d;
+
+    border: 1px solid #bbf7d0;
+}
+
+.return-status.pending {
+
+    background: #fff7ed;
+
+    color: #c2410c;
+
+    border: 1px solid #fed7aa;
+}
+
+
+/* =========================================================
+   DATE
+   ========================================================= */
+
+.return-order-date {
+
+    display: flex;
+
+    align-items: center;
+
+    flex-wrap: wrap;
+
+    gap: 6px;
+
+    margin-top: 14px;
+
+    color: #6b7280;
+
+    font-size: 13px;
+}
+
+.return-order-date strong {
+
+    color: #374151;
+
+    font-weight: 600;
+}
+
+.return-date-icon {
+
+    font-size: 15px;
+}
+
+
+/* =========================================================
+   ACCEPTED MESSAGE
+   ========================================================= */
+
+.return-accepted-message {
+
+    display: flex;
+
+    align-items: flex-start;
+
+    gap: 12px;
+
+    margin-top: 18px;
+
+    padding: 14px 16px;
+
+    border-radius: 14px;
+
+    background: #f0fdf4;
+
+    border: 1px solid #bbf7d0;
+
+    color: #166534;
+}
+
+.return-message-icon {
+
+    width: 28px;
+    height: 28px;
+
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background: #16a34a;
+
+    color: #ffffff;
+
+    font-weight: 800;
+}
+
+.return-accepted-message strong {
+
+    font-size: 13px;
+}
+
+.return-accepted-message p {
+
+    margin: 5px 0 0;
+
+    font-size: 12px;
+
+    line-height: 1.9;
+}
+
+
+/* =========================================================
+   PRODUCTS SECTION
+   ========================================================= */
+
+.return-products-section {
+
+    margin-top: 20px;
+}
+
+.return-section-title {
+
+    margin-bottom: 12px;
+
+    color: #111827;
+
+    font-size: 14px;
+
+    font-weight: 800;
+}
+
+
+/* =========================================================
+   PRODUCT CARD
+   ========================================================= */
+
+.returned-product-card {
+
+    padding: 15px;
+
+    margin-bottom: 12px;
+
+    border: 1px solid #e5e7eb;
+
+    border-radius: 16px;
+
+    background: #fafafa;
+}
+
+
+/* PRODUCT MAIN */
+
+.returned-product-main {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 14px;
+}
+
+.returned-product-image {
+
+    width: 70px;
+    height: 70px;
+
+    flex-shrink: 0;
+
+    object-fit: cover;
+
+    border-radius: 13px;
+
+    border: 1px solid #e5e7eb;
+
+    background: #ffffff;
+}
+
+.returned-product-info h4 {
+
+    margin: 0 0 8px;
+
+    color: #111827;
+
+    font-size: 14px;
+
+    font-weight: 700;
+}
+
+.returned-product-quantity {
+
+    color: #6b7280;
+
+    font-size: 12px;
+}
+
+.returned-product-quantity strong {
+
+    color: #111827;
+
+}
+
+
+/* =========================================================
+   EXPLANATION
+   ========================================================= */
+
+.returned-product-explanation {
+
+    margin-top: 13px;
+
+    padding: 11px 13px;
+
+    background: #ffffff;
+
+    border-radius: 11px;
+
+    border: 1px solid #edf0f4;
+}
+
+.returned-product-explanation span {
+
+    display: block;
+
+    margin-bottom: 5px;
+
+    color: #6b7280;
+
+    font-size: 11px;
+
+    font-weight: 700;
+}
+
+.returned-product-explanation p {
+
+    margin: 0;
+
+    color: #374151;
+
+    font-size: 13px;
+
+    line-height: 1.9;
+}
+
+
+/* =========================================================
+   PHOTO SECTION
+   ========================================================= */
+
+.returned-product-photo-section {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    margin-top: 12px;
+
+    padding-top: 11px;
+
+    border-top: 1px solid #e5e7eb;
+
+    color: #6b7280;
+
+    font-size: 12px;
+}
+
+.returned-product-photo-link {
+
+    padding: 6px 11px;
+
+    border-radius: 9px;
+
+    background: #f0f0ff;
+
+    color: #07006F !important;
+
+    text-decoration: none;
+
+    font-weight: 700;
+
+    transition: .2s ease;
+}
+
+.returned-product-photo-link:hover {
+
+    background: #07006F;
+
+    color: #ffffff !important;
+}
+
+
+/* =========================================================
+   EMPTY
+   ========================================================= */
+
+.return-orders-empty {
+
+    padding: 60px 20px;
+
+    text-align: center;
+
+    background: #ffffff;
+
+    border: 1px solid #e5e7eb;
+
+    border-radius: 20px;
+}
+
+.return-empty-icon {
+
+    width: 55px;
+    height: 55px;
+
+    margin: 0 auto 15px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background: #f0f0ff;
+
+    color: #07006F;
+
+    font-size: 24px;
+}
+
+.return-orders-empty strong {
+
+    display: block;
+
+    color: #111827;
+
+    font-size: 15px;
+}
+
+.return-orders-empty p {
+
+    margin: 7px 0 0;
+
+    color: #9ca3af;
+
+    font-size: 12px;
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 600px) {
+
+    .show_return_orders_box {
+
+        padding: 10px;
+
+    }
+
+    .return-orders-content {
+
+        padding: 15px;
+
+    }
+
+    .return-orders-header {
+
+        padding: 17px;
+
+    }
+
+    .return-orders-header h2 {
+
+        font-size: 17px;
+
+    }
+
+    .return-order-card {
+
+        padding: 15px;
+
+    }
+
+    .return-order-top {
+
+        align-items: flex-start;
+
+    }
+
+    .return-status {
+
+        font-size: 11px;
+
+        padding: 6px 10px;
+
+    }
+
+    .returned-product-image {
+
+        width: 60px;
+        height: 60px;
+
+    }
+
+}
+
+</style>

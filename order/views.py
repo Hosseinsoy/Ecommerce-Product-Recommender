@@ -6,8 +6,9 @@ from io import BytesIO
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseNotFound, HttpResponse, JsonResponse
-from django.shortcuts import render, redirect
+from django.db import transaction
+from django.http import HttpResponseNotFound, HttpResponse, JsonResponse, HttpResponseNotAllowed
+from django.shortcuts import render, redirect, get_object_or_404
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import timezone
@@ -151,65 +152,233 @@ def invoice_pdf(request, order_id):
 
 @login_required
 def return_order(request, order_id):
-    flag = False
-    order = Order.objects.get(pk=order_id)
-    order_products = order.items.all()
-    if order.user == request.user:
-        if request.method == 'GET':
-            order_form = ReturnOrderForm(custom_queryset=order_products)
-            if order.status != 'تحویل مرسوله به مشتری':
-                messages.error(request, 'این قابلیت پس از تحویل کالا در دسترس است')
-                flag = True
-            elif (timezone.now() - order.delivery_time) > datetime.timedelta(days=3):
-                flag = True
-                messages.error(request, 'امکان مرجوعی برای برای این سفارش وجحود ندارد. از زمان تحویل سفارش بیش از 3 روز گذشته است.')
 
-            if flag:
-                return JsonResponse({
-                    'redirect': True,
-                    'redirect_url': reverse('account:order_detail', args=[order_id])
-                })
-            template = render_to_string('return_order.html',{'form': order_form, 'order': order}, request=request)
-            return JsonResponse({'template': template})
-    else:
-        return HttpResponseNotFound('صفحه مورد نظر یافت نشد')
+    if request.method != 'GET':
+        return HttpResponseNotAllowed(['GET'])
+
+    # فقط سفارش متعلق به همین کاربر
+    order = get_object_or_404(
+        Order,
+        pk=order_id,
+        user=request.user
+    )
+
+    order_products = order.items.all()
+
+    # سفارش باید تحویل شده باشد
+    if order.status != 'تحویل مرسوله به مشتری':
+
+        messages.error(
+            request,
+            'این قابلیت پس از تحویل کالا در دسترس است'
+        )
+
+        return JsonResponse({
+            'redirect': True,
+            'redirect_url': reverse(
+                'account:order_detail',
+                args=[order_id]
+            )
+        })
+
+    # زمان تحویل باید وجود داشته باشد و حداکثر 3 روز گذشته باشد
+    if (
+        order.delivery_time is None
+        or timezone.now() - order.delivery_time > datetime.timedelta(days=3)
+    ):
+
+        messages.error(
+            request,
+            'امکان مرجوعی این سفارش وجود ندارد. '
+            'از زمان تحویل سفارش بیش از 3 روز گذشته است.'
+        )
+
+        return JsonResponse({
+            'redirect': True,
+            'redirect_url': reverse(
+                'account:order_detail',
+                args=[order_id]
+            )
+        })
+
+    # فرم انتخاب محصولات مرجوعی
+    order_form = ReturnOrderForm(
+        custom_queryset=order_products
+    )
+
+    template = render_to_string(
+        'return_order.html',
+        {
+            'form': order_form,
+            'order': order,
+        },
+        request=request
+    )
+
+    return JsonResponse({
+        'template': template
+    })
 
 
 @login_required
 def return_product(request, order_id):
-    order = Order.objects.get(pk=order_id)
-    if request.method == 'POST':
-        form = ReturnOrderForm(request.POST)
-        if form.is_valid():
-            products = form.cleaned_data['return_products']
-        ro = ReturnOrder.objects.create(order=order)
-        i = 1
-        products = products[::-1]
-        for product in products:
-            photo = request.FILES.get(f"photo_{i}")
-            ReturnProduct.objects.create(product=product, return_order=ro, quantity=request.POST[f"quantity_{i}"],
-                                         explanation=request.POST[f"explanation_{i}"],
-                                         photo=request.FILES.get(f"photo_{i}")
-                                         )
-            i += 1
-        messages.success(request, 'درخواست مرجوعی ارسال شد. شما میتوانید درخواست خود را از قسمت پیگیری درخواست های مرجوعی مشاهده کنید')
-        ro.cost = ro.total_cost()
-        ro.save()
-        return redirect('account:order_detail', order_id=order.id)
-    else:
-        selected_products = request.GET.get('selected_products', '')
-        product_ids = selected_products.split(',')
-        product_list = []
-        for product_id in product_ids:
-            try:
-                product = Product.objects.get(pk=product_id)
-                quantity = order.items.get(product=product).quantity
-                product_list.append({'product': product, 'quantity': quantity})
-            except Product.DoesNotExist:
-                continue
 
-        template = render_to_string('return_product.html', {'order': order, 'products': product_list}, request=request)
-        return JsonResponse({'template': template})
+    order = get_object_or_404(
+        Order,
+        pk=order_id,
+        user=request.user
+    )
+
+    order_products = order.items.all()
+
+    if request.method == 'POST':
+
+        form = ReturnOrderForm(
+            request.POST,
+            custom_queryset=order_products
+        )
+
+        if form.is_valid():
+
+            products = form.cleaned_data['return_products']
+
+            if not products:
+                return JsonResponse({
+                    'success': False,
+                    'errors': {
+                        'return_products': [
+                            'حداقل یک محصول را انتخاب کنید.'
+                        ]
+                    }
+                }, status=400)
+
+            return_order = ReturnOrder.objects.create(
+                order=order
+            )
+
+            for index, product in enumerate(products, start=1):
+
+                quantity = request.POST.get(
+                    f'quantity_{product.id}'
+                )
+
+                explanation = request.POST.get(
+                    f'explanation_{product.id}'
+                )
+
+                photo = request.FILES.get(
+                    f'photo_{product.id}'
+                )
+
+                if not quantity:
+                    return JsonResponse({
+                        'success': False,
+                        'error': f'تعداد مرجوعی برای {product.name} وارد نشده است.'
+                    }, status=400)
+
+                quantity = int(quantity)
+
+                # بررسی تعداد مرجوعی
+                order_item = order.items.filter(
+                    product=product
+                ).first()
+
+                if not order_item:
+                    return JsonResponse({
+                        'success': False,
+                        'error': 'محصول انتخاب‌شده متعلق به این سفارش نیست.'
+                    }, status=400)
+
+                if quantity < 1 or quantity > order_item.quantity:
+                    return JsonResponse({
+                        'success': False,
+                        'error': (
+                            f'تعداد مرجوعی برای {product.name} '
+                            f'باید بین 1 تا {order_item.quantity} باشد.'
+                        )
+                    }, status=400)
+
+                if not explanation:
+                    return JsonResponse({
+                        'success': False,
+                        'error': f'دلیل مرجوعی {product.name} وارد نشده است.'
+                    }, status=400)
+
+                if not photo:
+                    return JsonResponse({
+                        'success': False,
+                        'error': f'تصویر {product.name} انتخاب نشده است.'
+                    }, status=400)
+
+                ReturnProduct.objects.create(
+                    return_order=return_order,
+                    product=product,
+                    quantity=quantity,
+                    explanation=explanation,
+                    photo=photo
+                )
+
+            return_order.cost = return_order.total_cost()
+            return_order.save()
+
+            messages.success(
+                request,
+                'درخواست مرجوعی با موفقیت ارسال شد. '
+                'می‌توانید وضعیت درخواست را از قسمت پیگیری درخواست‌های مرجوعی مشاهده کنید.'
+            )
+
+            return redirect(
+                'account:order_detail',
+                order_id=order.id
+            )
+
+        return JsonResponse({
+            'success': False,
+            'errors': form.errors
+        }, status=400)
+
+
+    # GET
+    selected_products = request.GET.get(
+        'selected_products',
+        ''
+    )
+
+    product_ids = [
+        product_id
+        for product_id in selected_products.split(',')
+        if product_id
+    ]
+
+    product_list = []
+
+    for product_id in product_ids:
+
+        try:
+            order_item = order.items.get(
+                product_id=product_id
+            )
+
+            product_list.append({
+                'product': order_item.product,
+                'quantity': order_item.quantity
+            })
+
+        except order.items.model.DoesNotExist:
+            continue
+
+    template = render_to_string(
+        'return_product.html',
+        {
+            'order': order,
+            'products': product_list
+        },
+        request=request
+    )
+
+    return JsonResponse({
+        'template': template
+    })
 
 
 def show_returns(request, order_id):

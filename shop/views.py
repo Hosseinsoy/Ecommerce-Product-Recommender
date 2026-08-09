@@ -2075,3 +2075,163 @@ class AddProductAnswerView(LoginRequiredMixin, View):
             id=question.product.id,
             slug=question.product.slug
         )
+
+
+class EditProductCommentView(LoginRequiredMixin, View):
+
+    def get(self, request, comment_id):
+
+        comment = get_object_or_404(
+            ProductComment,
+            id=comment_id,
+            user=request.user
+        )
+
+        points = {}
+
+        for relation in comment.comment_points.select_related("point"):
+
+            points[str(relation.point.id)] = relation.point_type
+
+
+        return JsonResponse({
+            "success": True,
+            "comment": {
+                "id": comment.id,
+                "product_id": comment.product.id,
+                "product_name": comment.product.name,
+                "title": comment.title,
+                "body": comment.body,
+                "score": comment.score,
+                "positive_points": comment.positive_points or "",
+                "negative_points": comment.negative_points or "",
+                "points": points,
+            }
+        })
+
+
+    def post(self, request, comment_id):
+
+        comment = get_object_or_404(
+            ProductComment,
+            id=comment_id,
+            user=request.user
+        )
+
+
+        title = request.POST.get(
+            "title",
+            ""
+        ).strip()
+
+
+        body = request.POST.get(
+            "body",
+            ""
+        ).strip()
+
+
+        score = request.POST.get(
+            "score",
+            5
+        )
+
+
+        positive_points = request.POST.get(
+            "positive_points",
+            ""
+        ).strip()
+
+
+        negative_points = request.POST.get(
+            "negative_points",
+            ""
+        ).strip()
+
+
+
+        if not title or not body:
+
+            return JsonResponse({
+                "success": False,
+                "message": "عنوان و متن دیدگاه الزامی است."
+            }, status=400)
+
+
+
+        try:
+
+            score = int(score)
+
+        except (TypeError, ValueError):
+
+            score = 5
+
+
+
+        if score < 1 or score > 5:
+
+            return JsonResponse({
+                "success": False,
+                "message": "امتیاز باید بین ۱ تا ۵ باشد."
+            }, status=400)
+
+
+
+        # -----------------------------
+        # بروزرسانی کامنت
+        # -----------------------------
+
+        comment.title = title
+        comment.body = body
+        comment.score = score
+        comment.positive_points = positive_points
+        comment.negative_points = negative_points
+
+        comment.save()
+
+
+
+        # -----------------------------
+        # بروزرسانی موضوعات
+        # -----------------------------
+
+        ProductCommentPoint.objects.filter(
+            comment=comment
+        ).delete()
+
+
+
+        for point in CommentPoint.objects.all():
+
+            point_type = request.POST.get(
+                f"point_type_{point.id}"
+            )
+
+
+            if point_type in [
+                "positive",
+                "negative"
+            ]:
+
+                ProductCommentPoint.objects.create(
+                    comment=comment,
+                    point=point,
+                    point_type=point_type
+                )
+
+
+
+        # -----------------------------
+        # پیام جنگو
+        # -----------------------------
+
+        messages.success(
+            request,
+            "دیدگاه شما با موفقیت ویرایش شد."
+        )
+
+
+        return JsonResponse({
+            "success": True
+        })

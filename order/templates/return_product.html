@@ -1,22 +1,318 @@
-<div style="direction: rtl; text-align: right">
-    <form method="post" action="{% url 'order:return_product' order.id %} " enctype="multipart/form-data">
-        {% csrf_token %}
+    <div class="return-products-form" dir="rtl">
+
+        <div class="return-products-header">
+            <div>
+                <h3>اطلاعات مرجوعی کالا</h3>
+                <p>برای هر محصول، تعداد، تصویر و دلیل مرجوعی را وارد کنید.</p>
+            </div>
+        </div>
+
         {% for product in products %}
-            <label for="quantity">تعداد مرجوعی ({{ product.product.name }}):</label>
-            <br>
-            <input type="number" name="quantity_{{ forloop.counter }}" min="1" max="{{ product.quantity }}" required>
-            <br>
-            <br>
-            <label for="photo_{{ forloop.counter }}">تصویر ({{ product.product.name }}): </label>
-            <br>
-            <input type="file" name="photo_{{ forloop.counter }}" required>
-            <br>
-            <br>
-            <label for="explanation_{{ forloop.counter }}">توضیحات ({{ product.product.name }}): </label>
-            <br>
-            <textarea name="explanation_{{ forloop.counter }}" required></textarea>
-            <hr>
+
+            <div class="return-product-card">
+
+                <div class="return-product-info">
+
+                    {% if product.product.images.first %}
+                        <img
+                            src="{{ product.product.images.first.image_file.url }}"
+                            alt="{{ product.product.name }}"
+                            class="return-product-image"
+                        >
+                    {% endif %}
+
+                    <div class="return-product-title">
+                        <h4>{{ product.product.name }}</h4>
+
+                        <span>
+                            تعداد خریداری‌شده:
+                            {{ product.quantity }}
+                        </span>
+                    </div>
+
+                </div>
+
+                <div class="return-product-fields">
+
+                    <div class="return-field">
+
+                        <label for="quantity_{{ forloop.counter }}">
+                            تعداد مرجوعی
+                        </label>
+
+                        <input
+                            id="quantity_{{ forloop.counter }}"
+                            type="number"
+                            name="quantity_{{ forloop.counter }}"
+                            min="1"
+                            max="{{ product.quantity }}"
+                            required
+                        >
+
+                        <small>
+                            حداکثر {{ product.quantity }} عدد
+                        </small>
+
+                    </div>
+
+
+                    <div class="return-file-wrapper">
+
+                        <<input
+                            type="file"
+                            name="photo_{{ forloop.counter }}"
+                            id="photo_{{ forloop.counter }}"
+                            class="return-file-input"
+                            accept="image/*"
+                            required
+                        >
+
+                        <label
+                            for="photo_{{ forloop.counter }}"
+                            class="return-file-button"
+                        >
+                            <span class="return-file-camera">📷</span>
+                            <span>انتخاب تصویر</span>
+                        </label>
+
+                        <div class="return-file-selected">
+                            <span class="return-file-selected-icon">🖼️</span>
+                            <span class="return-file-selected-name">
+                                تصویری انتخاب نشده
+                            </span>
+                        </div>
+
+                    </div>
+
+
+                    <div class="return-field">
+
+                        <label for="explanation_{{ forloop.counter }}">
+                            دلیل مرجوعی
+                        </label>
+
+                        <textarea
+                            id="explanation_{{ forloop.counter }}"
+                            name="explanation_{{ forloop.counter }}"
+                            rows="4"
+                            placeholder="دلیل مرجوع کردن این کالا را بنویسید..."
+                            required
+                        ></textarea>
+
+                    </div>
+
+                </div>
+
+            </div>
+
         {% endfor %}
-        <input type="submit" value="ثبت مرجوعی">
-    </form>
-</div>
+
+
+        {% if products %}
+
+            <div class="return-submit-wrapper">
+
+                <button
+                    type="submit"
+                    class="return-submit-button"
+                >
+                    ثبت درخواست مرجوعی
+                </button>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+
+<style>
+/* =========================
+   Custom image upload
+   ========================= */
+
+.return-products-form .return-file-wrapper {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 10px;
+    direction: rtl;
+}
+
+/* مخفی کردن کامل input اصلی مرورگر */
+.return-products-form .return-file-input {
+    position: absolute !important;
+
+    width: 1px !important;
+    height: 1px !important;
+
+    padding: 0 !important;
+    margin: -1px !important;
+
+    overflow: hidden !important;
+
+    clip: rect(0, 0, 0, 0) !important;
+    clip-path: inset(50%) !important;
+
+    white-space: nowrap !important;
+
+    border: 0 !important;
+    opacity: 0 !important;
+
+    appearance: none !important;
+    -webkit-appearance: none !important;
+}
+
+
+/* دکمه انتخاب تصویر */
+.return-products-form .return-file-button {
+    flex: 0 0 auto;
+
+    width: 145px;
+    height: 44px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    padding: 0 18px;
+
+    box-sizing: border-box;
+
+    background: #07006F;
+    color: #fff !important;
+
+    border: none;
+    border-radius: 12px;
+
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+
+    cursor: pointer;
+    user-select: none;
+
+    transition:
+        background-color 0.2s ease,
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.return-products-form .return-file-button:hover {
+    background: #0b008c;
+    box-shadow: 0 5px 15px rgba(7, 0, 111, 0.18);
+    transform: translateY(-1px);
+}
+
+.return-products-form .return-file-button:active {
+    transform: translateY(0);
+}
+
+
+/* آیکون دوربین */
+.return-products-form .return-file-camera {
+    font-size: 17px;
+    line-height: 1;
+}
+
+
+/* نمایش نام فایل */
+.return-products-form .return-file-selected {
+    flex: 1;
+    min-width: 0;
+
+    height: 44px;
+
+    padding: 0 14px;
+
+    box-sizing: border-box;
+
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    background: #f8f9fc;
+
+    border: 1px solid #e1e4ec;
+    border-radius: 12px;
+
+    color: #777;
+
+    font-family: inherit;
+    font-size: 13px;
+
+    overflow: hidden;
+}
+
+.return-products-form .return-file-selected-icon {
+    flex-shrink: 0;
+    font-size: 16px;
+}
+
+.return-products-form .return-file-selected-name {
+    min-width: 0;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+/* فوکوس برای دسترسی با کیبورد */
+.return-products-form .return-file-input:focus-visible
++ .return-file-button {
+    outline: 3px solid rgba(7, 0, 111, 0.2);
+    outline-offset: 2px;
+}
+
+
+/* موبایل */
+@media (max-width: 768px) {
+
+    .return-products-form .return-file-wrapper {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .return-products-form .return-file-button {
+        width: 100%;
+    }
+
+    .return-products-form .return-file-selected {
+        width: 100%;
+    }
+}
+</style>
+    <script>
+    document.addEventListener('change', function (e) {
+
+        if (!e.target.classList.contains('return-file-input')) {
+            return;
+        }
+
+        const input = e.target;
+        const wrapper = input.closest('.return-file-wrapper');
+
+        if (!wrapper) {
+            return;
+        }
+
+        const nameElement = wrapper.querySelector(
+            '.return-file-selected-name'
+        );
+
+        if (input.files && input.files.length > 0) {
+
+            nameElement.textContent = input.files[0].name;
+            nameElement.style.color = '#07006F';
+
+        } else {
+
+            nameElement.textContent = 'تصویری انتخاب نشده';
+            nameElement.style.color = '#777';
+
+        }
+    });
+    </script>

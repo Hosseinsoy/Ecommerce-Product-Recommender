@@ -71,5 +71,10 @@ urlpatterns = [
         views.AddProductAnswerView.as_view(),
         name="add_product_answer"
     ),
+    path(
+        "edit-product-comment/<int:comment_id>/",
+        views.EditProductCommentView.as_view(),
+        name="edit_product_comment"
+    ),
 ]
 

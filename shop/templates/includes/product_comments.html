@@ -2,6 +2,7 @@
 
     <div class="comment-box mb-3">
 
+        <!-- عنوان دیدگاه -->
         <div class="comment-title">
 
             <p class="fw-bold">
@@ -17,70 +18,93 @@
         </div>
 
 
+        <!-- اطلاعات دیدگاه -->
         <div class="comment-details my-3 border-bottom-gray-150 pb-3 mx-5">
 
-            <span class="fs-8 gray-600">
-                {{ comment.created|date:"d F Y" }}
-            </span>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+
+                <span class="fs-8 gray-600">
+                    {{ comment.created|date:"d F Y" }}
+                </span>
 
 
-            <i class="fa fa-circle fs-11 gray-400"></i>
+                <i class="fa fa-circle fs-11 gray-400"></i>
 
 
-            <span class="fs-8 gray-600">
-                {{ comment.user.first_name }} {{ comment.user.last_name }}
-            </span>
+                <span class="fs-8 gray-600">
+                    {{ comment.user.first_name }}
+                    {{ comment.user.last_name }}
+                </span>
 
 
+                {% if comment.is_buyer %}
 
-            {% if comment.is_buyer %}
+                    <span class="badge bg-gray-400">
+                        خریدار
+                    </span>
 
-            <span class="badge bg-gray-400">
-                خریدار
-            </span>
+                {% endif %}
 
-            {% endif %}
 
+                {% if request.user.is_authenticated and comment.user_id == request.user.id %}
+
+                    <button
+                        type="button"
+                        class="comment-edit-button"
+                        data-comment-id="{{ comment.id }}"
+                        data-product-id="{{ comment.product.id }}"
+                    >
+
+                        <i class="fa fa-pen"></i>
+
+                        ویرایش
+
+                    </button>
+
+                {% endif %}
+
+            </div>
 
         </div>
+
+
+        <!-- متن دیدگاه -->
         <div class="comment-text border-bottom-gray-150 mx-5">
 
-                    <p class="my-2 comment">
+            <p class="my-2 comment">
+                {{ comment.body }}
+            </p>
 
-                        {{ comment.body }}
-
-                    </p>
-
-
-                </div>
+        </div>
 
 
-        {% if comment.positive_points != 'None' %}
+        <!-- نکات مثبت -->
+        {% if comment.positive_points and comment.positive_points != 'None' %}
+
             <div class="comment-text border-bottom-gray-150 mx-5">
 
+                <p class="text-success fs-7">
 
-                    <p class="text-success fs-7">
+                    <i class="fa fa-thumbs-up pe-1"></i>
 
-                        <i class="fa fa-thumbs-up pe-1"></i>
+                    نکات مثبت
 
-                        نکات مثبت
-
-                    </p>
-
+                </p>
 
 
-                    <p class="my-2 comment">
+                <p class="my-2 comment">
+                    {{ comment.positive_points }}
+                </p>
 
-                        {{ comment.positive_points }}
+            </div>
 
-                    </p>
-
-
-                </div>
         {% endif %}
-        {% if comment.negative_points != 'None' %}
-            <div class="comment-text border-bottom-gray-150 mx-5">
 
+
+        <!-- نکات منفی -->
+        {% if comment.negative_points and comment.negative_points != 'None' %}
+
+            <div class="comment-text border-bottom-gray-150 mx-5">
 
                 <p class="text-danger fs-7">
 
@@ -91,65 +115,55 @@
                 </p>
 
 
-                    <p class="my-2 comment">
+                <p class="my-2 comment">
+                    {{ comment.negative_points }}
+                </p>
 
-                        {{ comment.negative_points }}
+            </div>
 
-                    </p>
-
-
-                </div>
         {% endif %}
-
-
-
-
-{#                                <div class="border-bottom-gray-300 mt-3 pb-2">#}
-{##}
-{#                                    <p class="text-end fs-8 gray-600">#}
-{##}
-{#                                        آیا این دیدگاه مفید بود؟#}
-{##}
-{#                                        <span#}
-{#                                            class="px-1 c-pointer comment-vote"#}
-{#                                            data-comment-id="{{ comment.id }}"#}
-{#                                            data-vote-type="like">#}
-{##}
-{#                                            <span class="comment-likes">#}
-{#                                                {{ comment.votes.all|length }}#}
-{#                                            </span>#}
-{##}
-{#                                            <i class="fa fa-thumbs-up ps-1"></i>#}
-{##}
-{#                                        </span>#}
-{##}
-{##}
-{#                                        <span#}
-{#                                            class="px-1 c-pointer comment-vote"#}
-{#                                            data-comment-id="{{ comment.id }}"#}
-{#                                            data-vote-type="dislike">#}
-{##}
-{#                                            <span class="comment-dislikes">#}
-{#                                                {{ comment.dislikes }}</span>#}
-{##}
-{#                                            <i class="fa fa-thumbs-down ps-1"></i>#}
-{##}
-{#                                        </span>#}
-{##}
-{#                                    </p>#}
-{##}
-{#                                </div>#}
 
     </div>
 
 
-    {% empty %}
+{% empty %}
 
     <p class="text-center gray-600">
-
         هنوز دیدگاهی ثبت نشده است.
-
     </p>
 
+{% endfor %}
 
-    {% endfor %}
+<style>
+.comment-edit-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+
+    background: #fff;
+    color: #6b7280;
+
+    padding: 4px 8px;
+
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: all 0.2s ease;
+}
+
+.comment-edit-button i {
+    font-size: 10px;
+}
+
+.comment-edit-button:hover {
+    background: #07006f;
+    border-color: #07006f;
+    color: #fff;
+}
+</style>

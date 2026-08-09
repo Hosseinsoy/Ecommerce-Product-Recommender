@@ -1,3 +1,4 @@
+from django.db.models import Avg
 from django.utils import timezone
 from django.db import models
 from django.utils.text import slugify
@@ -128,6 +129,16 @@ class Product(models.Model):
                 self.flash_sale_end and
                 self.flash_sale_start <= now <= self.flash_sale_end
         )
+
+
+    @property
+    def average_score(self):
+        return self.comments.filter(
+            is_active=True,
+            is_buyer=True
+        ).aggregate(
+            avg=Avg("score")
+        )["avg"] or 0
 
     class Meta:
         ordering = ['-created']
