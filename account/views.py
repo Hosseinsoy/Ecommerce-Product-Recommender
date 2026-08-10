@@ -10,10 +10,11 @@ from django.shortcuts import render, redirect, get_object_or_404
 import random
 from django.contrib import messages
 from django.template.loader import render_to_string
+from django.urls import reverse
 from django.utils.text import slugify
 from django.views.decorators.csrf import csrf_exempt
 
-from account.models import ShopUser, UserAddress, City, ShopSeller
+from account.models import ShopUser, UserAddress, City, ShopSeller, Province
 from cart.cart import Cart
 from order.models import Order, OrderItem, ReturnProduct, ReturnOrder
 from shop.models import Product, Image, ProductFeature, ProductSizeVariant, ProductVariant, ProductColorVariant, \
@@ -76,11 +77,11 @@ def profile(request):
         total=Sum('final_cost')
     )['total'] or 0
 
-
-
-    default_address = addresses.first()
-
-
+    default_address = (
+            addresses.filter(is_default=True).first()
+            or
+            addresses.first()
+    )
 
     # ==============================
     # User Comments
@@ -602,49 +603,274 @@ def order_detail(request, order_id):
 
 @login_required
 def create_address(request):
+
     if request.method == 'POST':
+
         province_id = request.POST.get('province')
-        form = CreateAddressForm(request.POST, province_id=province_id)
+
+        form = CreateAddressForm(
+            request.POST,
+            province_id=province_id
+        )
+
+
         if form.is_valid():
+
             cd = form.cleaned_data
+
+
+            city_value = cd['city']
+
+
+            if str(city_value).isdigit():
+
+                city_name = City.objects.get(
+                    id=int(city_value)
+                ).name
+
+            else:
+
+                city_name = str(city_value)
+
+
+
             UserAddress.objects.create(
+
                 user=request.user,
-                province=cd['province'],
-                city=cd['city'],
+
+                province=cd['province'].name,
+
+                city=city_name,
+
                 address=cd['address'],
+
                 house_number=cd['house_number'],
-                postal_code=cd['postal_code']
+
+                postal_code=cd['postal_code'],
+
+                is_default=(
+                    not UserAddress.objects.filter(
+                        user=request.user
+                    ).exists()
+                )
+
             )
-            messages.success(request, 'آدرس اضافه شد')
-            return redirect('order:create_order')
+
+
+            messages.success(
+                request,
+                'آدرس اضافه شد'
+            )
+
+
+            return redirect(
+                'order:create_order'
+            )
+
 
     else:
+
         form = CreateAddressForm()
-        template = render_to_string('create_address.html', {'form': form}, request=request)
-        return JsonResponse({'template': template})
+
+
+
+    template = render_to_string(
+        'create_address.html',
+        {
+            'form': form
+        },
+        request=request
+    )
+
+
+    return JsonResponse({
+        'template': template
+    })
+
 
 
 @login_required
 def create_address_from_profile(request):
+
     if request.method == 'POST':
+
         province_id = request.POST.get('province')
-        form = CreateAddressForm(request.POST, province_id=province_id)
+
+
+        form = CreateAddressForm(
+            request.POST,
+            province_id=province_id
+        )
+
+
         if form.is_valid():
+
             cd = form.cleaned_data
+
+
+            city_value = cd['city']
+
+
+            if str(city_value).isdigit():
+
+                city_name = City.objects.get(
+                    id=int(city_value)
+                ).name
+
+            else:
+
+                city_name = str(city_value)
+
+
+
             UserAddress.objects.create(
+
                 user=request.user,
-                province=cd['province'],
-                city=cd['city'],
+
+                province=cd['province'].name,
+
+                city=city_name,
+
                 address=cd['address'],
+
                 house_number=cd['house_number'],
-                postal_code=cd['postal_code']
+
+                postal_code=cd['postal_code'],
+
+                is_default=(
+                    not UserAddress.objects.filter(
+                        user=request.user
+                    ).exists()
+                )
+
             )
-            messages.success(request, 'آدرس اضافه شد')
-            return redirect('account:addresses')
+
+            messages.success(
+                request,
+                'آدرس اضافه شد'
+            )
+
+            return redirect(
+                reverse('account:profile') + '?tab=addresses'
+            )
+
+
     else:
+
         form = CreateAddressForm()
-        template = render_to_string('create_address.html', {'form': form}, request=request)
-        return JsonResponse({'template': template})
+
+
+
+    template = render_to_string(
+        'create_address.html',
+        {
+            'form': form
+        },
+        request=request
+    )
+
+
+    return JsonResponse({
+        'template': template
+    })
+
+
+@login_required
+def edit_address(request, address_id):
+
+    address = get_object_or_404(
+        UserAddress,
+        id=address_id,
+        user=request.user
+    )
+
+
+    if request.method == "POST":
+
+        province_id = request.POST.get("province")
+
+        form = CreateAddressForm(
+            request.POST,
+            province_id=province_id
+        )
+
+
+        if form.is_valid():
+
+            cd = form.cleaned_data
+
+
+            address.province = cd['province'].name
+            address.city = City.objects.get(
+                id=cd['city']
+            ).name
+
+            address.address = cd['address']
+            address.house_number = cd['house_number']
+            address.postal_code = cd['postal_code']
+
+            address.save()
+
+
+            messages.success(
+                request,
+                "آدرس با موفقیت ویرایش شد."
+            )
+
+
+            return redirect(
+                "account:profile"
+            )
+
+
+    else:
+
+        province = Province.objects.filter(
+            name=address.province
+        ).first()
+
+
+        city = City.objects.filter(
+            name=address.city,
+            province=province
+        ).first()
+
+
+        form = CreateAddressForm(
+            province_id=province.id if province else None,
+            selected_city_id=city.id if city else None
+        )
+
+
+        form.initial = {
+
+            "province": province.id if province else None,
+
+            "city": city.id if city else None,
+
+            "address": address.address,
+
+            "house_number": address.house_number,
+
+            "postal_code": address.postal_code
+
+        }
+
+        template = render_to_string(
+            "edit_address.html",
+            {
+                "form": form,
+                "address": address
+            },
+            request=request
+        )
+
+
+        return JsonResponse(
+            {
+                "template": template
+            }
+        )
 
 
 @login_required
@@ -679,19 +905,44 @@ def login_seller(request):
 
 @login_required
 def edit_profile(request):
+
     user = request.user
+
     if request.method == 'POST':
-        form = EditShopUserForm(request.POST, instance=user)
+
+        form = EditShopUserForm(
+            request.POST,
+            instance=user
+        )
+
         if form.is_valid():
+
             form.save()
-            messages.success(request, 'اطلاعات با موفقیت ویرایش شد')
+
+            messages.success(
+                request,
+                'اطلاعات با موفقیت ویرایش شد'
+            )
+
+            return redirect(
+                reverse('account:profile') + '?tab=account'
+            )
+
     else:
-        form = EditShopUserForm(instance=user)
-    context = {
-        'form': form,
-        'user': user,
-    }
-    return render(request, 'edit_shopuser.html', context)
+
+        form = EditShopUserForm(
+            instance=user
+        )
+
+
+    return render(
+        request,
+        'edit_shopuser.html',
+        {
+            'form': form,
+            'user': user,
+        }
+    )
 
 
 @login_required
@@ -749,21 +1000,91 @@ class CustomPasswordChangeView(PasswordChangeView):
 
 @login_required
 def addresses(request):
-    user = request.user
-    user_addresses = UserAddress.objects.filter(user=user)
-    return render(request, 'addresses.html', context={'addresses': user_addresses})
+
+    user_addresses = UserAddress.objects.filter(
+        user=request.user
+    ).order_by(
+        "-is_default",
+        "-id"
+    )
+
+    return render(
+        request,
+        "addresses.html",
+        {
+            "addresses": user_addresses
+        }
+    )
 
 
 @login_required
 def remove_address(request):
-    item_id = request.POST.get('item_id')
-    print(item_id)
+
+    item_id = request.POST.get("item_id")
+
+
     try:
-        address = UserAddress.objects.get(id=item_id)
+
+        address = UserAddress.objects.get(
+            id=item_id,
+            user=request.user
+        )
+
+
+        # جلوگیری از حذف آدرس پیشفرض
+        if address.is_default:
+
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": "آدرس پیشفرض قابل حذف نیست."
+                },
+                status=400
+            )
+
+
         address.delete()
-        return JsonResponse(data={'success': True})
-    except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
+
+
+        return JsonResponse(
+            {
+                "success": True
+            }
+        )
+
+
+    except UserAddress.DoesNotExist:
+
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "آدرس پیدا نشد."
+            },
+            status=404
+        )
+
+
+@login_required
+def set_default_address(request, address_id):
+
+    address = get_object_or_404(
+        UserAddress,
+        id=address_id,
+        user=request.user
+    )
+
+    UserAddress.objects.filter(
+        user=request.user
+    ).update(
+        is_default=False
+    )
+
+    address.is_default = True
+    address.save()
+
+    return JsonResponse({
+        "success": True
+    })
 
 
 @login_required

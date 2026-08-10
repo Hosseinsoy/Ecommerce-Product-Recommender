@@ -104,7 +104,7 @@ def create_order(request):
     model_addresses = UserAddress.objects.filter(user=request.user)
     addresses = []
     for address in model_addresses:
-        city = City.objects.get(pk=address.city).name
+        city = address.city
         addr = ''
         addr += address.province + ' | '
         addr += city + ' | '

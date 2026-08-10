@@ -1,6 +1,5 @@
 {% extends 'parent/base.html' %}
 {% load static %}
-
 {% block title %}پروفایل کاربری{% endblock %}
 
 {% block content %}
@@ -9,6 +8,7 @@
 
     <div class="user-panel-wrapper">
 
+        <div class="container">
         <div class="container">
 
             <div class="row">
@@ -838,31 +838,27 @@
 
                                                 <button
                                                     type="button"
-                                                    class="comment-edit-button"
+                                                    class="comment-edit-button btn btn-light"
                                                     data-comment-id="{{ comment.id }}"
-                                                    data-product-id="{{ comment.product.id }}"
-                                                    title="ویرایش دیدگاه"
                                                     style="
-                                                        width: 34px;
-                                                        height: 34px;
-                                                        border: 1px solid #e5e7eb;
-                                                        border-radius: 10px;
-                                                        background: #fff;
-                                                        color: #07006f;
-                                                        display: flex;
-                                                        align-items: center;
-                                                        justify-content: center;
-                                                        cursor: pointer;
-                                                        transition: .2s;
-                                                        flex-shrink: 0;
+                                                        width:38px;
+                                                        height:38px;
+                                                        display:flex;
+                                                        align-items:center;
+                                                        justify-content:center;
+                                                        border-radius:10px;
+                                                        color:#07006f;
+                                                        flex-shrink:0;
                                                     "
+                                                    title="ویرایش دیدگاه"
                                                 >
-                                                
-                                                    <i class="fas fa-pen fa-sm"></i>
-                                                
+
+                                                    <i class="fas fa-pen"></i>
+
                                                 </button>
 
-                                            </div>
+
+                                              </div>
 
 
                                             <!-- COMMENT -->
@@ -1256,7 +1252,6 @@
                         </div>
 
 
-                        <!-- ================================= -->
                         <!-- ADDRESSES -->
                         <!-- ================================= -->
 
@@ -1266,83 +1261,281 @@
                             dir="rtl"
                         >
 
+
                             <div class="user-panel-profile border border-radius-3xl">
+
+
+                                <!-- HEADER -->
 
                                 <div class="user-panel-profile-header p-3 border-bottom-gray-300">
 
-                                    <p class="fw-bold">
-                                        آدرس ها
-                                    </p>
+
+                                    <div class="d-flex align-items-center justify-content-between">
+
+
+                                        <div class="d-flex align-items-center gap-2">
+
+
+                                            <span
+                                                style="
+                                                    width:38px;
+                                                    height:38px;
+                                                    display:flex;
+                                                    align-items:center;
+                                                    justify-content:center;
+                                                    border-radius:12px;
+                                                    background:#f3f1ff;
+                                                    color:#07006f;
+                                                "
+                                            >
+                                                <i class="fa fa-location-dot"></i>
+                                            </span>
+
+
+                                            <div>
+
+                                                <p class="fw-bold mb-0">
+                                                    آدرس های من
+                                                </p>
+
+
+                                                <small class="text-muted">
+                                                    مدیریت آدرس های ارسال
+                                                </small>
+
+                                            </div>
+
+
+                                        </div>
+
+
+
+{##}
+                                        <a id="add_address" href="" class="btn-auth2 fs-7 border-radius-3xl py-2" data-bs-toggle="modal" data-bs-target="#insertNewAddressModal">
+                                            <i class="fa fa-plus"></i>
+                                            ثبت آدرس جدید
+                                        </a>
+
+
+                                    </div>
+
 
                                 </div>
+
+
+
+
+
+                                <!-- ADDRESS LIST -->
 
 
                                 <div class="p-3">
 
+
                                     {% for address in addresses %}
 
-                                        <div class="border border-radius-3xl p-3 mb-3">
 
-                                            {% if forloop.first %}
+                                        <div
+                                            class="
+                                                address-item
+                                                border
+                                                border-radius-3xl
+                                                p-3
+                                                mb-3
+                                            "
+                                            data-address-id="{{ address.id }}"
+                                        >
 
-                                                <span class="badge bg-success mb-2">
-                                                    آدرس پیش فرض
-                                                </span>
 
-                                            {% endif %}
+                                            <div
+                                                class="
+                                                    d-flex
+                                                    justify-content-between
+                                                    align-items-start
+                                                    gap-3
+                                                "
+                                            >
 
-                                            <p>
-                                                استان:
-                                                {{ address.province }}
-                                            </p>
 
-                                            <p>
-                                                شهر:
-                                                {{ address.city }}
-                                            </p>
+                                                <div>
 
-                                            <p>
-                                                آدرس:
-                                                {{ address.address }}
-                                            </p>
 
-                                            <p>
-                                                پلاک:
-                                                {{ address.house_number }}
-                                            </p>
+                                                    {% if address.is_default %}
 
-                                            <p>
-                                                کد پستی:
-                                                {{ address.postal_code }}
-                                            </p>
+                                                        <span style="margin-bottom: 5px" class="badge bg-success">
+                                                            آدرس پیش فرض
+                                                        </span>
+
+                                                        {% else %}
+
+                                                        <button
+                                                            type="button"
+                                                            class="set-default-address"
+                                                            data-address-id="{{ address.id }}"
+                                                        >
+                                                            <i class="fa fa-check"></i>
+                                                            انتخاب پیشفرض
+                                                        </button>
+
+                                                    {% endif %}
+
+
+
+                                                    <p class="mb-2">
+                                                        استان:
+                                                        {{ address.province }}
+                                                    </p>
+
+
+                                                    <p class="mb-2">
+                                                        شهر:
+                                                        {{ address.city }}
+                                                    </p>
+
+
+                                                    <p class="mb-2">
+                                                        آدرس:
+                                                        {{ address.address }}
+                                                    </p>
+
+
+                                                    <p class="mb-2">
+                                                        پلاک:
+                                                        {{ address.house_number }}
+                                                    </p>
+
+
+                                                    <p class="mb-0">
+                                                        کد پستی:
+                                                        {{ address.postal_code }}
+                                                    </p>
+
+
+                                                </div>
+
+
+
+
+
+                                                <div
+                                                    class="d-flex flex-column align-items-center gap-2"
+                                                >
+
+
+                                                    <!-- EDIT -->
+
+                                                    <button
+                                                        type="button"
+                                                        class="edit-address-button btn btn-light"
+                                                        data-address-id="{{ address.id }}"
+                                                        style="
+                                                            width:38px;
+                                                            height:38px;
+                                                            display:flex;
+                                                            align-items:center;
+                                                            justify-content:center;
+                                                            border-radius:10px;
+                                                            color:#07006f;
+                                                        "
+                                                        title="ویرایش آدرس"
+                                                    >
+
+                                                        <i class="fas fa-pen"></i>
+
+                                                    </button>
+
+
+
+                                                    <!-- DELETE -->
+
+                                                    {% if not address.is_default %}
+
+                                                    <button
+                                                        type="button"
+                                                        class="remove-address-button"
+                                                        data-address-id="{{ address.id }}"
+                                                        style="
+                                                            width:38px;
+                                                            height:38px;
+                                                            display:flex;
+                                                            align-items:center;
+                                                            justify-content:center;
+                                                            border:1px solid #dc3545;
+                                                            background:#fff;
+                                                            color:#dc3545;
+                                                            border-radius:10px;
+                                                            cursor:pointer;
+                                                        "
+                                                        title="حذف آدرس"
+                                                    >
+
+                                                        <i class="fas fa-trash"></i>
+
+                                                    </button>
+
+                                                    {% endif %}
+
+
+                                                </div>
+
+
+                                            </div>
+
 
                                         </div>
 
+
                                     {% empty %}
 
-                                        <p class="text-danger text-center">
-                                            هیچ آدرسی ثبت نشده است.
-                                        </p>
+
+                                        <div class="text-center py-5">
+
+
+                                            <div
+                                                style="
+                                                    width:70px;
+                                                    height:70px;
+                                                    margin:auto;
+                                                    display:flex;
+                                                    align-items:center;
+                                                    justify-content:center;
+                                                    border-radius:50%;
+                                                    background:#f3f1ff;
+                                                    color:#07006f;
+                                                    font-size:25px;
+                                                "
+                                            >
+
+                                                <i class="fa fa-location-dot"></i>
+
+                                            </div>
+
+
+                                            <h5 class="fw-bold mt-3">
+                                                هنوز آدرسی ثبت نکرده‌اید
+                                            </h5>
+
+
+                                            <p class="text-muted">
+                                                برای ثبت سفارش ابتدا یک آدرس اضافه کنید.
+                                            </p>
+
+
+                                        </div>
+
 
                                     {% endfor %}
 
 
-                                    <div class="text-center mt-3">
-
-                                        <a
-                                            href="{% url 'account:addresses' %}"
-                                            class="btn custom-btn-danger border-radius-3xl"
-                                        >
-                                            مدیریت آدرس ها
-                                        </a>
-
-                                    </div>
 
                                 </div>
 
+
                             </div>
 
+
                         </div>
+                        <div class="edit_address_box"></div>
 
 
                         <!-- ================================= -->
@@ -1770,6 +1963,7 @@
 
     </div>
 
+</div>
 </div>
 </main>
 
@@ -2237,6 +2431,7 @@
 
 }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
@@ -2359,11 +2554,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const urlTab = urlParams.get('tab');
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | اگر ?tab=... وجود داشت همان تب را باز کن
-    |--------------------------------------------------------------------------
-    */
+
 
     if (urlTab) {
 
@@ -2381,8 +2572,413 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
 });
-</script>
 
+$(document).on(
+    "click",
+    ".edit-address-button",
+    function (e) {
+
+        e.preventDefault();
+
+        const addressId = $(this).data("address-id");
+
+        $.ajax({
+
+            url: `/account/profile/addresses/edit/${addressId}/`,
+
+            type: "GET",
+
+            success: function (response) {
+
+                // اگر مودال قبلی وجود دارد حذفش کن
+                $(".edit_address_box").remove();
+
+                // اضافه کردن مودال به body
+                $("body").append(response.template);
+
+                // گرفتن مودال تازه اضافه شده
+                const modal = $(".edit_address_box");
+
+                // استایل اجباری برای قرار گرفتن روی کل صفحه
+                modal.css({
+                    "display": "flex",
+                    "position": "fixed",
+                    "top": "0",
+                    "left": "0",
+                    "width": "100%",
+                    "height": "100%",
+                    "z-index": "99999",
+                    "align-items": "center",
+                    "justify-content": "center",
+                    "background": "rgba(0, 0, 0, 0.35)",
+                    "backdrop-filter": "blur(8px)"
+                });
+
+            },
+
+            error: function (xhr) {
+
+                console.log(
+                    "EDIT ADDRESS ERROR:",
+                    xhr.responseText
+                );
+
+            }
+
+        });
+
+    }
+);
+
+
+$(document).on(
+    "click",
+    ".close_address_button",
+    function(){
+
+        $(".edit_address_box").hide();
+
+    }
+);
+
+
+
+$(document).on(
+    "click",
+    ".edit_address_box",
+    function(e){
+
+        if(
+            $(e.target).hasClass(
+                "edit_address_box"
+            )
+        ){
+
+            $(".edit_address_box").hide();
+
+        }
+
+    }
+);
+
+$(document).on(
+    "click",
+    "#add_address",
+    function(){
+
+        $.ajax({
+
+            url:
+            "{% url 'account:create_address_from_profile' %}",
+
+            type:"GET",
+
+            success:function(response){
+
+                $(".create_address_box").remove();
+
+                $("body").append(
+                    response.template
+                );
+
+                $(".create_address_box").show();
+
+            }
+
+        });
+
+    }
+);
+
+$(document).on(
+"click",
+".close_edit_address",
+function(){
+
+    $(".edit_address_box").remove();
+
+});
+
+$(document).on(
+    "click",
+    ".set-default-address",
+    function(){
+
+        const addressId =
+            $(this).data("address-id");
+
+
+        $.ajax({
+
+            url:
+            `/account/profile/addresses/default/${addressId}/`,
+
+            type:"POST",
+
+            data:{
+                csrfmiddlewaretoken:
+                "{{ csrf_token }}"
+            },
+
+
+            success:function(response){
+
+                if(response.success){
+
+                    location.reload();
+
+                }
+
+            },
+
+
+            error:function(xhr){
+
+                console.log(
+                    xhr.responseText
+                );
+
+            }
+
+        });
+
+
+    }
+);
+
+let deleteAddressId = null;
+
+
+
+$(document).on(
+    "click",
+    ".remove-address-button",
+    function(){
+
+
+        deleteAddressId = $(this).data("address-id");
+
+
+        $(".delete_address_modal")
+            .css("display","flex");
+
+
+    }
+);
+
+
+
+
+
+$(document).on(
+    "click",
+    ".close-delete-modal",
+    function(){
+
+
+        deleteAddressId = null;
+
+
+        $(".delete_address_modal")
+            .hide();
+
+
+    }
+);
+
+
+
+
+
+
+$(document).on(
+    "click",
+    ".confirm-delete-address",
+    function(){
+
+
+        if(!deleteAddressId)
+            return;
+
+
+
+        $.ajax({
+
+            url:
+            "{% url 'account:remove_address' %}",
+
+
+            type:"POST",
+
+
+            data:{
+
+
+                item_id:deleteAddressId,
+
+
+                csrfmiddlewaretoken:
+                "{{ csrf_token }}"
+
+            },
+
+
+            success:function(response){
+
+
+                if(response.success){
+
+
+                    $(
+                    `.remove-address-button[data-address-id="${deleteAddressId}"]`
+                    )
+                    .closest(".address-item")
+                    .remove();
+
+
+
+                    $(".delete_address_modal")
+                    .hide();
+
+
+                }
+                else{
+
+
+                    alert(response.message);
+
+                }
+
+
+
+            },
+
+
+            error:function(xhr){
+
+                console.log(xhr.responseText);
+
+            }
+
+
+        });
+
+
+
+    }
+);
+$(document).on(
+    "click",
+    ".close_button",
+    function(){
+
+        $(".create_address_box")
+            .hide();
+
+    }
+);
+$(document).on(
+    "click",
+    ".create_address_box",
+    function(e){
+
+        if(
+            $(e.target).hasClass("create_address_box")
+        ){
+
+            $(".create_address_box")
+                .hide();
+
+        }
+
+    }
+);
+</script>
+<div
+    class="delete_address_modal"
+    style="
+        display:none;
+        position:fixed;
+        inset:0;
+        background:rgba(0,0,0,0.45);
+        backdrop-filter:blur(8px);
+        z-index:99999;
+        align-items:center;
+        justify-content:center;
+        direction:rtl;
+    "
+>
+
+    <div
+        style="
+            width:360px;
+            background:white;
+            border-radius:25px;
+            padding:25px;
+            text-align:center;
+            box-shadow:0 20px 50px rgba(0,0,0,.2);
+        "
+    >
+
+        <div
+            style="
+                width:60px;
+                height:60px;
+                margin:auto;
+                display:flex;
+                align-items:center;
+                justify-content:center;
+                border-radius:50%;
+                background:#ffe8e8;
+                color:#dc3545;
+                font-size:25px;
+            "
+        >
+            <i class="fas fa-trash"></i>
+        </div>
+
+
+        <h5 class="fw-bold mt-3">
+            حذف آدرس
+        </h5>
+
+
+        <p class="text-muted">
+            آیا از حذف این آدرس مطمئن هستید؟
+        </p>
+
+
+        <div class="d-flex justify-content-center gap-3 mt-4">
+
+
+            <button
+                class="btn btn-secondary close-delete-modal"
+                style="
+                    border-radius:15px;
+                "
+            >
+                انصراف
+            </button>
+
+
+
+            <button
+                class="btn btn-danger confirm-delete-address"
+                style="
+                    border-radius:15px;
+                "
+            >
+                حذف
+            </button>
+
+
+        </div>
+
+
+    </div>
+
+
+</div>
 {% endblock %}
 <style>
 .comment-edit-button {
@@ -2416,6 +3012,8 @@ document.addEventListener('DOMContentLoaded', function () {
     border-color: #07006f;
     color: #fff;
 }
+
+
 </style>
 {% block scripts %}
 <script src="{% static 'js/product_comments_sort.js' %}"></script>

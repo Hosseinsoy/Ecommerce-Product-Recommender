@@ -1,15 +1,143 @@
-<div class="create_address_box" style="direction:rtl; display: none; position: fixed; backdrop-filter: blur(25px); background: rgba(255, 255, 255, 0.5); left: 0; top: 0; width: 100%; height: 100%; z-index: 9999;">
-    <div style="position: relative; margin: auto; top: 10%; width: 50%; padding: 20px; background: white; border: darkblue solid 5px; border-radius: 15px;">
-        <span class="close_button" style="cursor: pointer; float: left; font-size: 24px;">&times;</span>
-        <form method="post" action="{% url 'account:create_address' %}">
+<div
+    class="create_address_box"
+    style="
+        direction:rtl;
+        display:none;
+        position:fixed;
+        inset:0;
+        background:rgba(0,0,0,0.35);
+        backdrop-filter:blur(8px);
+        z-index:9999;
+        padding:20px;
+    "
+>
+
+    <div
+        style="
+            position:relative;
+            width:min(650px,100%);
+            margin:5vh auto;
+            padding:28px;
+            background:#ffffff;
+            border:1px solid #e5e7eb;
+            border-radius:24px;
+            box-shadow:0 20px 60px rgba(0,0,0,0.20);
+            box-sizing:border-box;
+        "
+    >
+
+        <span
+            class="close_button"
+            style="
+                position:absolute;
+                top:16px;
+                left:18px;
+                width:36px;
+                height:36px;
+                display:flex;
+                align-items:center;
+                justify-content:center;
+                cursor:pointer;
+                border-radius:10px;
+                background:#f3f4f6;
+                color:#555;
+                font-size:24px;
+                line-height:1;
+            "
+        >
+            &times;
+        </span>
+
+
+        <div
+            style="
+                display:flex;
+                align-items:center;
+                gap:14px;
+                margin-bottom:25px;
+                padding-bottom:18px;
+                border-bottom:1px solid #eeeeee;
+            "
+        >
+
+            <div
+                style="
+                    width:48px;
+                    height:48px;
+                    display:flex;
+                    align-items:center;
+                    justify-content:center;
+                    border-radius:14px;
+                    background:#f3f1ff;
+                    color:#07006f;
+                    font-size:20px;
+                "
+            >
+                <i class="fa fa-location-dot"></i>
+            </div>
+
+
+            <div>
+
+                <h5
+                    style="
+                        margin:0 0 5px 0;
+                        font-weight:700;
+                        color:#222;
+                    "
+                >
+                    افزودن آدرس جدید
+                </h5>
+
+
+                <small style="color:#888;">
+                    اطلاعات آدرس ارسال سفارش را وارد کنید
+                </small>
+
+            </div>
+
+        </div>
+
+
+
+        <form
+            method="post"
+            action="{% url 'account:create_address_from_profile' %}"
+        >
+
             {% csrf_token %}
-            {{ form.as_p }}
-            <input type="submit" value="ذخیره آدرس">
+
+
+            <div class="edit-address-form">
+
+                {{ form.as_p }}
+
+            </div>
+
+
+            <button
+                type="submit"
+                class="btn custom-btn-danger"
+                style="
+                    width:100%;
+                    margin-top:15px;
+                    padding:12px 20px;
+                    border-radius:14px;
+                    font-weight:600;
+                    font-size:15px;
+                "
+            >
+                <i class="fa fa-check me-1"></i>
+                ذخیره آدرس
+            </button>
+
+
         </form>
+
+
     </div>
+
 </div>
-
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script type="text/javascript">
         $(document).ready(function() {

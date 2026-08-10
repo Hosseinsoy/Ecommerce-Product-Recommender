@@ -102,15 +102,58 @@ class ShopUser(AbstractBaseUser, PermissionsMixin):
 
 
 class UserAddress(models.Model):
-    user = models.ForeignKey(ShopUser, on_delete=models.CASCADE, related_name='addresses')
+
+    user = models.ForeignKey(
+        ShopUser,
+        on_delete=models.CASCADE,
+        related_name='addresses'
+    )
+
     province = models.CharField(max_length=50)
+
     city = models.CharField(max_length=50)
+
     address = models.TextField(max_length=100)
+
     house_number = models.CharField(max_length=50)
-    postal_code = models.CharField(max_length=10, default='')
+
+    postal_code = models.CharField(
+        max_length=10,
+        default=''
+    )
+
+    is_default = models.BooleanField(
+        default=False,
+        verbose_name="آدرس پیشفرض"
+    )
+
+
+    def save(self, *args, **kwargs):
+
+        # اگر این آدرس پیشفرض شد
+        if self.is_default:
+
+            UserAddress.objects.filter(
+                user=self.user,
+                is_default=True
+            ).exclude(
+                id=self.id
+            ).update(
+                is_default=False
+            )
+
+        super().save(*args, **kwargs)
+
+
 
     def __str__(self):
-        return f"{self.province} | {self.city} | {self.address} پلاک: {self.house_number} | " + 'کد پستی' + f":{self.postal_code}"
+
+        return (
+            f"{self.province} | "
+            f"{self.city} | "
+            f"{self.address} "
+            f"پلاک: {self.house_number}"
+        )
 
 
 class Province(models.Model):

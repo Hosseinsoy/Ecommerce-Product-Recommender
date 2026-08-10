@@ -204,19 +204,89 @@ class RegisterForm(forms.ModelForm):
 
 
 class CreateAddressForm(forms.Form):
-    province = forms.ModelChoiceField(queryset=Province.objects.all(), label='استان')
-    city = forms.ChoiceField(choices=[], label='شهر')
-    address = forms.CharField(max_length=100, widget=forms.Textarea, label='ادامه آدرس')
-    house_number = forms.CharField(label='پلاک')
-    postal_code = forms.CharField(max_length=10, label='کد پستی')
+
+    province = forms.ModelChoiceField(
+        queryset=Province.objects.all(),
+        label='استان',
+        empty_label='استان را انتخاب کنید',
+        widget=forms.Select(
+            attrs={
+                'class': 'form-select custom-address-input',
+            }
+        )
+    )
+
+    city = forms.ChoiceField(
+        choices=[],
+        label='شهر',
+        widget=forms.Select(
+            attrs={
+                'class': 'form-select custom-address-input',
+            }
+        )
+    )
+
+    address = forms.CharField(
+        max_length=100,
+        label='ادامه آدرس',
+        widget=forms.Textarea(
+            attrs={
+                'class': 'form-control custom-address-input',
+                'rows': 4,
+                'placeholder': 'ادامه آدرس را وارد کنید',
+            }
+        )
+    )
+
+    house_number = forms.CharField(
+        label='پلاک',
+        widget=forms.TextInput(
+            attrs={
+                'class': 'form-control custom-address-input',
+                'placeholder': 'مثلاً ۱۲',
+            }
+        )
+    )
+
+    postal_code = forms.CharField(
+        max_length=10,
+        label='کد پستی',
+        widget=forms.TextInput(
+            attrs={
+                'class': 'form-control custom-address-input',
+                'placeholder': 'کد پستی ۱۰ رقمی',
+                'inputmode': 'numeric',
+            }
+        )
+    )
 
     def __init__(self, *args, **kwargs):
+
         province_id = kwargs.pop('province_id', None)
+        selected_city_id = kwargs.pop('selected_city_id', None)
+
         super().__init__(*args, **kwargs)
+
+        # اگر استان مشخص شده باشد
         if province_id:
-            self.fields['city'].choices = [(city.id, city.name) for city in City.objects.filter(province_id=province_id)]
+
+            cities = City.objects.filter(
+                province_id=province_id
+            )
+
+            self.fields['city'].choices = [
+                (city.id, city.name)
+                for city in City.objects.filter(province_id=province_id)
+            ]
+
+            if selected_city_id:
+                self.fields['city'].initial = selected_city_id
+
         else:
-            self.fields['city'].choices = [('', 'اول استان را انتخاب کنید')]
+
+            self.fields['city'].choices = [
+                ('', 'ابتدا استان را انتخاب کنید')
+            ]
 
 
 class EditShopUserForm(forms.ModelForm):
@@ -237,7 +307,17 @@ class EditShopUserForm(forms.ModelForm):
         return phone
 
     def __init__(self, *args, **kwargs):
+
         super().__init__(*args, **kwargs)
+
+        for field in self.fields:
+            self.fields[field].widget.attrs.update({
+
+                'class':
+                    'form-control custom-address-input'
+
+            })
+
         self.fields['phone'].disabled = True
 
 

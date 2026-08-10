@@ -1,72 +1,155 @@
-{% extends 'parent/base.html' %}
-{% block title %}آدرس های شما{% endblock %}
-{% block content %}
-    <div class="header">
-        <h2>آدرس های شما</h2>
-    </div>
+<div class="profile-tab d-none" id="tab-addresses" dir="rtl">
 
-    <div class="big_cart">
-        <div id="add_address" style="cursor: pointer; width: fit-content; margin: auto; text-decoration: none; font-size: 14px; color: darkblue;  border: 2px solid black; border-radius: 10px; padding: 5px; background-color: #06ff9f;margin-bottom: 15px;">
-            اضافه کردن آدرس +
-        </div>
-        {% for address in addresses %}
-        <div class="item" data-item-id="{{ address.id }}">
-            <div class="product_info">
-                <div class="unit_price">استان: {{ address.province }}</div>
-                <div class="unit_price">شهر: {{ address.city }}</div>
-                <div class="unit_price">جزئیات آدرس: {{ address.address }}</div>
-                <div class="unit_price">پلاک: {{ address.house_number }}</div>
-                <div class="unit_price">کد پستی: {{ address.postal_code }}</div>
-            </div>
+<div class="user-panel-profile border border-radius-3xl">
 
-            <div class="actions">
-                <div class="remove_address" style="cursor: pointer; color: white;">حذف</div>
-            </div>
-        </div>
-        {% empty %}
-        <div style="text-align: center; color: red">آدرسی اضافه نشده است</div>
-        {% endfor %}
-    </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script>
-    $(document).ready(function() {
-    $('.remove_address').on('click', function() {
-        var itemId = $(this).closest('.item').data('item-id');
+<div class="user-panel-profile-header p-3 border-bottom-gray-300">
 
-        $.ajax({
-            type: 'POST',
-            url: '{% url "account:remove_address" %}',
-            data: {
-                'item_id': itemId,
-                'csrfmiddlewaretoken': '{{ csrf_token }}'  // Send CSRF token
-            },
-            success: function(response) {
-                $(`.item[data-item-id="${itemId}"]`).remove();
-            },
 
-        });
-    });
-});
-    $('#add_address').click(function () {
-        $.ajax({
-            type: 'GET',
-            url: '{% url "account:create_address_from_profile" %}',
-            success: function (data) {
-                    $('body').append(data.template);
-                    $('.create_address_box').show();
-            },
-        });
-    });
+<div class="d-flex justify-content-between align-items-center">
 
-    $(document).on('click', '.close_button', function () {
-        $('.create_address_box').hide();
-    });
 
-    $(document).on('click', '.create_address_box', function (e) {
-        if ($(e.target).is('.create_address_box')) {
-            $('.create_address_box').hide();
-        }
-    });
-</script>
-{% endblock %}
+<div class="d-flex align-items-center gap-2">
+
+
+<span class="profile-icon">
+<i class="fa fa-location-dot"></i>
+</span>
+
+
+<div>
+
+<p class="fw-bold mb-0">
+آدرس های من
+</p>
+
+
+<small class="text-muted">
+مدیریت آدرس های ارسال
+</small>
+
+
+</div>
+
+
+</div>
+
+
+<a href="{% url 'account:create_address_from_profile' %}"
+class="btn btn-sm custom-btn-danger">
+
+<i class="fa fa-plus"></i>
+
+</a>
+
+
+</div>
+
+
+</div>
+
+
+
+<div class="p-3">
+
+
+{% for address in addresses %}
+
+
+<div class="border border-radius-3xl p-3 mb-3">
+
+
+<div class="d-flex justify-content-between">
+
+
+<div>
+
+
+<p>
+{{address.province}} - {{address.city}}
+</p>
+
+
+<p>
+{{address.address}}
+</p>
+
+
+<p>
+پلاک:
+{{address.house_number}}
+</p>
+
+
+<p>
+کدپستی:
+{{address.postal_code}}
+</p>
+
+
+
+{% if address.is_default %}
+
+<span class="badge bg-success">
+آدرس پیشفرض
+</span>
+
+{% endif %}
+
+
+
+</div>
+
+
+
+<div>
+
+
+<a href="{% url 'account:edit_address' address.id %}"
+class="btn btn-light">
+
+<i class="fa fa-pen"></i>
+
+</a>
+
+
+{% if not address.is_default %}
+
+<a href="{% url 'account:set_default_address' address.id %}"
+class="btn btn-outline-success">
+
+پیشفرض
+
+</a>
+
+
+{% endif %}
+
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+
+{% empty %}
+
+
+<p class="text-center text-muted">
+آدرسی ثبت نشده است
+</p>
+
+
+{% endfor %}
+
+
+</div>
+
+
+</div>
+
+</div>

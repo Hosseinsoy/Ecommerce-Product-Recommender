@@ -33,4 +33,16 @@ urlpatterns = [
     path('profile/seller/products/edit/<int:product_id>', views.edit_product, name='edit_product'),
     path('profile/seller/products/make-available', views.make_available, name='make_available'),
     path('profile/seller/products/make-unavailable', views.make_unavailable, name='make_unavailable'),
+    path(
+        'profile/addresses/edit/<int:address_id>/',
+        views.edit_address,
+        name='edit_address'
+    ),
+
+
+    path(
+        'profile/addresses/default/<int:address_id>/',
+        views.set_default_address,
+        name='set_default_address'
+    ),
 ]

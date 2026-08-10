@@ -8602,3 +8602,150 @@ p {
     background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='126.729' height='126.73'%3e%3cpath fill='%23fcd93a' d='M121.215 44.212l-34.899-3.3c-2.2-.2-4.101-1.6-5-3.7l-12.5-30.3c-2-5-9.101-5-11.101 0l-12.4 30.3c-.8 2.1-2.8 3.5-5 3.7l-34.9 3.3c-5.2.5-7.3 7-3.4 10.5l26.3 23.1c1.7 1.5 2.4 3.7 1.9 5.9l-7.9 32.399c-1.2 5.101 4.3 9.3 8.9 6.601l29.1-17.101c1.9-1.1 4.2-1.1 6.1 0l29.101 17.101c4.6 2.699 10.1-1.4 8.899-6.601l-7.8-32.399c-.5-2.2.2-4.4 1.9-5.9l26.3-23.1c3.8-3.5 1.6-10-3.6-10.5z'/%3e%3c/svg%3e");
 
 }
+
+.edit_address_box {
+
+    backdrop-filter:blur(15px);
+    background:rgba(0,0,0,.35);
+    display:none;
+    position:fixed;
+    inset:0;
+    z-index:9999;
+
+}
+
+.edit-address-modal-box .address-form-style p {
+    margin-bottom:18px;
+}
+
+
+.edit-address-modal-box label {
+    display:block;
+    margin-bottom:8px;
+    font-weight:600;
+    color:#333;
+}
+
+
+.edit-address-modal-box input,
+.edit-address-modal-box select,
+.edit-address-modal-box textarea {
+
+    width:100%;
+    border:1px solid #ddd;
+    border-radius:14px;
+    padding:12px 15px;
+    font-size:14px;
+    outline:none;
+    transition:.3s;
+    background:#fafafa;
+
+}
+
+
+
+.edit-address-modal-box input:focus,
+.edit-address-modal-box select:focus,
+.edit-address-modal-box textarea:focus {
+
+    border-color:#07006f;
+    background:white;
+    box-shadow:0 0 0 3px rgba(7,0,111,.1);
+
+}
+
+
+
+.edit-address-modal-box textarea {
+
+    height:90px;
+    resize:none;
+
+}
+
+.set-default-address {
+
+    background: #f3f1ff;
+
+    color: #07006f;
+
+    border: 1px solid #07006f;
+
+    font-size: 12px;
+
+    padding: 5px 10px;
+
+    border-radius: 12px;
+
+    cursor: pointer;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 5px;
+
+    transition: 0.2s;
+    margin-bottom: 5px;
+
+}
+
+
+.set-default-address:hover {
+
+    background: #07006f;
+
+    color: white;
+
+}
+
+/* فقط فوتر سبد خرید */
+.shopping-cart-box .card-footer {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+    gap: 25px !important;
+}
+
+/* بخش مبلغ */
+.shopping-cart-box .card-footer-right {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    width: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* بخش دکمه */
+.shopping-cart-box .card-footer-left {
+    flex: 0 0 auto !important;
+    width: auto !important;
+    min-width: max-content !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    position: static !important;
+}
+
+/* خود دکمه */
+.shopping-cart-box .card-footer-left .btn {
+    white-space: nowrap !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 0 !important;
+}
+
+/* مبلغ را یک‌تکه نگه دار */
+.shopping-cart-box .card-footer-right > span:last-child {
+    white-space: nowrap !important;
+}
+
+.shopping-cart-box .card-footer-right {
+    text-align: right !important;
+}
+
+.shopping-cart-box .card-footer-left {
+    margin-right: 20px !important;
+}
