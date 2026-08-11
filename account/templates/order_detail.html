@@ -378,6 +378,22 @@
                 >
                     پیگیری درخواست های مرجوعی
                 </button>
+                {% if order.status == 'در صف بررسی' or order.status == 'تایید سفارش' or order.status == 'دریافت از فروشنده' %}
+
+                    <a href="{% url 'order:cancel_order' order.id %}"
+                       >
+                        <button
+                            type="button"
+                            class="order-tab-button cancel-order-btn">
+
+                            <i class="fa fa-times-circle me-2"></i>
+                            لغو سفارش
+
+                        </button>
+
+                    </a>
+
+                {% endif %}
 
             </div>
 
@@ -784,4 +800,28 @@ $(document).on(
     
 </script>
 
+<style>
+.cancel-order-btn {
+    background-color: #dc3545 !important;
+    color: #fff !important;
+    border: none;
+    transition: all 0.25s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+
+.cancel-order-btn:hover {
+    background-color: #bb2d3b !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(220, 53, 69, 0.25);
+}
+
+
+.cancel-order-btn i {
+    font-size: 15px;
+}
+</style>
 {% endblock %}

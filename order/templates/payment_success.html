@@ -1,0 +1,205 @@
+{% extends 'parent/base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block content %}
+<br><br><br><br><br>
+<div class="container mt-5">
+
+    <div class="row justify-content-center align-content-center">
+
+        <div class="col-12 col-md-8">
+
+
+            <div class="payment-status success">
+
+
+                <div class="payment-header">
+
+                    <div class="row align-items-center">
+
+
+                        <div class="col-12 col-lg-8 order-2 order-lg-1">
+
+
+                            <h2>
+
+
+                                <span class="status-text">
+
+                                    پرداخت شما با موفقیت انجام شد!
+
+                                </span>
+
+
+
+                                <span class="d-block mt-2">
+
+                                    شماره سفارش:
+
+                                    {{ order.id }}
+
+                                </span>
+
+
+                            </h2>
+
+
+                        </div>
+
+
+
+                        <div class="col-12 col-lg-4 order-1 order-lg-2 payment-status-img">
+
+
+                            <img
+                                src="{% static 'assets/img/Success.png' %}"
+                                alt="Success">
+
+
+                        </div>
+
+
+                    </div>
+
+
+                </div>
+
+
+
+                <div class="payment-details">
+
+
+                    <a
+                        href="{% url 'account:order_detail' order.id %}"
+                        class="main-btn">
+
+                        مشاهده جزئیات سفارش
+
+                    </a>
+
+
+
+                    <a
+                        href="{% url 'shop:home' %}">
+
+                        ادامه خرید
+
+                    </a>
+
+
+                </div>
+
+
+
+            </div>
+
+
+
+
+
+
+            <!-- Payment Info -->
+
+            <div class="payment-info-box">
+
+
+                <p class="info-title">
+
+                    جزئیات پرداخت
+
+                </p>
+
+
+
+                <div class="payment-table">
+
+
+                    <table>
+
+
+                        <thead>
+
+                            <tr>
+
+                                <th>
+                                    مبلغ
+                                </th>
+
+
+                                <th>
+                                    وضعیت
+                                </th>
+
+
+                                <th>
+                                    تاریخ
+                                </th>
+
+
+                            </tr>
+
+
+                        </thead>
+
+
+
+                        <tbody>
+
+
+                            <tr>
+
+
+                                <td>
+
+                                    {{ order.final_cost|intcomma }}
+
+                                    تومان
+
+                                </td>
+
+
+
+                                <td>
+
+                                    <span class="text-success">
+
+                                        موفق
+
+                                    </span>
+
+
+                                </td>
+
+
+
+                                <td>
+
+                                    {{ order.created|date:"Y/m/d" }}
+
+                                </td>
+
+
+                            </tr>
+
+
+                        </tbody>
+
+
+                    </table>
+
+
+                </div>
+
+
+            </div>
+
+
+        </div>
+
+
+    </div>
+
+
+</div>
+{% endblock %}

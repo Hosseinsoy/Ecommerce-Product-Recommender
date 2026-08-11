@@ -1,125 +1,1014 @@
 {% extends 'parent/base.html' %}
-{% block title %}Order information{% endblock %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}
+ثبت سفارش
+{% endblock %}
+
 {% block content %}
-    <div class="header">
-       <h1>اطلاعات زیر را برای ثبت سفارش کامل کنید</h1>
-    </div>
+<br><br><br><br><br><br><br>
+<main class="container">
 
-    <div class="big_order">
-    <div class="order_information_box">
-        <form method="post">
-            {% csrf_token %}
-            <label for="name">نام تحویل گیرنده:</label>
-            <input type="text" name="name">
-            <br>
-            <br>
-            <label for="phone">شماره تلفن تحویل گیرنده:</label>
-            <input type="text" name="phone">
-            <br>
-            <br>
-            <label for="address">آدرس</label>
-            <select name="address">
-                {% for address in addresses %}
-                    <option name="address {{ forloop.counter }}">{{ address }}</option>
-                    {% empty %}
-                    هیچ آدرسی وجود ندارد
-                {% endfor %}
-            </select>
-            <br>
-            <br>
-            <div id="add_address" style="cursor: pointer; border: 2px solid black; font-size: 14px; font-weight: bold; border-radius: 8px; padding: 10px; margin: auto; width: fit-content;">
-                اضافه کردن آدرس
+    <div class="payment">
+
+        <!-- Payment Header -->
+        <div class="payment-header-alt my-3 rounded-sm">
+
+            <div class="payment-progress d-flex justify-content-center align-items-center my-3">
+
+                <a
+                    href="{% url 'cart:cart_detail' %}"
+                    class="step basket mx-3 text-muted">
+
+                    <p class="text-center w-100">
+                        <i class="fa fa-shopping-cart"></i>
+                        <span>سبد خرید</span>
+                    </p>
+
+                </a>
+
+                <a
+                    href="#"
+                    class="step shipping mx-3 d-flex justify-content-between align-items-center active">
+
+                    <p class="fs-6 mb-0 text-center w-100">
+                        <i class="fa fa-truck"></i>
+                        <span>اطلاعات ارسال</span>
+                    </p>
+
+                </a>
+
+                <a
+                    href="#"
+                    class="step payment mx-3 d-flex justify-content-between align-items-center">
+
+                    <p class="text-center w-100">
+                        <i class="fa fa-credit-card pe-2"></i>
+                        <span>پرداخت</span>
+                    </p>
+
+                </a>
+
+            </div>
+
+        </div>
+        <!-- Payment Header -->
+
+        <form method="post" id="create_order_form">
+
+        {% csrf_token %}
+        <!-- Payment Details -->
+        <div class="payment-details cart">
+
+            <div class="row">
+
+                <!-- LEFT -->
+                <div class="col-sm-12 col-md-12 col-lg-8 col-xl-9">
+
+
+        <!-- Address -->
+        <div
+            class="payment-address d-flex justify-content-between align-items-center border-gray-300 border p-3"
+            style="border-radius:16px">
+
+            <div class="address-details">
+
+                <span class="fs-8 theme-color">
+                    آدرس تحویل سفارش
+                </span>
+
+                {% if addresses %}
+
+                    <p class="fw-bold my-2" id="selected-address">
+                        <i class="fa fa-map-marker-alt"></i>
+
+                        {% for address in addresses %}
+                            {% if address.is_default %}
+                                {{ address.province }}،
+                                {{ address.city }}،
+                                {{ address.address }}،
+                                پلاک {{ address.house_number }}
+                            {% endif %}
+                        {% endfor %}
+                    </p>
+
+                    <span class="fs-7">
+                        {{ request.user.get_full_name }}
+                    </span>
+
+                {% else %}
+
+                    <p class="fw-bold my-2" id="selected-address">
+                        <i class="fa fa-map-marker-alt"></i>
+                        هیچ آدرسی ثبت نشده است.
+                    </p>
+
+                    <span class="fs-7">
+                        {{ request.user.get_full_name }}
+                    </span>
+
+                {% endif %}
+
             </div>
 
 
-            <br>
-            <div id="add_discount_code" style="cursor: pointer; border: 2px solid black; font-size: 14px; font-weight: bold; border-radius: 8px; padding: 10px; margin: auto; width: fit-content;">
-                کد تخفیف دارید | وارد کنید
+            <a
+                href="#"
+                class="theme-color fs-7"
+                data-bs-toggle="modal"
+                data-bs-target="#selectAddress">
+
+                تغییر | ویرایش
+
+                <i class="fa fa-angle-left"></i>
+
+            </a>
+
+
+            <!-- Address Modal -->
+            <div
+                class="modal fade"
+                id="selectAddress"
+                tabindex="-1"
+                aria-hidden="true">
+
+                <div class="modal-dialog modal-dialog-centered">
+
+                    <div class="modal-content">
+
+                        <div class="modal-header">
+
+                            <h5 class="modal-title">
+                                انتخاب آدرس
+                            </h5>
+
+                            <button
+                                type="button"
+                                class="btn-close"
+                                data-bs-dismiss="modal">
+                            </button>
+
+                        </div>
+
+
+                        <div class="modal-body">
+
+                            <!-- Add New Address -->
+                            <div
+                                class="d-grid gap-2 insert-new-address-btn border-bottom-gray-150">
+
+                                <a
+                                    href="{% url 'account:profile' %}?tab=addresses"
+                                    class="btn text-start fw-bold">
+
+                                    <i class="fa fa-map-marker-alt pe-2"></i>
+
+                                    ثبت آدرس جدید
+
+                                    <i class="fa fa-angle-left float-end align-middle py-2"></i>
+
+                                </a>
+
+                            </div>
+
+
+                            <!-- Existing Addresses -->
+                            <div class="current-addresses">
+
+                                {% if addresses %}
+
+                                    {% for address in addresses %}
+
+                                        <div class="mb-4 border-bottom-gray-150 py-3">
+
+                                            <input
+                                                class="form-check-input address-radio"
+                                                type="radio"
+                                                name="selected_address"
+                                                id="address_{{ address.id }}"
+
+                                                value="{{ address.province }} | {{ address.city }} | {{ address.address }} | {{ address.house_number }} | کد پستی: {{ address.postal_code }}"
+
+                                                data-display-address="{{ address.province }}، {{ address.city }}، {{ address.address }}، پلاک {{ address.house_number }}"
+
+                                                {% if address.is_default %}
+                                                    checked
+                                                {% endif %}>
+
+                                            <label
+                                                class="form-check-label"
+                                                for="address_{{ address.id }}">
+
+                                                {{ address.province }}
+                                                |
+                                                {{ address.city }}
+                                                |
+                                                {{ address.address }}
+                                                |
+                                                پلاک {{ address.house_number }}
+
+                                                <span class="d-block py-3 fw-lighter gray-600">
+
+                                                    <i class="fa fa-envelope"></i>
+
+                                                    {{ address.postal_code }}
+
+                                                </span>
+
+                                            </label>
+
+                                        </div>
+
+                                    {% endfor %}
+
+                                {% else %}
+
+                                    <p class="text-muted text-center py-3">
+                                        هیچ آدرسی وجود ندارد.
+                                    </p>
+
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+
+                        {% if addresses %}
+
+                            <div class="modal-footer">
+
+                                <button
+                                    type="button"
+                                    id="confirm-address"
+                                    class="btn btn-success"
+                                >
+
+                                    انتخاب آدرس
+
+                                </button>
+
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
             </div>
-            <div class="unit_price">مبلغ قابل پرداخت: {{ cart.final_price }} تومان</div>
-            {% if discounted_cost %}
-            <div class="unit_price">مبلغ قابل پرداخت پس از تخفیف: {{ discounted_cost }} تومان</div>
-            {% endif %}
-            <br>
-            <input type="submit" value="پرداخت">
+            <!-- Address Modal -->
+
+        </div>
+
+
+                    <!-- Shipping -->
+                    <div class="payment-transfer-time border border-radius-xxl mt-3 p-3">
+
+                        <div class="d-flex justify-content-start align-items-center">
+
+                            <i class="fa fa-truck rotate-3d text-danger fs-4"></i>
+
+                            <div class="ms-3">
+
+                                <span class="fw-bold">
+                                    ارسال عادی
+
+                                    <span class="badge bg-gray-500 border-radius-3xl">
+                                        {{ cart|length }} کالا
+                                    </span>
+                                </span>
+
+                                <p class="fs-8 mb-0">
+                                    ارسال با پست
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- Products -->
+                        <div class="payment-products mt-4">
+
+                            <div class="row">
+
+                                {% for item in cart %}
+
+                                    <div class="col-3 col-xl-2">
+
+                                        <div class="payment-products-image position-relative">
+
+                                            {% with image=item.product.product.images.first %}
+
+                                                {% if image %}
+
+                                                    <img
+                                                        src="{{ image.image_file.url }}"
+                                                        alt="{{ item.product.product.name }}"
+                                                        class="object-contain">
+
+                                                {% endif %}
+
+                                            {% endwith %}
+
+                                            <p class="badge bg-gray-400 position-absolute bottom-0">
+
+                                                {{ item.quantity }}
+
+                                            </p>
+
+                                        </div>
+
+                                    </div>
+
+                                {% endfor %}
+
+                            </div>
+
+                        </div>
+                        <!-- Products -->
+
+                    </div>
+                    <!-- Shipping -->
+
+
+                    <!-- Payment Method -->
+                    <div class="payment-methods-alt p-3 mb-3 mt-3">
+
+                        <h2 class="fs-5 fw-bold">
+                            انتخاب روش پرداخت
+                        </h2>
+
+                        <div class="payment-option mt-4 pb-3 border-bottom">
+
+                            <input
+                                type="radio"
+                                name="payment_method"
+                                id="bankCard"
+                                class="radio-btn"
+                                checked>
+
+                            <label
+                                for="bankCard"
+                                class="fw-bold">
+
+                                <i class="fa fa-credit-card fs-3 px-2"></i>
+
+                                کارت بانکی
+
+                            </label>
+
+                        </div>
+
+                    </div>
+                    <!-- Payment Method -->
+                    <!-- Order Information -->
+
+                    <form method="post" id="create_order_form">
+
+                        {% csrf_token %}
+
+                        <div class="payment-address p-3 border border-radius-xxl">
+
+                            <h2 class="fs-5 fw-bold mb-4">
+                                اطلاعات تحویل گیرنده
+                            </h2>
+
+
+                            <div class="mb-3">
+
+                                <label
+                                    for="{{ form.name.id_for_label }}"
+                                    class="form-label fw-bold">
+
+                                    نام تحویل گیرنده
+
+                                </label>
+
+                                {{ form.name }}
+
+                            </div>
+
+
+                            <div class="mb-3">
+
+                                <label
+                                    for="{{ form.phone.id_for_label }}"
+                                    class="form-label fw-bold">
+
+                                    شماره تلفن تحویل گیرنده
+
+                                </label>
+
+                                {{ form.phone }}
+
+                            </div>
+
+
+                            {{ form.address }}
+
+                        </div>
+
+
+                    </form>
+
+                    <!-- Order Information -->
+
+
+
+
+                    <!-- Discount -->
+
+                    <div class="discount-section p-3 mb-3">
+
+
+                        <h2 class="fs-5 fw-bold">
+
+                            کد تخفیف
+
+                        </h2>
+
+
+                        <form
+                            method="post"
+                            action="{% url 'shop:add_discount_code' %}"
+                            class="mt-4"
+                        >
+                            {% csrf_token %}
+
+                            <div class="position-relative">
+
+                                <input
+                                    type="text"
+                                    name="discount_code"
+                                    class="form-control py-2 rounded"
+                                    placeholder="اگر کد تخفیف دارید وارد کنید ..."
+                                    value="{{ request.session.discount_code_value|default:'' }}"
+                                    style="padding-left: 90px;"
+                                >
+
+
+                                <button
+                                    type="submit"
+                                    class="btn btn-primary fw-bold"
+                                    style="
+                                        position: absolute;
+                                        left: 8px;
+                                        top: 50%;
+                                        transform: translateY(-50%);
+                                        height: 34px;
+                                        padding: 0 18px;
+                                        border-radius: 10px;
+                                        font-size: 14px;
+                                    "
+                                >
+                                    ثبت
+                                </button>
+
+                            </div>
+
+                        </form>
+
+
+
+                        </form>
+
+
+                        <br>
+                        {% if discount_amount %}
+
+                            <div
+                                class="mt-2 fs-7 text-success">
+
+                                کد تخفیف با موفقیت اعمال شد.
+
+                            </div>
+
+
+                            <div
+                                class="mt-3">
+
+
+                                <span class="text-success">
+
+                                    تخفیف اعمال‌شده:
+
+                                </span>
+
+
+                                <strong>
+
+                                    {{ discount_amount|intcomma }}
+
+                                </strong>
+
+                                تومان
+
+
+                            </div>
+
+
+                        {% endif %}
+
+
+
+                    </div>
+
+                    <!-- Discount -->
+
+
+
+                </div>
+
+
+                <!-- RIGHT -->
+                <div class="col-lg-4 col-xl-3 mt-3">
+
+                    <div class="cart-summary">
+
+
+                        <div class="price-row d-flex justify-content-between px-3 py-3 border-bottom">
+
+                            <p class="fs-7 fw-bold">
+                                قیمت کالاها
+                                ({{ cart|length }})
+                            </p>
+
+                            <p class="fs-7 fw-bold text-muted">
+
+                                {{ cart.total_price|intcomma }}
+
+                                تومان
+
+                            </p>
+
+                        </div>
+
+
+                        <div class="price-row d-flex justify-content-between px-3 py-3 border-bottom">
+
+                            <p class="fs-7 fw-bold">
+                                هزینه ارسال
+                            </p>
+
+                            <p class="fs-7 fw-bold text-muted">
+
+                                {{ cart.post_price|intcomma }}
+
+                                تومان
+
+                            </p>
+
+                        </div>
+
+
+                        {% if discounted_cost %}
+
+                            <div class="price-row d-flex justify-content-between px-3 py-3 border-bottom">
+
+                                <p class="fs-7 fw-bold text-success">
+                                    تخفیف
+                                </p>
+
+                                <p class="fs-7 fw-bold text-success">
+
+                                    {{ discount_amount|intcomma }}
+
+                                    تومان
+
+                                </p>
+
+                            </div>
+
+                            <div class="price-row d-flex justify-content-between px-3 py-3 border-bottom">
+
+                                <p class="fs-7 fw-bold text-danger">
+                                    قابل پرداخت
+                                </p>
+
+                                <p class="fs-6 fw-bold text-danger">
+
+                                    {{ discounted_cost|intcomma }}
+
+                                    تومان
+
+                                </p>
+
+                            </div>
+
+                        {% else %}
+
+                            <div class="price-row d-flex justify-content-between px-3 py-3 border-bottom">
+
+                                <p class="fs-7 fw-bold text-danger">
+                                    قابل پرداخت
+                                </p>
+
+                                <p class="fs-6 fw-bold text-danger">
+
+                                    {{ cart.final_price|intcomma }}
+
+                                    تومان
+
+                                </p>
+
+                            </div>
+
+                        {% endif %}
+
+
+                        <div class="d-grid p-3">
+
+                            <button
+                                type="submit"
+                                form="create_order_form"
+                                class="btn-auth2 text-center p-1 rounded">
+
+                                پرداخت
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
         </form>
     </div>
+</main>
 
 
-       <h2>کالاهای سبد خرید</h2>
-
-        <div class="big_order_create">
-            {% for item in cart %}
-            <div class="product_order_create">
-                <a href="{{ item.product.get_absolute_url }}">
-                    <img class="product_image" src="{{ item.product.images.first.image_file.url }}">
-                </a>
-                <div class="product_info">
-                    <a href="{{ item.product.get_absolute_url }}">
-                        <span class="unit_price">{{ item.product.name }}</span>
-                    </a>
-                    <span class="unit_price">قیمت واحد: {{ item.product.off_price }} تومان</span>
-                    <span class="unit_price">موجودی: {{ item.product.inventory }}</span>
-                    <span id="quantity-{{ item.product.id }}" class="quantity">* {{ item.quantity }}</span>
-                    <span id="total-price-{{ item.product.id }}" class="total_price">قیمت *{{ item.quantity }}: {{ item.total }} تومان</span>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-
-    <br>
-
-    <!-- Order Information Box -->
-
-
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script>
-    $(document).ready(function () {
-    $('#add_address').click(function () {
-        $.ajax({
-            type: 'GET',
-            url: '{% url "account:create_address" %}',
-            success: function (data) {
-                    $('body').append(data.template);
-                    $('.create_address_box').show();
-            },
-        });
-    });
+document.addEventListener("DOMContentLoaded", function(){
 
-    $(document).on('click', '.close_button', function () {
-        $('.create_address_box').hide();
-    });
 
-    $(document).on('click', '.create_address_box', function (e) {
-        if ($(e.target).is('.create_address_box')) {
-            $('.create_address_box').hide();
+    const radios = document.querySelectorAll(".address-radio");
+    const hiddenAddress = document.getElementById("id_address");
+    const selectedAddress = document.getElementById("selected-address");
+    const confirmBtn = document.getElementById("confirm-address");
+
+
+    // مقدار اولیه آدرس پیشفرض
+    let checked = document.querySelector(".address-radio:checked");
+
+    if(checked){
+
+        hiddenAddress.value = checked.value;
+
+    }
+
+
+
+    confirmBtn.addEventListener("click", function(){
+
+
+        let selected = document.querySelector(".address-radio:checked");
+
+
+        if(!selected){
+
+            alert("لطفا یک آدرس انتخاب کنید");
+
+            return;
+
         }
-    });
-        $('#add_discount_code').click(function () {
-        $.ajax({
-            type: 'GET',
-            url: '{% url "shop:add_discount_code" %}',
-            success: function (data) {
-                    $('body').append(data.template);
-                    $('.discount_code_box').show();
-            },
-        });
-    });
 
-    $(document).on('click', '.close_button', function () {
-        $('.discount_code_box').hide();
-    });
 
-    $(document).on('click', '.discount_code_box', function (e) {
-        if ($(e.target).is('.discount_code_box')) {
-            $('.discount_code_box').hide();
+        hiddenAddress.value = selected.value;
+
+
+        selectedAddress.innerHTML =
+        '<i class="fa fa-map-marker-alt"></i> '
+        +
+        selected.dataset.displayAddress;
+
+
+
+        let modalElement =
+        document.getElementById("selectAddress");
+
+
+        let modal =
+        bootstrap.Modal.getInstance(modalElement);
+
+
+        if(modal){
+
+            modal.hide();
+
         }
+
+
+        console.log(
+            "ADDRESS:",
+            hiddenAddress.value
+        );
+
+
     });
+
+
+
+});
+
+$(document).ready(function () {
+
+
+    // =========================
+    // باز کردن فرم افزودن آدرس
+    // =========================
+
+    $(document).on("click", "#add_address", function (e) {
+
+        e.preventDefault();
+
+
+        $.ajax({
+
+            type: "GET",
+
+            url: "{% url 'account:create_address' %}",
+
+
+            success: function (data) {
+
+                $("body").append(data.template);
+
+                $(".create_address_box").show();
+
+            }
+
+        });
+
+
+    });
+
+
+
+    // =========================
+    // بستن فرم آدرس
+    // =========================
+
+    $(document).on(
+        "click",
+        ".close_button",
+        function () {
+
+            $(".create_address_box").hide();
+
+        }
+    );
+
+
+    $(document).on(
+        "click",
+        ".create_address_box",
+        function(e){
+
+            if(
+                $(e.target).hasClass(
+                    "create_address_box"
+                )
+            ){
+
+                $(".create_address_box").hide();
+
+            }
+
+        }
+    );
+
+
+
+
+
+$(document).on("click", "#confirm-address", function(e){
+
+    e.preventDefault();
+
+    console.log("CONFIRM CLICKED");
+
+
+    let selected = $(".address-radio:checked");
+
+
+    console.log("SELECTED:", selected);
+
+
+    if(selected.length === 0){
+
+        console.log("NO ADDRESS");
+
+        return;
+
+    }
+
+
+    let fullAddress = selected.attr("value");
+
+
+    let displayAddress = selected.attr(
+        "data-display-address"
+    );
+
+
+    console.log(
+        "NEW ADDRESS:",
+        fullAddress
+    );
+
+
+    $("#selected-address").html(
+        '<i class="fa fa-map-marker-alt"></i> '
+        +
+        displayAddress
+    );
+
+
+    $("#id_address").val(
+        fullAddress
+    );
+
+
+    console.log(
+        "HIDDEN VALUE:",
+        $("#id_address").val()
+    );
+
+
+    $("#selectAddress").modal("hide");
+
+
+});
+
+
+    // =========================
+    // مقدار اولیه آدرس
+    // =========================
+
+    let defaultAddress =
+        $(".address-radio:checked");
+
+
+    if(defaultAddress.length){
+
+        $("#id_address").val(
+            defaultAddress.val()
+        );
+
+
+        console.log(
+            "DEFAULT ADDRESS:",
+            $("#id_address").val()
+        );
+
+    }
+
+
+
 });
 
 
 
+
+
+// =========================
+// کد تخفیف
+// =========================
+
+$("#discount-form").on(
+    "submit",
+    function(e){
+
+
+        e.preventDefault();
+
+
+        $.ajax({
+
+            type:"POST",
+
+            url:"{% url 'shop:add_discount_code' %}",
+
+
+            data:{
+
+
+                discount_code:
+                    $("#discount-code").val(),
+
+
+                csrfmiddlewaretoken:
+                    "{{ csrf_token }}"
+
+
+            },
+
+
+            success:function(data){
+
+
+                if(data.success){
+
+
+                    $("#discount-message")
+
+                    .removeClass(
+                        "text-danger"
+                    )
+
+                    .addClass(
+                        "text-success"
+                    )
+
+                    .text(
+                        "کد تخفیف اعمال شد"
+                    );
+
+
+
+                    $("#discount-result")
+                    .show();
+
+
+
+                    $("#discount-amount")
+                    .text(
+
+                        Number(
+                            data.discount_amount
+                        )
+                        .toLocaleString("fa-IR")
+
+                    );
+
+
+
+                    $("#final-cost")
+                    .text(
+
+                        Number(
+                            data.final_cost
+                        )
+                        .toLocaleString("fa-IR")
+                        +
+                        " تومان"
+
+                    );
+
+
+                }
+
+                else{
+
+
+                    $("#discount-message")
+
+                    .removeClass(
+                        "text-success"
+                    )
+
+                    .addClass(
+                        "text-danger"
+                    )
+
+                    .text(
+                        data.error
+                    );
+
+
+                }
+
+
+            },
+
+
+            error:function(xhr){
+
+
+                console.log(
+                    xhr.responseText
+                );
+
+
+            }
+
+
+        });
+
+
+
+    }
+);
+
+
 </script>
+
 {% endblock %}

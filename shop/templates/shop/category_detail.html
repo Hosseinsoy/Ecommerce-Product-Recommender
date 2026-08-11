@@ -9,14 +9,14 @@
 <!-- Main:start -->
 <main class="container mt-xxxx-large">
 <div class="category-products my-3">
-        <p>محصولات مربط به دسته بندی : <span class="badge bg-info">{{ category.name }}</span></p>
-    </div>
-    {% include "includes/product_page.html" %}
+    <p>محصولات مربط به دسته بندی : <span class="badge bg-info">{{ category.name }}</span></p>
+</div>
+{% include "includes/product_page.html" %}
 </main>
 {% endblock %}
 {% block scripts %}
 <script>
-    const pageType = "category";
+const pageType = "category";
 </script>
 <script src="{% static 'js/filter_and_ordering.js' %}"></script>
 {% endblock %}

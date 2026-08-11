@@ -76,7 +76,7 @@ data-item-id="{{ item.product.id }}"
 
 <div class="col-md-3 text-center">
 
-
+<a href="{{ item.product.product.get_absolute_url }}">
 <img
 
 src="{{ item.product.product.images.first.image_file.url }}"
@@ -91,6 +91,7 @@ object-fit:cover;
 
 
 >
+</a>
 
 
 
@@ -104,13 +105,14 @@ object-fit:cover;
 
 <div class="col-md-7">
 
+<a style="color: black" href="{{ item.product.product.get_absolute_url }}">
 
 <h5 class="fw-bold">
 
 {{ item.product.product.name }}
 
 </h5>
-
+</a>
 
 
 

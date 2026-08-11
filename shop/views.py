@@ -3,6 +3,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 # from django.contrib.postgres.search import TrigramSimilarity
 from django.core.paginator import Paginator
+from django.db.models.functions import Coalesce
 from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.template.loader import render_to_string
@@ -13,7 +14,7 @@ from account.models import ShopUser
 from cart.cart import Cart
 from order.models import OrderItem
 from .forms import SearchForm
-from django.db.models import Min, Max, Q, Avg, Count, F
+from django.db.models import Min, Max, Q, Avg, Count, F, Sum, Value
 from .models import Category, Product, DiscountCode, Brand, ProductComment, CommentPoint, ProductCommentPoint, \
     ProductQuestion, ProductAnswer
 from django.conf import settings
@@ -533,21 +534,36 @@ def save_product(request, product_id):
 
 
 def add_discount_code(request):
-    if request.method == 'POST':
-        discount_code = request.POST.get('discount_code')
-        try:
-            dc = DiscountCode.objects.get(code=discount_code)
-            cart = Cart(request)
-            messages.success(request, 'کد تخفیف اعمال شد')
-            request.session['discounted_cost'] = cart.price_after_discount_code(dc)
-            request.session['discount_code'] = dc.id
-        except DiscountCode.DoesNotExist:
-            messages.error(request, 'کد تخفیف اشتباه است')
+    if request.method != 'POST':
         return redirect('order:create_order')
 
-    else:
-        template = render_to_string('partials/discount_code.html', request=request)
-        return JsonResponse({'template': template})
+    discount_code = request.POST.get('discount_code', '').strip()
+
+    if not discount_code:
+        messages.error(request, 'کد تخفیف را وارد کنید')
+        return redirect('order:create_order')
+
+    try:
+        dc = DiscountCode.objects.get(code=discount_code)
+
+    except DiscountCode.DoesNotExist:
+        messages.error(request, 'کد تخفیف اشتباه است')
+        return redirect('order:create_order')
+
+    cart = Cart(request)
+
+    discounted_cost = cart.price_after_discount_code(dc)
+
+    request.session['discounted_cost'] = discounted_cost
+    request.session['discount_code'] = dc.id
+    request.session['discount_code_value'] = dc.code
+
+    messages.success(
+        request,
+        f'کد تخفیف اعمال شد.'
+    )
+
+    return redirect('order:create_order')
 
 
 class CategoryDetailView(ListView):
@@ -2234,4 +2250,483 @@ class EditProductCommentView(LoginRequiredMixin, View):
 
         return JsonResponse({
             "success": True
+        })
+
+
+class BestSellingProductsView(ListView):
+
+    model = Product
+
+    template_name = "shop/best_selling.html"
+
+    context_object_name = "products"
+
+    paginate_by = PRODUCTS_PER_PAGE
+
+
+    def get_queryset(self):
+
+        products = (
+            Product.objects
+            .filter(
+                is_available=True
+            )
+            .annotate(
+                total_sold=Sum(
+                    "orders__quantity"
+                )
+            )
+            .filter(
+                total_sold__isnull=False
+            )
+            .prefetch_related(
+                "images",
+                "variants"
+            )
+            .select_related(
+                "brand",
+                "category"
+            )
+            .order_by(
+                "-total_sold"
+            )
+        )
+
+
+        # -------------------------
+        # Price Filter
+        # -------------------------
+
+        min_price = self.request.GET.get(
+            "min_price"
+        )
+
+        max_price = self.request.GET.get(
+            "max_price"
+        )
+
+
+        if min_price:
+            products = products.filter(
+                price__gte=min_price
+            )
+
+
+        if max_price:
+            products = products.filter(
+                price__lte=max_price
+            )
+
+
+        # -------------------------
+        # Brand Filter
+        # -------------------------
+
+        brand_ids = self.request.GET.getlist(
+            "brands"
+        )
+
+
+        if brand_ids:
+
+            products = products.filter(
+                brand__id__in=brand_ids
+            )
+
+
+        # -------------------------
+        # Sorting
+        # -------------------------
+
+        sort = self.request.GET.get(
+            "sort"
+        )
+
+
+        if sort == "cheap":
+
+            products = products.order_by(
+                "off_price",
+                "price"
+            )
+
+
+        elif sort == "expensive":
+
+            products = products.order_by(
+                "-off_price",
+                "-price"
+            )
+
+
+        elif sort == "newest":
+
+            products = products.order_by(
+                "-created"
+            )
+
+
+        return products
+    def get_context_data(self, **kwargs):
+
+        context = super().get_context_data(**kwargs)
+
+
+
+        context["categories"] = Category.objects.all().order_by(
+            "name"
+        )
+
+
+        context["brands"] = Brand.objects.all().order_by(
+            "name"
+        )
+
+
+
+        if self.request.user.is_authenticated:
+
+            context["saved_product_ids"] = list(
+
+                self.request.user.saved_products.values_list(
+                    "id",
+                    flat=True
+                )
+
+            )
+
+        else:
+
+            context["saved_product_ids"] = self.request.session.get(
+                "wishlist",
+                []
+            )
+
+
+
+
+        cart = Cart(
+            self.request
+        )
+
+
+        context["cart_item_ids"] = [
+
+            int(item["product"].id)
+
+            for item in cart
+
+        ]
+
+
+
+        products = self.get_queryset()
+
+
+
+        context["min_price"] = self.request.GET.get(
+            "min_price",
+            products.order_by("price").first().price
+            if products.exists()
+            else 0
+        )
+
+
+        context["max_price"] = self.request.GET.get(
+            "max_price",
+            products.order_by("-price").first().price
+            if products.exists()
+            else 0
+        )
+
+
+
+        context["selected_brands"] = [
+
+            int(x)
+
+            for x in self.request.GET.getlist(
+                "brands"
+            )
+
+        ]
+
+
+
+        context["selected_categories"] = []
+
+
+
+        context["only_available"] = True
+
+        context["current_sort"] = self.request.GET.get(
+            "sort",
+            "best"
+        )
+
+
+        context["is_wishlist_page"] = False
+
+
+
+        return context
+
+
+class BestSellingProductsAjaxView(View):
+
+    def get(self, request, *args, **kwargs):
+
+        products = (
+            Product.objects
+            .filter(
+                is_available=True
+            )
+            .annotate(
+                sales_count=Sum(
+                    "orders__quantity"
+                )
+            )
+            .filter(
+                sales_count__gt=0
+            )
+            .select_related(
+                "brand",
+                "category"
+            )
+            .prefetch_related(
+                "images",
+                "variants"
+            )
+        )
+
+        # =========================
+        # Category
+        # =========================
+
+        category_ids = request.GET.getlist(
+            "categories"
+        )
+
+        if category_ids:
+
+            products = products.filter(
+                category__id__in=category_ids
+            )
+
+
+        # =========================
+        # Brand
+        # =========================
+
+        brand_ids = request.GET.getlist(
+            "brands"
+        )
+
+        if brand_ids:
+
+            products = products.filter(
+                brand__id__in=brand_ids
+            )
+
+
+        # =========================
+        # Price
+        # =========================
+
+        min_price = request.GET.get(
+            "min_price"
+        )
+
+        max_price = request.GET.get(
+            "max_price"
+        )
+
+
+        if min_price:
+
+            products = products.filter(
+                price__gte=min_price
+            )
+
+
+        if max_price:
+
+            products = products.filter(
+                price__lte=max_price
+            )
+
+
+        # =========================
+        # Available
+        # =========================
+
+        only_available = request.GET.get(
+            "only_available"
+        )
+
+
+        if only_available == "1":
+
+            products = products.filter(
+                inventory__gt=0,
+                is_available=True
+            )
+
+
+        # =========================
+        # Ordering
+        # =========================
+
+        sort = request.GET.get(
+            "sort",
+            "best"
+        )
+
+        if sort == "cheap":
+
+            products = products.order_by(
+                "off_price",
+                "price",
+                "-sales_count"
+            )
+
+
+        elif sort == "expensive":
+
+            products = products.order_by(
+                "-off_price",
+                "-price",
+                "-sales_count"
+            )
+
+        elif sort == "newest":
+
+            products = products.order_by(
+
+                "-created",
+
+                "-sales_count"
+
+            )
+
+        elif sort == "oldest":
+
+            products = products.order_by(
+
+                "created",
+
+                "-sales_count"
+
+            )
+
+        elif sort == "cheap":
+
+            products = products.order_by(
+
+                "off_price",
+
+                "-sales_count"
+
+            )
+
+        elif sort == "expensive":
+
+            products = products.order_by(
+
+                "-off_price",
+
+                "-sales_count"
+
+            )
+
+        else:
+
+
+            products = products.order_by(
+
+                "-sales_count"
+
+            )
+        print(products.count())
+        print(list(products.values("id", "name", "sales_count")))
+        # =========================
+        # Pagination
+        # =========================
+
+        paginator = Paginator(
+            products,
+            PRODUCTS_PER_PAGE
+        )
+
+
+        page_number = request.GET.get(
+            "page",
+            1
+        )
+
+
+        page_obj = paginator.get_page(
+            page_number
+        )
+
+
+        # =========================
+        # Context
+        # =========================
+
+        context = {
+
+            "products": page_obj.object_list,
+
+            "page_obj": page_obj,
+
+            "paginator": paginator,
+
+            "is_paginated": page_obj.has_other_pages(),
+
+            "saved_product_ids": (
+                    list(
+                        request.user.saved_products.values_list(
+                            "id",
+                            flat=True
+                        )
+                    )
+                    if request.user.is_authenticated
+                    else request.session.get(
+                        "wishlist",
+                        []
+                    )
+                ),
+            "is_wishlist_page": False,
+
+        }
+
+
+        from cart.cart import Cart
+
+        cart = Cart(request)
+
+
+        context["cart_item_ids"] = [
+
+            int(item["product"].id)
+
+            for item in cart
+
+        ]
+
+
+        html = render_to_string(
+            "includes/products_list.html",
+            context,
+            request=request
+        )
+
+
+        return JsonResponse({
+
+            "html": html,
+
+            "count": paginator.count,
+
         })

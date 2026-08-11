@@ -1,4 +1,4 @@
-from django.db.models import Avg
+from django.db.models import Avg, Sum
 from django.utils import timezone
 from django.db import models
 from django.utils.text import slugify
@@ -139,6 +139,16 @@ class Product(models.Model):
         ).aggregate(
             avg=Avg("score")
         )["avg"] or 0
+
+    @property
+    def total_sales(self):
+        return self.orders.filter(
+            order__paid=True,
+            order__status='تحویل مرسوله به مشتری'
+        ).aggregate(
+            total=Sum('quantity')
+        )['total'] or 0
+
 
     class Meta:
         ordering = ['-created']

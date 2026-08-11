@@ -1,0 +1,64 @@
+{% extends 'parent/base.html' %}
+
+
+{% block content %}
+
+<br><br><br><br><br><br><br>
+<div class="container mt-5">
+
+    <div class="card p-4 text-center">
+
+
+        <h4 class="mb-4">
+
+            آیا از لغو سفارش مطمئن هستید؟
+
+        </h4>
+
+
+        <p>
+
+            شماره سفارش:
+            {{ order.id }}
+
+        </p>
+
+
+        <p class="text-danger">
+
+            در صورت لغو، مبلغ پرداختی حداکثر تا 48 ساعت برگشت داده می‌شود.
+
+        </p>
+<br>
+
+        <form method="post">
+
+            {% csrf_token %}
+
+
+            <button
+            class="btn btn-danger">
+
+                بله، لغو سفارش
+
+            </button>
+
+
+            <a
+            href="{% url 'account:order_detail' order.id %}"
+            class="btn btn-secondary">
+
+                بازگشت
+
+            </a>
+
+
+        </form>
+
+
+    </div>
+
+</div>
+
+
+{% endblock %}

@@ -594,7 +594,7 @@
                         <!-- Comments -->
                         <li>
                             <a class="dropdown-item py-2 fw-bold"
-                               href="{% url 'account:profile' %}?tab=reviews">
+                               href="{% url 'account:profile' %}?tab=comments">
 
                                 <span class="pe-1">
 
@@ -916,7 +916,7 @@
                                           fill="#000000"/>
                                 </g>
                             </svg><!--end::Svg Icon-->
-                            <a class="mx-2 py-2" href="javascript:void(0)">پرفروش‌ترین‌ها</a>
+                            <a class="mx-2 py-2" href="{% url 'shop:best_selling' %}">پرفروش‌ترین‌ها</a>
 
                         </li>
                         <!--            Navbar Item:end-->

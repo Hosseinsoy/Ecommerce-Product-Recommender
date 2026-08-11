@@ -135,22 +135,31 @@ const container = document.getElementById('story-slider'),
 sliders.forEach(item => {
     item.addEventListener('click', () => container.src = item.dataset.video);
 });
-const story_img =document.querySelectorAll(".swiper-img")
+const story_img = document.querySelectorAll(".swiper-img");
 const video = document.querySelector(".story-videos-box video");
 const backdrop = document.querySelector(".modal");
 
-story_img.forEach(function (item){
-    item.addEventListener("click" ,function (){
+story_img.forEach(function (item) {
+    item.addEventListener("click", function () {
+
+        if (!video) return;
+
         video.currentTime = 0;
         video.autoplay = true;
         video.load();
-    })
-})
 
-backdrop.addEventListener('hidden.bs.modal', function (){
-    video.pause();
-    video.currentTime = 0;
-})
+    });
+});
+
+if (backdrop && video) {
+
+    backdrop.addEventListener('hidden.bs.modal', function () {
+        video.pause();
+        video.currentTime = 0;
+    });
+
+}
+
 const banners = document.querySelectorAll('.banner-item');
 
 banners.forEach(banner => {

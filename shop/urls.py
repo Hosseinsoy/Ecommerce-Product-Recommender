@@ -76,5 +76,15 @@ urlpatterns = [
         views.EditProductCommentView.as_view(),
         name="edit_product_comment"
     ),
+    path(
+        "best-selling/",
+        views.BestSellingProductsView.as_view(),
+        name="best_selling"
+    ),
+    path(
+        "best-selling/ajax/",
+        views.BestSellingProductsAjaxView.as_view(),
+        name="best_selling_ajax"
+    ),
 ]
 

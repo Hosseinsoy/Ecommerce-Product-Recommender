@@ -97,47 +97,245 @@ def order(request):
 
 @login_required
 def create_order(request):
-    discounted_cost = None
-    if 'discounted_cost' in request.session:
-        discounted_cost = request.session['discounted_cost']
+
     cart = Cart(request)
-    model_addresses = UserAddress.objects.filter(user=request.user)
-    addresses = []
-    for address in model_addresses:
-        city = address.city
-        addr = ''
-        addr += address.province + ' | '
-        addr += city + ' | '
-        addr += address.address + ' | '
-        addr += address.house_number + ' | '
-        addr += 'کد پستی: ' + address.postal_code
-        addresses.append(addr)
+
+    if len(cart) == 0:
+        messages.error(request, 'سبد خرید شما خالی است')
+        return redirect('cart:cart_detail')
+
+
+    # -------------------------
+    # آدرس‌های کاربر
+    # -------------------------
+
+    addresses = UserAddress.objects.filter(
+        user=request.user
+    )
+
+    default_address = addresses.filter(
+        is_default=True
+    ).first()
+
+
+    default_address_text = ''
+
+    if default_address:
+
+        default_address_text = (
+            f"{default_address.province} | "
+            f"{default_address.city} | "
+            f"{default_address.address} | "
+            f"{default_address.house_number} | "
+            f"کد پستی: {default_address.postal_code}"
+        )
+
+
+    # -------------------------
+    # تخفیف
+    # -------------------------
+
+    discounted_cost = request.session.get(
+        'discounted_cost'
+    )
+    discount_code_value = request.session.get(
+        'discount_code_value'
+    )
+    discount_amount = None
+
+
+    if discounted_cost is not None:
+
+        original_cost = cart.final_price()
+
+        discount_amount = (
+            int(original_cost)
+            -
+            int(discounted_cost)
+        )
+
+
+    # -------------------------
+    # POST
+    # -------------------------
+
     if request.method == 'POST':
+
         form = CreateOrderForm(request.POST)
+
+
         if form.is_valid():
+
             order = form.save(commit=False)
+
             order.user = request.user
-            if discounted_cost:
-                order.final_cost = discounted_cost
+
+
+            # -------------------------
+            # آدرس انتخاب شده
+            # -------------------------
+
+            selected_address = form.cleaned_data.get(
+                'address'
+            )
+
+
+            if selected_address:
+
+                order.address = selected_address
+
             else:
+
+                order.address = default_address_text
+
+
+
+            # -------------------------
+            # مبلغ نهایی
+            # -------------------------
+
+            if discounted_cost is not None:
+
+                order.final_cost = discounted_cost
+
+            else:
+
                 order.final_cost = cart.final_price()
-            if 'discounted_cost' in request.session:
-                del request.session['discounted_cost']
-            if 'discount_code' in request.session:
-                dc = DiscountCode.objects.get(pk=request.session['discount_code'])
-                order.discount_code = dc
-                del request.session['discount_code']
+
+
+
+            # -------------------------
+            # کد تخفیف
+            # -------------------------
+
+            discount_code_id = request.session.get(
+                'discount_code'
+            )
+
+
+            if discount_code_id:
+
+                try:
+
+                    dc = DiscountCode.objects.get(
+                        pk=discount_code_id
+                    )
+
+                    order.discount_code = dc
+
+
+                except DiscountCode.DoesNotExist:
+
+                    pass
+
+
+
+            # ذخیره سفارش
+
             order.save()
+
+
+
+            # -------------------------
+            # آیتم‌های سفارش
+            # -------------------------
+
             for item in cart:
-                OrderItem.objects.create(order=order, product=item['product'].product, price=item['product'].product.off_price,
-                                         weight=item['product'].product.weight, quantity=item['quantity'],
-                                         color=item['product'].color, size=item['product'].size)
+
+                OrderItem.objects.create(
+
+                    order=order,
+
+                    product=item['product'].product,
+
+                    price=item['product'].product.off_price,
+
+                    weight=item['product'].product.weight,
+
+                    quantity=item['quantity'],
+
+                    color=item['product'].color,
+
+                    size=item['product'].size
+
+                )
+
+
+
+            # -------------------------
+            # پاک کردن سبد
+            # -------------------------
+
             cart.clear()
-            return redirect('account:profile')
+
+
+            request.session.pop(
+                'discounted_cost',
+                None
+            )
+
+            request.session.pop(
+                'discount_code',
+                None
+            )
+
+            return redirect(
+                'order:payment_successful',
+                order_id=order.id
+            )
+
+
+
+    # -------------------------
+    # GET
+    # -------------------------
+
     else:
-        form = CreateOrderForm(initial={'name': request.user.get_full_name(), 'phone': request.user.phone})
-    return render(request, 'create_order.html', {"form": form, "cart": cart, 'addresses': addresses,
-                                                 'discounted_cost': discounted_cost})
+
+
+        form = CreateOrderForm(
+
+            initial={
+
+                'name':
+                    request.user.get_full_name(),
+
+                'phone':
+                    request.user.phone,
+
+                'address':
+                    default_address_text
+
+            }
+
+        )
+
+
+    return render(
+
+        request,
+
+        'create_order.html',
+
+        {
+
+            'form': form,
+
+            'cart': cart,
+
+            'addresses': addresses,
+
+            'default_address': default_address,
+
+            'discounted_cost': discounted_cost,
+
+            'discount_amount': discount_amount,
+
+            'discount_code_value': discount_code_value,
+
+        }
+
+    )
 
 
 def invoice_pdf(request, order_id):
@@ -398,3 +596,81 @@ def show_returns(request, order_id):
         return JsonResponse({'template': template})
 
 
+def payment_successful(request, order_id):
+    order = Order.objects.get(pk=order_id)
+    return render(
+        request,
+        'payment_success.html',
+        {
+            'order': order
+        }
+    )
+
+@login_required
+def cancel_order(request, order_id):
+
+    order = get_object_or_404(
+        Order,
+        id=order_id,
+        user=request.user
+    )
+
+
+    cancellable_status = [
+        'در صف بررسی',
+        'تایید سفارش',
+        'دریافت از فروشنده'
+    ]
+
+
+    if order.status not in cancellable_status:
+
+        messages.error(
+            request,
+            'این سفارش دیگر قابل لغو نیست.'
+        )
+
+        return redirect(
+            'order:order_detail',
+            order.id
+        )
+
+
+    if request.method == "POST":
+
+
+        order.status = "لغو شده"
+
+
+        # اگر پرداخت شده باشد
+        # مبلغ باید برگشت بخورد
+        if order.paid:
+
+            # اینجا بعدا به درگاه یا کیف پول وصل میشه
+            # فعلا فقط ثبت می‌کنیم
+
+            pass
+
+
+        order.save()
+
+
+        messages.success(
+            request,
+            'سفارش شما با موفقیت لغو شد. مبلغ پرداختی حداکثر تا 48 ساعت برگشت داده می‌شود.'
+        )
+
+
+        return redirect(
+            'account:order_detail',
+            order.id
+        )
+
+
+    return render(
+        request,
+        'order/cancel_order.html',
+        {
+            'order': order
+        }
+    )

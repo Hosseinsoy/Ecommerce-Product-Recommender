@@ -5,9 +5,28 @@ from shop.models import Product
 
 
 class CreateOrderForm(forms.ModelForm):
+    address = forms.CharField(
+        widget=forms.HiddenInput(attrs={
+            "id": "id_address"
+        })
+    )
+
     class Meta:
         model = Order
         fields = ['name', 'phone', 'address']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields['name'].widget.attrs.update({
+            'class': 'form-control',
+            'placeholder': 'نام و نام خانوادگی تحویل گیرنده'
+        })
+
+        self.fields['phone'].widget.attrs.update({
+            'class': 'form-control',
+            'placeholder': 'شماره تلفن تحویل گیرنده'
+        })
 
 
 class ReturnOrderForm(forms.Form):

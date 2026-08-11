@@ -27,6 +27,9 @@ $(document).ready(function () {
         typeof pageType !== "undefined"
         && pageType === "products";
 
+    const isBestSellingPage =
+        typeof pageType !== "undefined"
+        && pageType === "best-selling";
 
     let ajaxUrl = "";
 
@@ -34,6 +37,11 @@ $(document).ready(function () {
     if (isWishlist) {
 
         ajaxUrl = "/wishlist/ajax/";
+
+    }
+    else if (isBestSellingPage) {
+
+        ajaxUrl = "/best-selling/ajax/";
 
     }
     else if (isProductsPage) {
@@ -56,6 +64,9 @@ $(document).ready(function () {
 
 
     let currentSort = "newest";
+    if (isBestSellingPage) {
+    currentSort = "best";
+}
 
     let searchQuery = new URLSearchParams(window.location.search).get("q") || "";
 
@@ -318,8 +329,7 @@ $(document).ready(function () {
             // Category page فقط برندها را آپدیت کند
             // ==========================
 
-            if (isCategoryPage || isProductsPage){
-
+            if (isCategoryPage || isProductsPage || isBestSellingPage){
 
                 const categories = [];
 
