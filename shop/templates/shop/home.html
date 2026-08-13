@@ -239,7 +239,8 @@
 
             <div class="row">
 
-                {% for category in categories %}
+                {% for category in home_categories %}
+                    {% if category.id  %}
                     <div class="col-4 col-lg-2 col-xl-2 mb-4">
                         <a href="{{ category.get_absolute_url }}" title="{{ category.name }}">
                             <img src="{{ category.image_file.url }}"
@@ -255,7 +256,7 @@
                     {% if forloop.counter|divisibleby:5 %}
                         <div class="clearfix d-none d-lg-block"></div>
                     {% endif %}
-
+                    {% endif %}
                 {% endfor %}
 
             </div>

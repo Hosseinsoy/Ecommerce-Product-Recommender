@@ -882,27 +882,23 @@
                     <ul class="navbar-nav mb-2 mb-lg-0 d-flex justify-content-between align-items-center position-relative">
                  <li class="nav-item d-flex justify-content-between align-items-center ms-1 me-3 position-relative">
 
-    <a class="mx-2 py-2" href="javascript:void(0)">
-        <i class="fa-solid fa-grip"></i>
+<a class="mx-2 py-2" href="javascript:void(0)">
+    <i class="fa-solid fa-grip"></i>
+    دسته بندی ها
+</a>
 
-        دسته بندی ها
-    </a>
+<ul class="position-absolute nav-item-submenu bg-white custom-box-shadow-s-2 category-menu">
 
-    <ul class="position-absolute nav-item-submenu bg-white custom-box-shadow-s-2">
+    {% for category in categories %}
+        <li class="nav-item-submenu-child">
+            <a href="{{ category.get_absolute_url }}"
+               class="d-flex align-items-center">
+                <span>{{ category.name }}</span>
+            </a>
+        </li>
+    {% endfor %}
 
-        {% for category in categories %}
-<li class="nav-item-submenu-child">
-    <a href="{{ category.get_absolute_url }}"
-       class="d-flex align-items-center">
-
-        <span>{{ category.name }}</span>
-    </a>
-</li>
-        {% endfor %}
-
-    </ul>
-
-</li>
+</ul>
 
                         <!--            Navbar Item:start-->
                         <li class="nav-item d-flex justify-content-between align-items-center">
@@ -942,3 +938,23 @@
     <header class="header"></header>
     <!--    Header In Loader:end-->
 </div>
+<style>
+    .category-menu {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    grid-auto-flow: column;
+    grid-template-rows: repeat(12, auto);
+
+    width: 1000px;
+    padding: 15px;
+    margin: 0;
+    list-style: none;
+}
+
+
+.category-menu .nav-item-submenu-child a {
+    text-decoration: none;
+    color: #333;
+}
+
+</style>

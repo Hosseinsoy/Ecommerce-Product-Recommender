@@ -49,6 +49,7 @@ class ProductColorVariantInline(admin.TabularInline):
 class ProductAdmin(admin.ModelAdmin):
 
     list_display = (
+        'id',
         'name',
         'category',
         'inventory',
@@ -108,7 +109,7 @@ class ProductVariantAdmin(admin.ModelAdmin):
 class CategoryAdmin(admin.ModelAdmin):
 
     list_display = (
-        'name',
+        'name', 'id', 'image_file'
     )
 
     prepopulated_fields = {

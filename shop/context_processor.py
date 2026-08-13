@@ -8,7 +8,8 @@ from shop.utils.wishlist import wishlist_count
 
 def categories(request):
     return {
-        'categories': Category.objects.all()
+        'categories': Category.objects.all(),
+        'home_categories': Category.objects.filter(id__lte=11)
     }
 
 

@@ -280,8 +280,7 @@
                                         <ul class="features gap-4 d-flex flex-wrap">
 
 
-                                            {% for feature in product.features.all %}
-
+                                        {% for feature in product.features.all|slice:":4" %}
 
                                             <li class="fs-6">
 
