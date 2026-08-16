@@ -25,6 +25,15 @@ from shop.utils.wishlist import (
     get_wishlist,
     save_wishlist,
 )
+from shop.utils.search_utils import (
+    normalize_query,
+    tokenize,
+    detect_brand,
+    BRAND_ALIASES,
+    normalize_search_tokens,
+)
+from django.db.models import Q, Case, When, Value, IntegerField
+from shop.models import Category
 
 User = settings.AUTH_USER_MODEL
 
@@ -1432,22 +1441,130 @@ class BrandDetailView(ListView):
 
 def search_products(query):
 
+    query = normalize_query(query)
+
     if not query:
         return Product.objects.none()
 
+    words = tokenize(query)
 
-    products = Product.objects.filter(
-        Q(name__icontains=query)
-        |
-        Q(description__icontains=query)
-        |
-        Q(brand__name__icontains=query)
-        |
-        Q(category__name__icontains=query)
+    qs = Product.objects.select_related(
+        "brand",
+        "category"
+    )
+
+    # ---------- تشخیص برند ----------
+    brand = detect_brand(query)
+
+    if brand:
+        qs = qs.filter(brand=brand)
+
+    # ---------- تشخیص کتگوری ----------
+    category = None
+
+    categories = sorted(
+        Category.objects.all(),
+        key=lambda c: len(c.name),
+        reverse=True
+    )
+
+    for cat in categories:
+        if normalize_query(cat.name) in query:
+            category = cat
+            break
+
+    if category:
+        qs = qs.filter(category=category)
+
+    # ---------- حذف کلمات برند و کتگوری ----------
+
+    brand_words = set()
+    brand_alias_words = set()
+
+    if brand:
+        brand_words.update(tokenize(brand.name))
+
+        for fa, en in BRAND_ALIASES.items():
+            if en == brand.name.lower():
+                brand_alias_words.update(tokenize(fa))
+
+    category_words = set(tokenize(category.name)) if category else set()
+
+    remaining_words = []
+
+    for word in words:
+        if (
+            word in brand_words
+            or word in brand_alias_words
+            or word in category_words
+        ):
+            continue
+
+        remaining_words.append(word)
+
+    remaining_words = normalize_search_tokens(
+        remaining_words
+    )
+
+    # ---------- جستجو روی نام، توضیحات و ویژگی‌ها ----------
+
+    for word in remaining_words:
+
+        qs = qs.filter(
+            Q(name__icontains=word)
+            |
+            Q(description__icontains=word)
+            |
+            Q(features__name__icontains=word)
+            |
+            Q(features__value__icontains=word)
+        )
+
+    # ---------- امتیازدهی ----------
+
+    qs = qs.annotate(
+
+        exact_name=Case(
+            When(
+                name__icontains=query,
+                then=Value(100)
+            ),
+            default=Value(0),
+            output_field=IntegerField()
+        ),
+
+        brand_score=Case(
+            When(
+                brand=brand,
+                then=Value(40)
+            ),
+            default=Value(0),
+            output_field=IntegerField()
+        ) if brand else Value(
+            0,
+            output_field=IntegerField()
+        ),
+
+        category_score=Case(
+            When(
+                category=category,
+                then=Value(30)
+            ),
+            default=Value(0),
+            output_field=IntegerField()
+        ) if category else Value(
+            0,
+            output_field=IntegerField()
+        )
+
+    ).order_by(
+        "-exact_name",
+        "-brand_score",
+        "-category_score",
+        "-created"
     ).distinct()
 
-
-    return products
+    return qs
 
 
 class SearchAjaxView(View):
@@ -1530,7 +1647,18 @@ class SearchResultView(View):
         query = request.GET.get("q", "").strip()
 
         products = search_products(query)
+        from shop.models import SearchQuery
 
+        if (
+                request.user.is_authenticated
+                and query
+        ):
+            SearchQuery.objects.create(
+                user=request.user,
+                query=query,
+                results_count=products.count(),
+                timestamp=timezone.now()
+            )
 
         # برندهای مرتبط با نتایج سرچ
         brands = Brand.objects.filter(

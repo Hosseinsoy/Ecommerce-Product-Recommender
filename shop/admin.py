@@ -15,7 +15,7 @@ from .models import (
 )
 
 from shop.models import Category
-
+from shop.models import Interaction
 
 # =========================================================
 # Product Inlines
@@ -264,3 +264,31 @@ class ProductCommentAdmin(admin.ModelAdmin):
 #     ordering = (
 #         'id',
 #     )
+
+
+from shop.models import SearchQuery
+
+
+@admin.register(SearchQuery)
+class SearchQueryAdmin(admin.ModelAdmin):
+
+    list_display = (
+        'user',
+        'query',
+        'timestamp',
+        'results_count',
+    )
+
+
+@admin.register(Interaction)
+class IterationAdmin(admin.ModelAdmin):
+
+    list_display = (
+        'user',
+        'product',
+        'search_query',
+        'event',
+        'timestamp',
+        'dwell_time',
+        'metadata'
+    )
