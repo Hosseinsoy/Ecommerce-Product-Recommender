@@ -45,19 +45,19 @@ class ImplicitDataset:
     # Weight
     # =====================================
 
-    def get_weight(self, event):
+    def get_weight(self, interaction_type):
 
         weights = {
-
             "view": 1,
-            "wishlist": 3,
-            "cart": 5,
-            "purchase": 10,
-
+            "wishlist": 4,
+            "cart": 7,
+            "purchase": 12,
         }
 
-        return weights.get(event, 1)
-
+        return weights.get(
+            interaction_type,
+            1
+        )
 
 
     # =====================================

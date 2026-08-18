@@ -18,7 +18,6 @@ BASE_DIR = os.path.dirname(
 
 sys.path.append(BASE_DIR)
 
-
 os.environ.setdefault(
     "DJANGO_SETTINGS_MODULE",
     "SabzShop.settings"
@@ -27,17 +26,23 @@ os.environ.setdefault(
 django.setup()
 
 
-
 # ==========================
 # Imports
 # ==========================
 
 from shop.models import Product
 
-from recommendation.ml.implicit_dataset import ImplicitDataset
+from recommendation.ml.implicit_dataset import (
+    ImplicitDataset
+)
 
-from recommendation.ml.implicit_model import ImplicitALSModel
+from recommendation.ml.implicit_model import (
+    ImplicitALSModel
+)
 
+from recommendation.ml.re_ranker import (
+    RecommendationReRanker
+)
 
 
 # ==========================
@@ -50,7 +55,6 @@ MODEL_DIR = os.path.join(
     "ml",
     "models"
 )
-
 
 
 # ==========================
@@ -73,7 +77,6 @@ with open(
     user_mapping = pickle.load(f)
 
 
-
 with open(
     os.path.join(
         MODEL_DIR,
@@ -85,9 +88,7 @@ with open(
     reverse_item_mapping = pickle.load(f)
 
 
-
 print("Mappings loaded")
-
 
 
 # ==========================
@@ -98,30 +99,22 @@ model = ImplicitALSModel()
 
 
 model.load(
-
     os.path.join(
         MODEL_DIR,
         "als_model.pkl"
     )
-
 )
-
-print("LOADED MODEL USERS:", model.model.user_factors.shape)
-print("LOADED MODEL ITEMS:", model.model.item_factors.shape)
-print("MAPPING ITEMS:", len(reverse_item_mapping))
-
-print("Model loaded")
-
 
 
 # ==========================
-# Build matrix
+# Build Matrix
 # ==========================
 
 dataset = ImplicitDataset()
 
-
-user_item_matrix = dataset.build_user_item_matrix()
+user_item_matrix = (
+    dataset.build_user_item_matrix()
+)
 
 
 # ==========================
@@ -131,67 +124,110 @@ user_item_matrix = dataset.build_user_item_matrix()
 user_id = 1
 
 
-
 if user_id not in user_mapping:
 
     print(
         f"User {user_id} not found"
     )
 
-    exit()
+    raise SystemExit
 
 
-
-internal_user_id = user_mapping[user_id]
-
-
-
-# ==========================
-# Recommend
-# ==========================
-
-recommendations = model.recommend(
-
-    internal_user_id,
-
-    user_item_matrix,
-
-    item_count=10
-
+internal_user_id = (
+    user_mapping[user_id]
 )
 
 
-item_indices, scores = recommendations
+# ==========================
+# ALS Candidates
+# ==========================
+
+item_indices, scores = model.recommend(
+    internal_user_id,
+    user_item_matrix,
+    item_count=50,
+    filter_already_liked_items=True
+)
 
 
+candidates = []
+
+
+for item_index, als_score in zip(
+    item_indices,
+    scores
+):
+
+    item_index = int(item_index)
+
+    product_id = reverse_item_mapping[
+        item_index
+    ]
+
+    try:
+
+        product = Product.objects.select_related(
+            "category",
+            "brand"
+        ).get(
+            id=product_id
+        )
+
+    except Product.DoesNotExist:
+
+        continue
+
+    candidates.append(
+        (
+            product,
+            float(als_score)
+        )
+    )
+
+
+# ==========================
+# Re-Ranking
+# ==========================
+
+reranker = (
+    RecommendationReRanker()
+)
+
+
+recommendations = reranker.rerank(
+    user_id=user_id,
+    candidates=candidates,
+    limit=10
+)
+
+
+# ==========================
+# Print Results
+# ==========================
 
 print("==============================")
 print(
-    f"Recommendations for user {user_id}"
+    f"Re-ranked Recommendations for user {user_id}"
 )
 print("==============================")
 
 
-for item_index, score in zip(item_indices, scores):
-    print(
-        "DEBUG ITEM INDEX:",
-        item_index,
-        "MAX:",
-        len(reverse_item_mapping)
-    )
-    product_id = reverse_item_mapping[item_index]
+for rank, recommendation in enumerate(
+    recommendations,
+    start=1
+):
 
+    product = recommendation["product"]
 
-    product = Product.objects.get(
+    final_score = recommendation["score"]
 
-        id=product_id
-
-    )
-
+    als_score = recommendation["als_score"]
 
     print(
-
         f"""
+Rank:
+{rank}
+
 Product:
 {product.name}
 
@@ -204,10 +240,12 @@ Brand:
 Price:
 {product.price}
 
-Score:
-{score}
+ALS Score:
+{als_score:.4f}
+
+Final Score:
+{final_score:.4f}
 
 ------------------------------
 """
-
     )
