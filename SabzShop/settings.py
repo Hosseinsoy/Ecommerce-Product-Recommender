@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'slugify',
     'django.contrib.humanize',
+    'recommendation.apps.RecommendationConfig',
 ]
 
 MIDDLEWARE = [

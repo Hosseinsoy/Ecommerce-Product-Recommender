@@ -15,7 +15,7 @@ from .models import (
 )
 
 from shop.models import Category
-from shop.models import Interaction
+
 
 # =========================================================
 # Product Inlines
@@ -280,15 +280,3 @@ class SearchQueryAdmin(admin.ModelAdmin):
     )
 
 
-@admin.register(Interaction)
-class IterationAdmin(admin.ModelAdmin):
-
-    list_display = (
-        'user',
-        'product',
-        'search_query',
-        'event',
-        'timestamp',
-        'dwell_time',
-        'metadata'
-    )
