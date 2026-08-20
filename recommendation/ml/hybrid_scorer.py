@@ -1,16 +1,21 @@
 from collections import defaultdict
+from difflib import SequenceMatcher
+from recommendation.ml.content_similarity import ContentSimilarity
 
 
 class HybridScorer:
 
     def __init__(
-        self,
-        als_weight=0.4,
-        content_weight=0.6
+            self,
+            als_weight=0.4,
+            content_weight=0.6,
+            content_model=None
     ):
 
         self.als_weight = als_weight
         self.content_weight = content_weight
+
+        self.content_model = content_model
 
     # =====================================
     # Normalize
@@ -133,6 +138,11 @@ class HybridScorer:
                 brand_scores
             ),
             "preferred_price": weighted_price,
+
+            "liked_product_ids": [
+                interaction.product_id
+                for interaction in train_interactions
+            ],
         }
 
     # =====================================
@@ -243,6 +253,44 @@ class HybridScorer:
         return similarity
 
     # =====================================
+    # Text Similarity
+    # =====================================
+
+    def text_similarity(
+        self,
+        product,
+        profile
+    ):
+
+        liked_products = profile.get(
+            "liked_products",
+            []
+        )
+
+
+        if not liked_products:
+            return 0.0
+
+
+        best_score = 0.0
+
+
+        for liked in liked_products:
+
+            score = SequenceMatcher(
+                None,
+                product.name.lower(),
+                liked.name.lower()
+            ).ratio()
+
+
+            if score > best_score:
+                best_score = score
+
+
+        return best_score
+
+    # =====================================
     # Budget Compatibility
     # =====================================
 
@@ -298,11 +346,40 @@ class HybridScorer:
         )
 
         # وزن داخلی Content
+        text = self.text_similarity(
+            product,
+            profile
+        )
+        similarity = self.similarity_score(
+            product,
+            profile
+        )
+
         return (
-            0.35 * category
-            + 0.25 * brand
-            + 0.20 * price
-            + 0.20 * budget_match
+                0.25 * category
+                + 0.20 * brand
+                + 0.15 * price
+                + 0.10 * budget_match
+                + 0.30 * similarity
+        )
+
+    def similarity_score(
+            self,
+            product,
+            profile
+    ):
+
+        if not self.content_model:
+            return 0.0
+
+        liked_products = profile.get(
+            "liked_product_ids",
+            []
+        )
+
+        return self.content_model.similarity(
+            product.id,
+            liked_products
         )
 
     # =====================================

@@ -6,15 +6,19 @@ import implicit
 
 class ImplicitALSModel:
 
-    def __init__(self):
+    def __init__(
+        self,
+        factors=64,
+        regularization=0.05,
+        iterations=30
+    ):
 
         self.model = implicit.als.AlternatingLeastSquares(
-            factors=64,
-            regularization=0.05,
-            iterations=30,
+            factors=factors,
+            regularization=regularization,
+            iterations=iterations,
             random_state=42
         )
-
     # =====================================
     # Train
     # =====================================

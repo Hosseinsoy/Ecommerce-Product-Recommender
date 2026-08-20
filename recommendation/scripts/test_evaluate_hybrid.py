@@ -1,8 +1,18 @@
-import os
-import sys
 import math
 import django
+import os
+import sys
 
+BASE_DIR = os.path.dirname(
+    os.path.dirname(
+        os.path.dirname(
+            os.path.abspath(__file__)
+        )
+    )
+)
+
+sys.path.append(BASE_DIR)
+from recommendation.ml.content_similarity import ContentSimilarity
 import numpy as np
 import scipy.sparse as sparse
 
@@ -65,7 +75,7 @@ TEST_EVENTS = {
 
 K = 10
 
-CANDIDATE_COUNT = 50
+CANDIDATE_COUNT = 100
 
 DECAY_LAMBDA = 0.061
 
@@ -238,6 +248,25 @@ dataset = ImplicitDataset()
 
 full_matrix = (
     dataset.build_matrix()
+)
+
+
+all_products = list(
+    Product.objects
+    .select_related(
+        "category",
+        "brand"
+    )
+    .prefetch_related(
+        "features",
+        "color_variants",
+        "size_variants"
+    )
+)
+
+
+content_model = ContentSimilarity(
+    all_products
 )
 
 
@@ -556,9 +585,11 @@ model.train(
 # ==========================
 
 ALS_WEIGHTS = [
-    0.5,
-    0.4,
+    0.35,
     0.3,
+    0.25,
+    0.2,
+    0.15,
 ]
 
 
@@ -570,20 +601,17 @@ for als_weight in ALS_WEIGHTS:
     print("==============================")
 
     print(
-        f"HYBRID TEST | ALS={als_weight:.1f}"
+        f"HYBRID TEST | ALS={als_weight:.2f}"
     )
 
     print("==============================")
 
-
     hybrid = HybridScorer(
-
         als_weight=als_weight,
-
         content_weight=(
-            1.0 - als_weight
-        )
-
+                1.0 - als_weight
+        ),
+        content_model=content_model
     )
 
 
