@@ -26,7 +26,7 @@ class ContentSimilarity:
 
         self.vectorizer = TfidfVectorizer(
             analyzer="word",
-            ngram_range=(1,2),
+            ngram_range=(1,3),
             min_df=1
         )
 
@@ -49,10 +49,9 @@ class ContentSimilarity:
 
         # نام محصول
         if product.name:
-
-            text_parts.append(
-                product.name
-            )
+            text_parts.append(product.name)
+            text_parts.append(product.name)
+            text_parts.append(product.name)
 
 
         # توضیحات
