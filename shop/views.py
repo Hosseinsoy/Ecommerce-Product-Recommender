@@ -13,6 +13,7 @@ from django.views.generic import ListView
 from account.models import ShopUser
 from cart.cart import Cart
 from order.models import OrderItem
+from recommendation.ml.recommendation_service import RecommendationService
 from .forms import SearchForm
 from django.db.models import Min, Max, Q, Avg, Count, F, Sum, Value
 from .models import Category, Product, DiscountCode, Brand, ProductComment, CommentPoint, ProductCommentPoint, \
@@ -65,32 +66,89 @@ PRODUCTS_PER_PAGE = 12  # 4X
 def home(request):
 
     flash_products = [
-        product for product in Product.objects.prefetch_related(
+        product
+        for product in Product.objects.prefetch_related(
             'images',
             'variants'
         )
         if product.is_flash_sale
     ][:10]
 
-    popular_brands = Brand.objects.filter(
-    ).order_by('-sales_count')[:12]
 
-    newest_products = Product.objects.prefetch_related(
-        'images'
-    ).filter(
-        is_available=True
-    ).order_by('-created')[:12]
+    popular_brands = (
+        Brand.objects
+        .order_by('-sales_count')[:12]
+    )
+
+
+    newest_products = (
+        Product.objects
+        .prefetch_related(
+            'images'
+        )
+        .filter(
+            is_available=True
+        )
+        .order_by(
+            '-created'
+        )[:12]
+    )
+
+
+    # ==========================
+    # Personalized Recommendations
+    # ==========================
 
     def chunked(iterable, n):
-        args = [iter(iterable)] * n
-        return zip_longest(*args)
+
+        args = [
+            iter(iterable)
+        ] * n
+
+        return zip_longest(
+            *args
+        )
+
+    recommended_products = []
+
+    if request.user.is_authenticated:
+        recommended_products = (
+            RecommendationService
+            .recommend_for_user(
+                request.user.id,
+                limit=10
+            )
+        )
+
+    recommended_product_groups = chunked(
+        recommended_products,
+        3
+    )
 
     context = {
-        'shocking_products': flash_products,
-        'popular_brands': popular_brands,
-        "newest_products": chunked(newest_products, 3),
+
+        'shocking_products':
+            flash_products,
+
+        'popular_brands':
+            popular_brands,
+
+        'newest_products':
+            chunked(
+                newest_products,
+                3
+            ),
+
+        'recommended_products': recommended_products,
+        'recommended_product_groups': recommended_product_groups,
     }
-    return render(request, 'shop/home.html', context)
+
+
+    return render(
+        request,
+        'shop/home.html',
+        context
+    )
 
 
 class ProductListView(ListView):

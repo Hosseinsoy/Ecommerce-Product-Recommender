@@ -493,7 +493,138 @@
         </div>
     </section>
 
+    <!-- Personalized Recommendations:start -->
+{% if user.is_authenticated and recommended_products %}
+
+<section class="best-sales-section mt-5 position-relative rounded-4 overflow-hidden">
+
+    <!-- Section Title:start -->
+    <h2 class="text-center py-3 fw-semibold fs-4">
+        <i class="fa fa-magic me-2 fs-6"></i>
+        پیشنهادهای مخصوص شما
+    </h2>
+    <!-- Section Title:end -->
+
+
+    <!-- Slider:start -->
+    <div class="swiper bestSales px-2 py-4">
+
+        <div class="swiper-wrapper">
+
+            {% for group in recommended_product_groups %}
+
+                <div class="swiper-slide">
+
+                    <div class="product-slide-item">
+
+                        {% for product in group %}
+
+                            {% if product %}
+
+                                <a href="{{ product.get_absolute_url }}"
+                                   class="d-flex align-items-center justify-content-between product-link">
+
+                                    <div class="product-image">
+
+                                        {% with image=product.images.first %}
+
+                                            {% if image %}
+
+                                                <img
+                                                    src="{{ image.image_file.url }}"
+                                                    alt="{{ product.name }}"
+                                                    title="{{ product.name }}"
+                                                    class="img-fluid"
+                                                >
+
+                                            {% endif %}
+
+                                        {% endwith %}
+
+                                    </div>
+
+
+                                    <div class="product-info">
+
+                                        <p class="mb-2 fw-bold">
+                                            {{ product.name }}
+                                        </p>
+
+
+                                        {% if product.off >= 10 %}
+
+                                            <div class="d-flex align-items-center gap-2 mb-1">
+
+                                                <span class="badge bg-danger">
+                                                    {{ product.off }}%
+                                                </span>
+
+                                                <span class="fw-bold text-danger">
+                                                    {{ product.off_price|intcomma }}
+                                                    تومان
+                                                </span>
+
+                                            </div>
+
+
+                                            <small class="text-muted text-decoration-line-through">
+                                                {{ product.price|intcomma }}
+                                                تومان
+                                            </small>
+
+                                        {% else %}
+
+                                            <span class="fw-bold text-dark">
+                                                {{ product.price|intcomma }}
+                                                تومان
+                                            </span>
+
+                                        {% endif %}
+
+                                    </div>
+
+                                </a>
+
+                            {% endif %}
+
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+</section>
+
+{% endif %}
+<!-- Personalized Recommendations:end -->
 </div>
 
 </div>
+<style>
+.product-image {
+    width: 90px;
+    height: 90px;
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    overflow: hidden;
+}
+
+.product-image img {
+    width: 100%;
+    height: 100%;
+
+    object-fit: contain;
+    object-position: center;
+}
+</style>
 {% endblock %}
