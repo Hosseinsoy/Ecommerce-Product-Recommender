@@ -1,7 +1,7 @@
 import datetime
 from django.forms import modelformset_factory
 import http
-
+from recommendation.models import UserPreference
 import requests
 from django.contrib.auth import logout, login, authenticate, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
@@ -441,98 +441,220 @@ def username_password_login(request):
 def register(request):
 
     if request.user.is_authenticated:
-        return HttpResponseNotFound('صفحه مورد نظر یافت نشد')
 
-    phone = request.session.get('verified_phone')
+        return HttpResponseNotFound(
+            "صفحه مورد نظر یافت نشد"
+        )
+
+
+    phone = request.session.get(
+        "verified_phone"
+    )
+
 
     if not phone:
+
         messages.error(
             request,
-            'ابتدا شماره تلفن خود را تأیید کنید.'
+            "ابتدا شماره تلفن خود را تأیید کنید."
         )
-        return redirect('account:verification_login')
 
-    if request.method == 'POST':
+        return redirect(
+            "account:verification_login"
+        )
 
-        form = RegisterForm(request.POST)
+
+    if request.method == "POST":
+
+        form = RegisterForm(
+            request.POST
+        )
+
 
         if form.is_valid():
 
-            first_name = form.cleaned_data['first_name']
-            last_name = form.cleaned_data['last_name']
-            email = form.cleaned_data.get('email')
+            first_name = (
+                form.cleaned_data["first_name"]
+            )
 
-            # بررسی مجدد شماره
-            if ShopUser.objects.filter(phone=phone).exists():
+            last_name = (
+                form.cleaned_data["last_name"]
+            )
+
+            email = (
+                form.cleaned_data.get("email")
+            )
+
+
+            favorite_categories = (
+                form.cleaned_data.get(
+                    "favorite_categories"
+                )
+            )
+
+            favorite_brands = (
+                form.cleaned_data.get(
+                    "favorite_brands"
+                )
+            )
+
+            max_monthly_budget = (
+                form.cleaned_data.get(
+                    "max_monthly_budget"
+                )
+                or 0
+            )
+
+            age = (
+                form.cleaned_data.get(
+                    "age"
+                )
+            )
+
+
+            # ==========================
+            # Check phone again
+            # ==========================
+
+            if ShopUser.objects.filter(
+                phone=phone
+            ).exists():
 
                 messages.error(
                     request,
-                    'این شماره تلفن قبلاً ثبت شده است.'
+                    "این شماره تلفن قبلاً ثبت شده است."
                 )
 
                 request.session.pop(
-                    'verified_phone',
+                    "verified_phone",
                     None
                 )
 
                 return redirect(
-                    'account:verification_login'
+                    "account:verification_login"
                 )
 
-            # ساخت کاربر
+
+            # ==========================
+            # Create User
+            # ==========================
+
             user = ShopUser.objects.create(
                 phone=phone,
                 first_name=first_name,
-                last_name=last_name
+                last_name=last_name,
+                email=email,
             )
 
-            # انتقال علاقه‌مندی‌های مهمان
-            merge_guest_wishlist(request, user)
 
-            # عدم استفاده از پسورد
+            # ==========================
+            # Create User Preference
+            # ==========================
+
+            preference = (
+                UserPreference.objects.create(
+                    user=user,
+                    max_monthly_budget=(
+                        max_monthly_budget
+                    ),
+                    age=age,
+                )
+            )
+
+
+            preference.favorite_categories.set(
+                favorite_categories
+            )
+
+            preference.favorite_brands.set(
+                favorite_brands
+            )
+
+
+            # ==========================
+            # Guest Wishlist
+            # ==========================
+
+            merge_guest_wishlist(
+                request,
+                user
+            )
+
+
+            # ==========================
+            # Disable Password
+            # ==========================
+
             user.set_unusable_password()
+
             user.save()
 
-            # ورود خودکار
-            user.backend = 'account.backends.ShopUserBackend'
-            login(request, user)
 
-            # پاک کردن شماره تأییدشده
+            # ==========================
+            # Auto Login
+            # ==========================
+
+            user.backend = (
+                "account.backends.ShopUserBackend"
+            )
+
+            login(
+                request,
+                user
+            )
+
+
+            # ==========================
+            # Clear Verification Session
+            # ==========================
+
             request.session.pop(
-                'verified_phone',
+                "verified_phone",
                 None
             )
 
+
             messages.success(
                 request,
-                'اکانت شما با موفقیت ساخته شد | خوش آمدید'
+                "اکانت شما با موفقیت ساخته شد | خوش آمدید"
             )
 
-            if 'shopping' in request.session:
+
+            # ==========================
+            # Continue Shopping
+            # ==========================
+
+            if "shopping" in request.session:
 
                 request.session.pop(
-                    'shopping',
+                    "shopping",
                     None
                 )
 
                 return redirect(
-                    'order:create_order'
+                    "order:create_order"
                 )
 
+
             return redirect(
-                'account:profile'
+                "account:profile"
             )
+
 
     else:
 
         form = RegisterForm()
 
+
     return render(
         request,
-        'registration/register.html',
+        "registration/register.html",
         {
-            'form': form,
-            'shopping': 'shopping' in request.session,
+            "form": form,
+            "shopping": (
+                "shopping"
+                in request.session
+            ),
         }
     )
 

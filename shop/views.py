@@ -1,4 +1,5 @@
 from itertools import product, zip_longest
+from recommendation.models import Interaction
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 # from django.contrib.postgres.search import TrigramSimilarity
@@ -344,7 +345,22 @@ def product_detail(request, id, slug):
         id=id,
         slug=slug
     )
+    # -----------------------------------------
+    # ثبت Interaction مشاهده محصول
+    # -----------------------------------------
 
+    if (
+        request.user.is_authenticated
+        and request.GET.get("ajax") != "1"
+    ):
+
+        Interaction.objects.create(
+            user=request.user,
+            product=product,
+            event="view",
+            source="direct",
+            interaction_score=1.0,
+        )
     # -----------------------------------------
     # بررسی وجود محصول در سبد خرید
     # -----------------------------------------
@@ -1077,15 +1093,29 @@ class WishlistToggleView(View):
                 id=product.id
             ).exists():
 
+                # حذف از Wishlist
                 saved_products.remove(product)
 
                 status = "removed"
 
             else:
 
+                # اضافه کردن به Wishlist
                 saved_products.add(product)
 
                 status = "added"
+
+                # ثبت Interaction
+                Interaction.objects.create(
+                    user=request.user,
+                    product=product,
+                    event="wishlist",
+                    source=request.POST.get(
+                        "source",
+                        "direct"
+                    ),
+                    interaction_score=3.0,
+                )
 
             wishlist_products = saved_products.all()
 
@@ -1148,6 +1178,8 @@ class WishlistToggleView(View):
             "wishlist_html": wishlist_html,
 
         })
+
+
 class WishlistView(ListView):
     model = Product
     template_name = "shop/wishlist.html"

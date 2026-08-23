@@ -152,52 +152,101 @@ class UsernamePasswordLoginForm(forms.Form):
         return phone
 
 
+from django import forms
+
+from .models import ShopUser
+from shop.models import Category, Brand
+
+
 class RegisterForm(forms.ModelForm):
+    favorite_categories = forms.ModelMultipleChoiceField(
+        queryset=Category.objects.all(),
+        required=False,
+        widget=forms.CheckboxSelectMultiple()
+    )
+
+    favorite_brands = forms.ModelMultipleChoiceField(
+        queryset=Brand.objects.all(),
+        required=False,
+        widget=forms.CheckboxSelectMultiple()
+    )
+
+    max_monthly_budget = forms.IntegerField(
+        required=False,
+        min_value=0,
+        widget=forms.NumberInput(
+            attrs={
+                "class": "login-phone-input",
+                "placeholder": "بودجه ماهانه (تومان)",
+                "min": "0",
+            }
+        )
+    )
+
+    age = forms.IntegerField(
+        required=False,
+        min_value=1,
+        max_value=120,
+        widget=forms.NumberInput(
+            attrs={
+                "class": "login-phone-input",
+                "placeholder": "سن",
+                "min": "1",
+                "max": "120",
+            }
+        )
+    )
 
     class Meta:
+
         model = ShopUser
 
         fields = [
-            'first_name',
-            'last_name',
-            'email',
+            "first_name",
+            "last_name",
+            "email",
         ]
 
         widgets = {
-            'first_name': forms.TextInput(
+
+            "first_name": forms.TextInput(
                 attrs={
-                    'class': 'login-phone-input',
-                    'placeholder': 'نام',
-                    'autocomplete': 'given-name',
+                    "class": "login-phone-input",
+                    "placeholder": "نام",
+                    "autocomplete": "given-name",
                 }
             ),
 
-            'last_name': forms.TextInput(
+            "last_name": forms.TextInput(
                 attrs={
-                    'class': 'login-phone-input',
-                    'placeholder': 'نام خانوادگی',
-                    'autocomplete': 'family-name',
+                    "class": "login-phone-input",
+                    "placeholder": "نام خانوادگی",
+                    "autocomplete": "family-name",
                 }
             ),
 
-            'email': forms.EmailInput(
+            "email": forms.EmailInput(
                 attrs={
-                    'class': 'login-phone-input',
-                    'placeholder': 'ایمیل (اختیاری)',
-                    'autocomplete': 'email',
+                    "class": "login-phone-input",
+                    "placeholder": "ایمیل (اختیاری)",
+                    "autocomplete": "email",
                 }
             ),
         }
 
     def clean_email(self):
-        email = self.cleaned_data.get('email')
+
+        email = self.cleaned_data.get("email")
 
         if not email:
             return None
 
-        if ShopUser.objects.filter(email=email).exists():
+        if ShopUser.objects.filter(
+            email=email
+        ).exists():
+
             raise forms.ValidationError(
-                'این ایمیل قبلاً استفاده شده است.'
+                "این ایمیل قبلاً استفاده شده است."
             )
 
         return email

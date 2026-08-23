@@ -4,11 +4,30 @@ from django.template.loader import render_to_string
 from django.views import View
 from django.views.decorators.http import require_POST
 from shop.models import Product, ProductVariant
+from recommendation.models import Interaction
 from cart.cart import Cart
 from sms import send_sms
 
 
 # Create your views here.
+def record_cart_interaction(
+    request,
+    product
+):
+    """
+    ثبت تعامل cart فقط برای کاربران لاگین‌شده.
+    """
+
+    if not request.user.is_authenticated:
+        return
+
+    Interaction.objects.create(
+        user=request.user,
+        product=product,
+        event="cart",
+        source="direct",
+    )
+
 
 @require_POST
 def add_to_cart(request, product_id):
@@ -27,6 +46,10 @@ def add_to_cart(request, product_id):
             product_variant = get_object_or_404(ProductVariant, product__id=product_id)
         cart = Cart(request)
         cart.add(product_variant)
+        record_cart_interaction(
+            request,
+            product
+        )
         cart_html = render_to_string(
             "includes/cart_dropdown.html",
             {
@@ -53,6 +76,8 @@ def cart_detail(request):
 def update_quantity(request):
 
     item_id = request.POST.get("item_id")
+    if item_id:
+        item_id = item_id.replace(",", "")
     action = request.POST.get("action")
 
     try:
@@ -72,6 +97,10 @@ def update_quantity(request):
 
             cart.add(product)
 
+            record_cart_interaction(
+                request,
+                product.product
+            )
         elif action == "decrease":
 
             cart.decrease(product)
@@ -174,6 +203,8 @@ def update_quantity(request):
             },
             status=500
         )
+
+
 @require_POST
 def remove_item(request):
     item_id = request.POST.get('item_id')
@@ -225,6 +256,11 @@ class CartToggleView(View):
         else:
 
             cart.add(product_variant)
+
+            record_cart_interaction(
+                request,
+                product
+            )
 
             status = "added"
 

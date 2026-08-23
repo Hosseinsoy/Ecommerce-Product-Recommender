@@ -20,6 +20,7 @@ from order.forms import CreateOrderForm, ReturnOrderForm
 from order.models import OrderItem, Order, ReturnOrder, ReturnProduct
 import pdfkit
 
+from recommendation.models import Interaction
 from shop.models import Product, Image, DiscountCode
 
 
@@ -597,7 +598,32 @@ def show_returns(request, order_id):
 
 
 def payment_successful(request, order_id):
-    order = Order.objects.get(pk=order_id)
+
+    order = Order.objects.get(
+        pk=order_id
+    )
+
+
+    # ثبت خرید برای سیستم پیشنهادگر
+
+    if request.user.is_authenticated:
+
+        order_items = order.items.all()
+
+
+        for item in order_items:
+
+            Interaction.objects.get_or_create(
+
+                user=request.user,
+
+                product=item.product,
+
+                event="purchase",
+
+            )
+
+
     return render(
         request,
         'payment_success.html',
@@ -605,6 +631,7 @@ def payment_successful(request, order_id):
             'order': order
         }
     )
+
 
 @login_required
 def cancel_order(request, order_id):

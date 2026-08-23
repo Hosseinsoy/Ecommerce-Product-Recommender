@@ -43,16 +43,29 @@ class RecommendationService:
 
     FINAL_LIMIT = 10
 
+
+    # ALS candidate generation
     ALS_WEIGHT = 0.20
 
     CONTENT_WEIGHT = 0.80
 
 
+    # Final behavior vs explicit preference
+    BEHAVIOR_WEIGHT = 0.80
+
+    PREFERENCE_WEIGHT = 0.20
+
+
     EVENT_WEIGHTS = {
+
         "view": 1.0,
+
         "wishlist": 3.0,
+
         "cart": 5.0,
+
         "purchase": 10.0,
+
     }
 
 
@@ -76,6 +89,57 @@ class RecommendationService:
 
 
     # =====================================
+    # Dynamic Weight
+    # =====================================
+
+    @classmethod
+    def get_dynamic_weights(
+            cls,
+            interaction_count
+    ):
+
+        """
+        تعیین میزان تاثیر رفتار کاربر
+        نسبت به UserPreference
+
+        کاربر جدید:
+        Preference بیشتر
+
+        با افزایش Interaction:
+        رفتار کاربر غالب می‌شود
+        """
+
+        if interaction_count <= 0:
+
+            return (
+                0.0,
+                1.0
+            )
+
+
+        if interaction_count <= 3:
+
+            return (
+                0.60,
+                0.40
+            )
+
+
+        if interaction_count <= 10:
+
+            return (
+                0.80,
+                0.20
+            )
+
+
+        return (
+            0.90,
+            0.10
+        )
+
+
+    # =====================================
     # Paths
     # =====================================
 
@@ -83,46 +147,51 @@ class RecommendationService:
     def model_directory(cls):
 
         return os.path.join(
+
             settings.BASE_DIR,
+
             "recommendation",
+
             "ml",
+
             "models",
+
         )
 
 
     # =====================================
-    # Load ALS + Mappings
+    # Load ALS + Mapping
     # =====================================
 
     @classmethod
     def load_models(cls):
 
         if cls._als_model is not None:
+
             return
 
 
         model_dir = cls.model_directory()
 
 
-        # -------------------------------
-        # ALS Model
-        # -------------------------------
-
         model_path = os.path.join(
+
             model_dir,
+
             "final_als_model.pkl",
+
         )
 
 
         if not os.path.exists(model_path):
 
             raise FileNotFoundError(
-                "Final ALS model was not found: "
-                f"{model_path}"
+                f"ALS model not found: {model_path}"
             )
 
 
         als = ImplicitALSModel()
+
 
         als.load(
             model_path
@@ -131,10 +200,6 @@ class RecommendationService:
 
         cls._als_model = als
 
-
-        # -------------------------------
-        # Mappings
-        # -------------------------------
 
         mapping_files = {
 
@@ -153,44 +218,44 @@ class RecommendationService:
         }
 
 
-        for attribute, filename in (
-            mapping_files.items()
-        ):
+        for attribute, filename in mapping_files.items():
+
 
             path = os.path.join(
+
                 model_dir,
+
                 filename,
+
             )
-
-
-            if not os.path.exists(path):
-
-                raise FileNotFoundError(
-                    "Recommendation mapping was not found: "
-                    f"{path}"
-                )
 
 
             with open(
                 path,
-                "rb",
+                "rb"
             ) as file:
 
+
                 setattr(
+
                     cls,
+
                     f"_{attribute}",
-                    pickle.load(file),
+
+                    pickle.load(file)
+
                 )
 
 
     # =====================================
-    # Load Products + Content Model
+    # Load Content Model
     # =====================================
 
     @classmethod
     def load_content_model(cls):
 
         if cls._products_loaded:
+
             return
 
 
@@ -216,10 +281,10 @@ class RecommendationService:
         )
 
 
-        cls._content_model = (
-            ContentSimilarity(
-                products
-            )
+        cls._content_model = ContentSimilarity(
+
+            products
+
         )
 
 
@@ -232,9 +297,10 @@ class RecommendationService:
 
     @classmethod
     def get_user_interactions(
-        cls,
-        user_id,
+            cls,
+            user_id,
     ):
+
 
         return list(
 
@@ -246,6 +312,8 @@ class RecommendationService:
 
             .select_related(
                 "product",
+                "product__category",
+                "product__brand",
             )
 
             .order_by(
@@ -257,13 +325,13 @@ class RecommendationService:
 
 
     # =====================================
-    # User Explicit Preference
+    # User Preference
     # =====================================
 
     @classmethod
     def get_user_preference(
-        cls,
-        user_id,
+            cls,
+            user_id,
     ):
 
         try:
@@ -283,63 +351,56 @@ class RecommendationService:
 
             )
 
+
         except UserPreference.DoesNotExist:
 
             return None
-
-
     # =====================================
-    # Build Time-Decay User Row
+    # Build Time Decay User Row
     # =====================================
 
     @classmethod
     def build_user_row(
-        cls,
-        user_id,
-        interactions,
+            cls,
+            user_id,
+            interactions,
     ):
 
         number_of_items = len(
             cls._item_mapping
         )
 
-
         row_indices = []
 
         row_data = []
 
-
-        reference_timestamp = (
-            timezone.now()
-        )
+        reference_timestamp = timezone.now()
 
 
         for interaction in interactions:
 
-            product_id = (
-                interaction.product_id
-            )
+            product_id = interaction.product_id
 
 
-            if product_id not in (
-                cls._item_mapping
-            ):
+            if product_id not in cls._item_mapping:
 
                 continue
 
 
-            base_weight = (
-                cls.EVENT_WEIGHTS.get(
-                    interaction.event,
-                    1.0,
-                )
+            base_weight = cls.EVENT_WEIGHTS.get(
+
+                interaction.event,
+
+                1.0
+
             )
 
 
             age_days = (
 
                 reference_timestamp
-                - interaction.timestamp
+                -
+                interaction.timestamp
 
             ).total_seconds() / 86400.0
 
@@ -350,14 +411,20 @@ class RecommendationService:
 
 
             decay = math.exp(
+
                 -cls.DECAY_LAMBDA
-                * age_days
+                *
+                age_days
+
             )
 
 
             effective_weight = (
+
                 base_weight
-                * decay
+                *
+                decay
+
             )
 
 
@@ -371,45 +438,52 @@ class RecommendationService:
 
 
             row_data.append(
+
                 effective_weight
+
             )
 
 
-        matrix = sparse.csr_matrix(
+        return sparse.csr_matrix(
 
             (
+
                 row_data,
+
                 (
+
                     [0] * len(row_indices),
+
                     row_indices,
+
                 ),
+
             ),
 
             shape=(
+
                 1,
+
                 number_of_items,
+
             )
 
         )
 
 
-        return matrix
-
 
     # =====================================
-    # User Budget
+    # Budget
     # =====================================
 
     @classmethod
     def get_budget(
-        cls,
-        user_id,
+            cls,
+            user_id,
     ):
 
-        preference = (
-            cls.get_user_preference(
-                user_id
-            )
+        preference = cls.get_user_preference(
+            user_id
         )
 
 
@@ -419,9 +493,15 @@ class RecommendationService:
 
 
         return (
+
             preference.max_monthly_budget
-            or 0
+
+            or
+
+            0
+
         )
+
 
 
     # =====================================
@@ -430,15 +510,14 @@ class RecommendationService:
 
     @classmethod
     def preference_fallback(
-        cls,
-        user_id,
-        limit=10,
+            cls,
+            user_id,
+            limit=10,
     ):
 
-        preference = (
-            cls.get_user_preference(
-                user_id
-            )
+
+        preference = cls.get_user_preference(
+            user_id
         )
 
 
@@ -447,19 +526,26 @@ class RecommendationService:
             Product.objects
 
             .filter(
+
                 is_available=True,
+
                 inventory__gt=0,
+
             )
 
             .select_related(
+
                 "category",
+
                 "brand",
+
             )
 
         )
 
 
         if not products:
+
             return []
 
 
@@ -468,30 +554,41 @@ class RecommendationService:
             return products[:limit]
 
 
+
         scored_products = []
 
 
         for product in products:
 
-            score = (
-                PreferenceScorer.score(
-                    product,
-                    preference
-                )
+
+            score = PreferenceScorer.score(
+
+                product,
+
+                preference
+
             )
 
 
             scored_products.append(
+
                 (
+
                     product,
+
                     score
+
                 )
+
             )
 
 
         scored_products.sort(
+
             key=lambda x: x[1],
+
             reverse=True
+
         )
 
 
@@ -500,20 +597,228 @@ class RecommendationService:
             product
 
             for product, score
+
             in scored_products[:limit]
 
         ]
 
 
+
+    # =====================================
+    # Interaction Based Cold Start
+    # =====================================
+
+    @classmethod
+    def interaction_fallback(
+            cls,
+            user_id,
+            limit=10,
+    ):
+
+
+        interactions = cls.get_user_interactions(
+
+            user_id
+
+        )
+
+
+        preference = cls.get_user_preference(
+
+            user_id
+
+        )
+
+
+        if not interactions:
+
+            return cls.preference_fallback(
+
+                user_id,
+
+                limit
+
+            )
+
+
+
+        seen_product_ids = {
+
+            interaction.product_id
+
+            for interaction in interactions
+
+        }
+
+
+
+        products = list(
+
+            Product.objects
+
+            .filter(
+
+                is_available=True,
+
+                inventory__gt=0,
+
+            )
+
+            .exclude(
+
+                id__in=seen_product_ids
+
+            )
+
+            .select_related(
+
+                "category",
+
+                "brand",
+
+            )
+
+            .prefetch_related(
+
+                "features",
+
+                "color_variants",
+
+                "size_variants",
+
+            )
+
+        )
+
+
+        if not products:
+
+            return []
+
+
+
+        scorer = HybridScorer(
+
+            content_model=cls._content_model
+
+        )
+
+
+        profile = scorer.build_user_profile(
+
+            interactions
+
+        )
+
+
+        budget = cls.get_budget(
+
+            user_id
+
+        )
+
+
+
+        behavior_weight, preference_weight = (
+
+            cls.get_dynamic_weights(
+
+                len(interactions)
+
+            )
+
+        )
+
+
+
+        ranked = []
+
+
+
+        for product in products:
+
+
+            behavior_score = scorer.content_score(
+
+                product,
+
+                profile,
+
+                budget
+
+            )
+
+
+            preference_score = 0.0
+
+
+            if preference:
+
+                preference_score = PreferenceScorer.score(
+
+                    product,
+
+                    preference
+
+                )
+
+
+
+            final_score = (
+
+                behavior_weight
+                *
+                behavior_score
+
+                +
+
+                preference_weight
+                *
+                preference_score
+
+            )
+
+
+            ranked.append(
+
+                {
+
+                    "product": product,
+
+                    "score": final_score
+
+                }
+
+            )
+
+
+
+        ranked.sort(
+
+            key=lambda x: x["score"],
+
+            reverse=True
+
+        )
+
+
+
+        return [
+
+            item["product"]
+
+            for item in ranked[:limit]
+
+        ]
     # =====================================
     # Recommendation
     # =====================================
 
     @classmethod
     def recommend_for_user(
-        cls,
-        user_id,
-        limit=None,
+            cls,
+            user_id,
+            limit=None,
     ):
 
         cls.load_models()
@@ -526,161 +831,143 @@ class RecommendationService:
             limit = cls.FINAL_LIMIT
 
 
-        # ---------------------------------
-        # User Preference
-        # ---------------------------------
 
-        preference = (
-            cls.get_user_preference(
-                user_id
-            )
+        preference = cls.get_user_preference(
+            user_id
         )
 
 
-        # ---------------------------------
-        # User Mapping
-        # ---------------------------------
+        interactions = cls.get_user_interactions(
+            user_id
+        )
 
-        if user_id not in (
-            cls._user_mapping
-        ):
+
+
+        # =================================
+        # New User / Cold Start
+        # =================================
+
+        if user_id not in cls._user_mapping:
+
+
+            if interactions:
+
+                return cls.interaction_fallback(
+
+                    user_id,
+
+                    limit
+
+                )
+
 
             return cls.preference_fallback(
+
                 user_id,
+
                 limit
+
             )
 
 
-        # ---------------------------------
-        # User Interactions
-        # ---------------------------------
 
-        interactions = (
-            cls.get_user_interactions(
-                user_id
-            )
-        )
-
-
-        # ---------------------------------
-        # Cold Start
-        # ---------------------------------
+        # =================================
+        # User Without Interaction
+        # =================================
 
         if not interactions:
 
             return cls.preference_fallback(
+
                 user_id,
+
                 limit
+
             )
 
 
-        # ---------------------------------
-        # Determine Preference Weight
-        # ---------------------------------
 
-        interaction_count = len(
+        # =================================
+        # Build ALS User Row
+        # =================================
+
+        user_row = cls.build_user_row(
+
+            user_id,
+
             interactions
+
         )
 
 
-        if preference is None:
-
-            preference_weight = 0.0
-
-        else:
-
-            preference_weight = (
-                PreferenceScorer
-                .get_interaction_weight(
-                    interaction_count
-                )
-            )
+        internal_user_id = cls._user_mapping[user_id]
 
 
-        behavior_weight = (
-            1.0
-            - preference_weight
-        )
 
-
-        # ---------------------------------
-        # User Row
-        # ---------------------------------
-
-        user_row = (
-            cls.build_user_row(
-                user_id,
-                interactions,
-            )
-        )
-
-
-        # ---------------------------------
-        # Internal User ID
-        # ---------------------------------
-
-        internal_user_id = (
-            cls._user_mapping[
-                user_id
-            ]
-        )
-
-
-        # ---------------------------------
+        # =================================
         # ALS Candidate Generation
-        # ---------------------------------
+        # =================================
 
-        item_indices, als_scores = (
+        item_indices, als_scores = cls._als_model.recommend(
 
-    cls._als_model.recommend(
+            internal_user_id,
 
-        internal_user_id,
+            user_row,
 
-        user_row,
+            item_count=cls.CANDIDATE_COUNT,
 
-        item_count=cls.CANDIDATE_COUNT,
+            filter_already_liked_items=True,
 
-        filter_already_liked_items=True,
-
-    )
-)
+        )
 
 
-        candidates = []
-
-
-        # ---------------------------------
-        # Load Candidate Products
-        # ---------------------------------
 
         candidate_product_ids = []
 
 
+
         for item_index in item_indices:
 
-            item_index = int(
-                item_index
-            )
+
+            item_index = int(item_index)
 
 
-            if item_index in (
-                cls._reverse_item_mapping
-            ):
+            if item_index in cls._reverse_item_mapping:
+
 
                 candidate_product_ids.append(
 
-                    cls._reverse_item_mapping[
-                        item_index
-                    ]
+                    cls._reverse_item_mapping[item_index]
 
                 )
 
 
+
         if not candidate_product_ids:
 
-            return cls.fallback_products(
+
+            return cls.interaction_fallback(
+
+                user_id,
+
                 limit
+
             )
+
+
+
+        # =================================
+        # Remove Seen Products
+        # =================================
+
+        seen_product_ids = {
+
+            interaction.product_id
+
+            for interaction in interactions
+
+        }
+
 
 
         products = list(
@@ -688,63 +975,86 @@ class RecommendationService:
             Product.objects
 
             .filter(
+
                 id__in=candidate_product_ids,
+
                 is_available=True,
+
                 inventory__gt=0,
+
+            )
+
+            .exclude(
+
+                id__in=seen_product_ids
+
             )
 
             .select_related(
+
                 "category",
+
                 "brand",
+
             )
 
             .prefetch_related(
+
                 "features",
+
                 "color_variants",
+
                 "size_variants",
+
             )
 
         )
 
 
+
         products_by_id = {
+
             product.id: product
+
             for product in products
+
         }
 
 
-        # حفظ ترتیب ALS
-        # در candidates
+
+        candidates = []
+
+
 
         for item_index, als_score in zip(
-            item_indices,
-            als_scores,
+
+                item_indices,
+
+                als_scores
+
         ):
 
-            item_index = int(
-                item_index
-            )
+
+            item_index = int(item_index)
 
 
-            if item_index not in (
-                cls._reverse_item_mapping
-            ):
+
+            if item_index not in cls._reverse_item_mapping:
 
                 continue
 
 
-            product_id = (
-                cls._reverse_item_mapping[
-                    item_index
-                ]
-            )
+
+            product_id = cls._reverse_item_mapping[item_index]
 
 
-            product = (
-                products_by_id.get(
-                    product_id
-                )
+
+            product = products_by_id.get(
+
+                product_id
+
             )
+
 
 
             if product is None:
@@ -752,24 +1062,37 @@ class RecommendationService:
                 continue
 
 
+
             candidates.append(
+
                 (
+
                     product,
+
                     float(als_score)
+
                 )
+
             )
+
 
 
         if not candidates:
 
-            return cls.fallback_products(
+
+            return cls.interaction_fallback(
+
+                user_id,
+
                 limit
+
             )
 
 
-        # ---------------------------------
-        # Train-based Hybrid Profile
-        # ---------------------------------
+
+        # =================================
+        # Hybrid Profile
+        # =================================
 
         scorer = HybridScorer(
 
@@ -782,25 +1105,21 @@ class RecommendationService:
         )
 
 
-        profile = (
-            scorer.build_user_profile(
-                interactions
-            )
+        profile = scorer.build_user_profile(
+
+            interactions
+
         )
 
 
-        # ---------------------------------
-        # Budget
-        # ---------------------------------
 
         budget = cls.get_budget(
+
             user_id
+
         )
 
 
-        # ---------------------------------
-        # Hybrid Ranking
-        # ---------------------------------
 
         ranked = scorer.rank(
 
@@ -815,57 +1134,108 @@ class RecommendationService:
         )
 
 
-        # ---------------------------------
-        # Explicit Preference Adjustment
-        # ---------------------------------
+
+        # =================================
+        # Dynamic Behavior Preference Blend
+        # =================================
+
+        behavior_weight, preference_weight = (
+
+            cls.get_dynamic_weights(
+
+                len(interactions)
+
+            )
+
+        )
+
+
 
         for item in ranked:
 
-            explicit_score = (
-                PreferenceScorer.score(
+
+            behavior_score = item["hybrid_score"]
+
+
+
+            preference_score = 0.0
+
+
+
+            if preference:
+
+
+                preference_score = PreferenceScorer.score(
+
                     item["product"],
+
                     preference
+
                 )
+
+
+
+            # جلوگیری از غالب شدن preference
+
+            behavior_score = max(
+
+                0.0,
+
+                min(
+
+                    behavior_score,
+
+                    1.0
+
+                )
+
             )
 
 
-            item[
-                "explicit_preference_score"
-            ] = explicit_score
+
+            preference_score = max(
+
+                0.0,
+
+                min(
+
+                    preference_score,
+
+                    1.0
+
+                )
+
+            )
 
 
-            item[
-                "final_score"
-            ] = (
+
+            item["final_score"] = (
 
                 behavior_weight
-                * item["hybrid_score"]
+
+                *
+                behavior_score
 
                 +
 
                 preference_weight
-                * explicit_score
+
+                *
+                preference_score
 
             )
 
 
-        # ---------------------------------
-        # Final Sort
-        # ---------------------------------
 
         ranked.sort(
 
-            key=lambda x:
-            x["final_score"],
+            key=lambda x: x["final_score"],
 
             reverse=True
 
         )
 
 
-        # ---------------------------------
-        # Return Products
-        # ---------------------------------
 
         return [
 
@@ -876,14 +1246,15 @@ class RecommendationService:
         ]
 
 
+
     # =====================================
     # Generic Fallback
     # =====================================
 
     @classmethod
     def fallback_products(
-        cls,
-        limit=10,
+            cls,
+            limit=10,
     ):
 
         return list(
@@ -891,12 +1262,17 @@ class RecommendationService:
             Product.objects
 
             .filter(
+
                 is_available=True,
+
                 inventory__gt=0,
+
             )
 
             .order_by(
+
                 "-created"
+
             )[:limit]
 
         )
