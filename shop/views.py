@@ -117,7 +117,7 @@ def home(request):
             RecommendationService
             .recommend_for_user(
                 request.user.id,
-                limit=10
+                limit=12
             )
         )
 

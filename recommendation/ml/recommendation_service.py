@@ -41,7 +41,7 @@ class RecommendationService:
 
     CANDIDATE_COUNT = 100
 
-    FINAL_LIMIT = 10
+    FINAL_LIMIT = 12
 
 
     # ALS candidate generation
@@ -98,46 +98,34 @@ class RecommendationService:
             interaction_count
     ):
 
-        """
-        تعیین میزان تاثیر رفتار کاربر
-        نسبت به UserPreference
-
-        کاربر جدید:
-        Preference بیشتر
-
-        با افزایش Interaction:
-        رفتار کاربر غالب می‌شود
-        """
-
         if interaction_count <= 0:
-
             return (
                 0.0,
                 1.0
             )
 
+        if interaction_count <= 2:
+            return (
+                0.30,
+                0.70
+            )
 
-        if interaction_count <= 3:
+        if interaction_count <= 5:
+            return (
+                0.45,
+                0.55
+            )
 
+        if interaction_count <= 20:
             return (
                 0.60,
                 0.40
             )
 
-
-        if interaction_count <= 10:
-
-            return (
-                0.80,
-                0.20
-            )
-
-
         return (
-            0.90,
-            0.10
+            0.80,
+            0.20
         )
-
 
     # =====================================
     # Paths
@@ -364,112 +352,113 @@ class RecommendationService:
             cls,
             user_id,
             interactions,
+            preference=None,
     ):
 
-        number_of_items = len(
-            cls._item_mapping
-        )
+        number_of_items = len(cls._item_mapping)
 
-        row_indices = []
-
-        row_data = []
+        item_weights = {}
 
         reference_timestamp = timezone.now()
 
+        # -----------------------------
+        # Real Interactions
+        # -----------------------------
 
         for interaction in interactions:
 
             product_id = interaction.product_id
 
-
             if product_id not in cls._item_mapping:
-
                 continue
 
-
             base_weight = cls.EVENT_WEIGHTS.get(
-
                 interaction.event,
-
                 1.0
-
             )
-
 
             age_days = (
+                               reference_timestamp
+                               - interaction.timestamp
+                       ).total_seconds() / 86400.0
 
-                reference_timestamp
-                -
-                interaction.timestamp
-
-            ).total_seconds() / 86400.0
-
-
-            if age_days < 0:
-
-                age_days = 0
-
+            age_days = max(age_days, 0)
 
             decay = math.exp(
-
-                -cls.DECAY_LAMBDA
-                *
-                age_days
-
+                -cls.DECAY_LAMBDA * age_days
             )
 
+            effective_weight = base_weight * decay
 
-            effective_weight = (
-
-                base_weight
-                *
-                decay
-
+            item_weights[product_id] = (
+                    item_weights.get(product_id, 0.0)
+                    + effective_weight
             )
 
+        # -----------------------------
+        # Inject User Preference
+        # -----------------------------
 
+        if preference:
+
+            favorite_categories = set(
+                preference.favorite_categories.values_list(
+                    "id",
+                    flat=True
+                )
+            )
+
+            favorite_brands = set(
+                preference.favorite_brands.values_list(
+                    "id",
+                    flat=True
+                )
+            )
+
+            preferred_products = Product.objects.filter(
+                id__in=cls._item_mapping.keys()
+            ).only(
+                "id",
+                "category_id",
+                "brand_id"
+            )
+
+            for product in preferred_products:
+
+                if product.id in item_weights:
+                    continue
+
+                boost = 0.0
+
+                if product.category_id in favorite_categories:
+                    boost += 0.8
+
+                if product.brand_id in favorite_brands:
+                    boost += 0.5
+
+                if boost > 0:
+                    item_weights[product.id] = boost
+
+        row_indices = []
+        row_data = []
+
+        for product_id, weight in item_weights.items():
             row_indices.append(
-
-                cls._item_mapping[
-                    product_id
-                ]
-
+                cls._item_mapping[product_id]
             )
 
-
-            row_data.append(
-
-                effective_weight
-
-            )
-
+            row_data.append(weight)
 
         return sparse.csr_matrix(
-
             (
-
                 row_data,
-
                 (
-
                     [0] * len(row_indices),
-
                     row_indices,
-
                 ),
-
             ),
-
-            shape=(
-
-                1,
-
-                number_of_items,
-
-            )
-
+            shape=(1, number_of_items),
         )
-
 
 
     # =====================================
@@ -822,428 +811,486 @@ class RecommendationService:
     ):
 
         cls.load_models()
-
         cls.load_content_model()
 
-
         if limit is None:
-
             limit = cls.FINAL_LIMIT
 
+        preference = cls.get_user_preference(user_id)
+        interactions = cls.get_user_interactions(user_id)
 
+        # ---------------------------------
+        # کاربر بدون هیچ تعاملی
+        # ---------------------------------
 
-        preference = cls.get_user_preference(
-            user_id
+        if not interactions:
+            return cls.preference_fallback(user_id, limit)
+
+        # ---------------------------------
+        # ساخت User Row (Interaction + Preference)
+        # ---------------------------------
+
+        user_row = cls.build_user_row(
+            user_id,
+            interactions,
+            preference,
         )
 
+        # ---------------------------------
+        # Candidate Generation
+        # ---------------------------------
 
-        interactions = cls.get_user_interactions(
-            user_id
+        candidate_product_ids = set()
+
+        als_candidates = []
+
+        # ================================
+        # 1) ALS Candidates
+        # ================================
+        interaction_count = len(interactions)
+        print(
+            "******** DEBUG INTERACTION COUNT ********",
+            interaction_count
         )
+        if interaction_count <= 2:
 
+            als_candidate_count = 5
 
+        elif interaction_count <= 5:
 
-        # =================================
-        # New User / Cold Start
-        # =================================
+            als_candidate_count = 10
 
-        if user_id not in cls._user_mapping:
+        elif interaction_count <= 20:
 
+            als_candidate_count = 20
 
-            if interactions:
+        else:
 
-                return cls.interaction_fallback(
+            als_candidate_count = cls.CANDIDATE_COUNT
 
-                    user_id,
+        # Disable ALS for low interaction users
+        if interaction_count < 10:
+            print(
+                "******** ALS SHOULD BE DISABLED ********"
+            )
+            item_indices = []
+            als_scores = []
 
-                    limit
+            print(
+                "ALS disabled - low interaction count:",
+                interaction_count
+            )
 
+        else:
+
+            if user_id in cls._user_mapping:
+
+                internal_user_id = cls._user_mapping[user_id]
+
+                item_indices, als_scores = cls._als_model.recommend(
+                    internal_user_id,
+                    user_row,
+                    item_count=als_candidate_count,
+                    filter_already_liked_items=True,
+                )
+
+            else:
+
+                item_indices, als_scores = cls._als_model.model.recommend(
+                    userid=0,
+                    user_items=user_row,
+                    N=cls.CANDIDATE_COUNT,
+                    filter_already_liked_items=True,
+                    recalculate_user=True,
                 )
 
 
-            return cls.preference_fallback(
+        for item_index, score in zip(
+                item_indices[:20],
+                als_scores[:20]
+        ):
 
-                user_id,
+            pid = cls._reverse_item_mapping.get(
+                int(item_index)
+            )
 
-                limit
+            if pid:
+                p = Product.objects.get(
+                    id=pid
+                )
+
+                print(
+                    p.name,
+                    score
+                )
+
+                if score > 0.15:
+                    candidate_product_ids.add(pid)
+
+                    als_candidates.append(
+                        (
+                            pid,
+                            float(score)
+                        )
+                    )
+
+        # ================================
+        # 2) Content Candidates
+        # ================================
+
+        scorer = HybridScorer(
+            content_model=cls._content_model
+        )
+
+        profile = scorer.build_user_profile(
+            interactions
+        )
+
+        liked_ids = profile.get(
+            "liked_product_ids",
+            []
+        )
+
+        if liked_ids:
+
+            similar_products = Product.objects.filter(
+
+                is_available=True,
+
+                inventory__gt=0,
+
+            ).exclude(
+
+                id__in=liked_ids
+
+            ).select_related(
+
+                "category",
+                "brand",
+
+            ).prefetch_related(
+
+                "features",
+                "color_variants",
+                "size_variants",
 
             )
 
+            similarity_candidates = []
 
+            for product in similar_products:
 
-        # =================================
-        # User Without Interaction
-        # =================================
+                score = scorer.similarity_score(
 
-        if not interactions:
+                    product,
 
-            return cls.preference_fallback(
+                    profile
 
-                user_id,
+                )
 
-                limit
+                if score > 0:
+                    similarity_candidates.append(
+
+                        (
+                            product.id,
+                            score
+
+                        )
+
+                    )
+
+            similarity_candidates.sort(
+
+                key=lambda x: x[1],
+
+                reverse=True
 
             )
 
+            for pid, score in similarity_candidates[:50]:
+                candidate_product_ids.add(pid)
 
+        # ================================
+        # 3) Preference Candidates
+        # ================================
 
-        # =================================
-        # Build ALS User Row
-        # =================================
-
-        user_row = cls.build_user_row(
+        preference_products = cls.preference_fallback(
 
             user_id,
 
-            interactions
+            limit=5
 
         )
 
 
-        internal_user_id = cls._user_mapping[user_id]
-
-
-
-        # =================================
-        # ALS Candidate Generation
-        # =================================
-
-        item_indices, als_scores = cls._als_model.recommend(
-
-            internal_user_id,
-
-            user_row,
-
-            item_count=cls.CANDIDATE_COUNT,
-
-            filter_already_liked_items=True,
-
-        )
-
-
-
-        candidate_product_ids = []
-
-
-
-        for item_index in item_indices:
-
-
-            item_index = int(item_index)
-
-
-            if item_index in cls._reverse_item_mapping:
-
-
-                candidate_product_ids.append(
-
-                    cls._reverse_item_mapping[item_index]
-
-                )
-
-
-
-        if not candidate_product_ids:
-
-
-            return cls.interaction_fallback(
-
-                user_id,
-
-                limit
-
+        for product in preference_products:
+            candidate_product_ids.add(
+                product.id
             )
 
+        if not candidate_product_ids:
+            return cls.interaction_fallback(
+                user_id,
+                limit
+            )
 
+        # تبدیل ALS score ها برای Ranking
 
-        # =================================
-        # Remove Seen Products
-        # =================================
+        als_score_map = {
 
-        seen_product_ids = {
+            pid: score
 
-            interaction.product_id
+            for pid, score
 
-            for interaction in interactions
+            in als_candidates
 
         }
 
-
+        seen_product_ids = {
+            interaction.product_id
+            for interaction in interactions
+        }
 
         products = list(
 
             Product.objects
 
             .filter(
-
                 id__in=candidate_product_ids,
-
                 is_available=True,
-
                 inventory__gt=0,
-
             )
 
             .exclude(
-
                 id__in=seen_product_ids
-
             )
 
             .select_related(
-
                 "category",
-
                 "brand",
-
             )
 
             .prefetch_related(
-
                 "features",
-
                 "color_variants",
-
                 "size_variants",
-
             )
 
         )
-
-
-
-        products_by_id = {
-
-            product.id: product
-
-            for product in products
-
-        }
-
-
 
         candidates = []
 
-
-
-        for item_index, als_score in zip(
-
-                item_indices,
-
-                als_scores
-
-        ):
-
-
-            item_index = int(item_index)
-
-
-
-            if item_index not in cls._reverse_item_mapping:
-
-                continue
-
-
-
-            product_id = cls._reverse_item_mapping[item_index]
-
-
-
-            product = products_by_id.get(
-
-                product_id
-
+        for product in products:
+            print(
+                "CANDIDATE:",
+                product.name,
+                "ALS SCORE:",
+                als_score_map.get(product.id, 0)
             )
+            # اگر interaction کم است ALS را صفر کن
+            if interaction_count <= 20:
 
-
-
-            if product is None:
-
-                continue
-
-
-
-            candidates.append(
-
-                (
-
-                    product,
-
-                    float(als_score)
-
+                candidates.append(
+                    (
+                        product,
+                        0.0
+                    )
                 )
 
-            )
+            else:
 
-
+                candidates.append(
+                    (
+                        product,
+                        als_score_map.get(
+                            product.id,
+                            0.0
+                        )
+                    )
+                )
 
         if not candidates:
-
-
             return cls.interaction_fallback(
-
                 user_id,
-
                 limit
+            )
+        # ---------------------------------
+        # Hybrid Ranking
+        # ---------------------------------
 
+        if interaction_count <= 10:
+
+            scorer = HybridScorer(
+                als_weight=0.0,
+                content_weight=1.0,
+                content_model=cls._content_model,
             )
 
+        else:
 
+            scorer = HybridScorer(
+                als_weight=cls.ALS_WEIGHT,
+                content_weight=cls.CONTENT_WEIGHT,
+                content_model=cls._content_model,
+            )
 
-        # =================================
-        # Hybrid Profile
-        # =================================
+        profile = scorer.build_user_profile(interactions)
 
-        scorer = HybridScorer(
-
-            als_weight=cls.ALS_WEIGHT,
-
-            content_weight=cls.CONTENT_WEIGHT,
-
-            content_model=cls._content_model,
-
-        )
-
-
-        profile = scorer.build_user_profile(
-
-            interactions
-
-        )
-
-
-
-        budget = cls.get_budget(
-
-            user_id
-
-        )
-
-
+        budget = cls.get_budget(user_id)
 
         ranked = scorer.rank(
-
             candidates=candidates,
-
             profile=profile,
-
             budget=budget,
-
             limit=len(candidates),
-
         )
+        interaction_count = len(interactions)
 
+        if interaction_count <= 2:
 
+            behavior_limit = 2
 
-        # =================================
-        # Dynamic Behavior Preference Blend
-        # =================================
+        elif interaction_count <= 5:
 
-        behavior_weight, preference_weight = (
+            behavior_limit = 5
 
-            cls.get_dynamic_weights(
+        else:
 
-                len(interactions)
+            behavior_limit = limit
+        # ---------------------------------
+        # Dynamic Mixing
+        # ---------------------------------
 
-            )
+        interaction_count = len(interactions)
 
+        behavior_weight, preference_weight = cls.get_dynamic_weights(
+            interaction_count
         )
-
-
-
+        print("\n===== FINAL SCORE DEBUG =====")
+        # امتیازدهی preference جدا
         for item in ranked:
-
-
-            behavior_score = item["hybrid_score"]
-
-
 
             preference_score = 0.0
 
-
-
             if preference:
-
-
                 preference_score = PreferenceScorer.score(
-
                     item["product"],
-
                     preference
-
                 )
 
-
-
-            # جلوگیری از غالب شدن preference
-
-            behavior_score = max(
-
-                0.0,
-
-                min(
-
-                    behavior_score,
-
-                    1.0
-
-                )
-
+            item["preference_score"] = preference_score
+            print(
+                item["product"].name,
+                "hybrid:",
+                item["hybrid_score"],
+                "pref:",
+                item["preference_score"]
             )
 
 
 
-            preference_score = max(
-
-                0.0,
-
-                min(
-
-                    preference_score,
-
-                    1.0
-
-                )
-
-            )
-
-
-
-            item["final_score"] = (
-
-                behavior_weight
-
-                *
-                behavior_score
-
-                +
-
-                preference_weight
-
-                *
-                preference_score
-
-            )
-
-
-
-        ranked.sort(
-
-            key=lambda x: x["final_score"],
-
+        # مرتب سازی جداگانه
+        behavior_ranked = sorted(
+            ranked,
+            key=lambda x: x["hybrid_score"],
             reverse=True
-
         )
 
+        preference_ranked = sorted(
+            ranked,
+            key=lambda x:
+            0.7 * x["hybrid_score"]
+            +
+            0.3 * x["preference_score"],
+            reverse=True
+        )
 
+        # تعداد آیتم های رفتاری
+        if interaction_count <= 1:
 
-        return [
+            behavior_count = 2
 
+        elif interaction_count <= 3:
+
+            behavior_count = 4
+
+        elif interaction_count <= 5:
+
+            behavior_count = 6
+
+        else:
+
+            behavior_count = int(
+                limit * behavior_weight
+            )
+
+        behavior_products = [
             item["product"]
-
-            for item in ranked[:limit]
-
+            for item in behavior_ranked[:behavior_count]
         ]
+
+        preference_products = [
+            item["product"]
+            for item in preference_ranked
+            if item["preference_score"] > 0
+        ]
+
+        # Merge نهایی
+        # Merge نهایی با نسبت واقعی
+        print("\n===== PREF PRODUCTS DEBUG =====")
+
+        for p in preference_products[:20]:
+            print(p.name)
+
+        print("\n===== BEHAVIOR PRODUCTS DEBUG =====")
+
+        for p in behavior_products:
+            print(p.name)
+        final_products = []
+
+        behavior_index = 0
+        preference_index = 0
+
+        while len(final_products) < limit:
+
+            # 80 درصد رفتار
+            if (
+                    behavior_index < len(behavior_products)
+                    and
+                    len(final_products) < int(limit * behavior_weight)
+            ):
+
+                product = behavior_products[behavior_index]
+                behavior_index += 1
+
+            else:
+
+                if preference_index >= len(preference_products):
+                    break
+
+                product = preference_products[preference_index]
+                preference_index += 1
+
+            if product not in final_products:
+                final_products.append(product)
+        print("\n===== PREF SELECTED =====")
+
+        for p in preference_products:
+            if "Nintendo" in p.name:
+                print("NINTENDO FROM PREF:", p.name)
+
+        print("\n===== BEHAVIOR SELECTED =====")
+
+        for p in behavior_products:
+            if "Nintendo" in p.name:
+                print("NINTENDO FROM BEHAVIOR:", p.name)
+        print("\n===== FINAL PRODUCTS =====")
+
+        for p in final_products:
+            print(
+                p.name
+            )
+        return final_products
 
 
 

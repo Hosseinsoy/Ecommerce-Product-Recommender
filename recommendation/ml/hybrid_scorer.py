@@ -64,13 +64,13 @@ class HybridScorer:
 
         event_weights = {
 
-            "view": 1.0,
+            "view": 2.0,
 
-            "wishlist": 3.0,
+            "wishlist": 5.0,
 
-            "cart": 5.0,
+            "cart": 8.0,
 
-            "purchase": 10.0,
+            "purchase": 12.0,
 
         }
 
