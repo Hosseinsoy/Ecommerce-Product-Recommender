@@ -58,7 +58,7 @@ class RecommendationService:
 
     EVENT_WEIGHTS = {
 
-        "view": 1.0,
+        "view": 2.0,
 
         "wishlist": 3.0,
 
@@ -289,8 +289,7 @@ class RecommendationService:
             user_id,
     ):
 
-
-        return list(
+        interactions = list(
 
             Interaction.objects
 
@@ -305,11 +304,23 @@ class RecommendationService:
             )
 
             .order_by(
-                "timestamp",
-                "id",
+                "-timestamp",
+                "-id",
             )
 
         )
+
+        for i in interactions[:20]:
+            print(
+                "INTERACTION:",
+                i.product.name,
+                "| EVENT:",
+                i.event,
+                "| TIME:",
+                i.timestamp
+            )
+
+        return interactions
 
 
     # =====================================
@@ -368,7 +379,19 @@ class RecommendationService:
         for interaction in interactions:
 
             product_id = interaction.product_id
+            product = Product.objects.filter(
+                id=product_id
+            ).first()
 
+            if product:
+                print(
+                    "CHECK PRODUCT:",
+                    product.name,
+                    "| CAT:",
+                    product.category.name,
+                    "| IN MAPPING:",
+                    product_id in cls._item_mapping
+                )
             if product_id not in cls._item_mapping:
                 continue
 
@@ -389,6 +412,12 @@ class RecommendationService:
             )
 
             effective_weight = base_weight * decay
+
+            # boost recent interactions
+            if age_days <= 7:
+                effective_weight *= 3
+            elif age_days <= 30:
+                effective_weight *= 1.5
 
             item_weights[product_id] = (
                     item_weights.get(product_id, 0.0)
@@ -448,7 +477,27 @@ class RecommendationService:
             )
 
             row_data.append(weight)
+        print("==============================")
+        print("USER ROW DEBUG")
+        print("==============================")
 
+        print("USER:", user_id)
+
+        print("ITEM COUNT:", len(item_weights))
+
+        for pid, weight in item_weights.items():
+
+            product = Product.objects.filter(
+                id=pid
+            ).first()
+
+            if product and product.category.name == "حیوانات خانگی":
+                print(
+                    "PET:",
+                    product.name,
+                    "WEIGHT:",
+                    weight
+                )
         return sparse.csr_matrix(
             (
                 row_data,
@@ -629,14 +678,10 @@ class RecommendationService:
 
             )
 
-
-
-        seen_product_ids = {
-
+        purchased_product_ids = {
             interaction.product_id
-
             for interaction in interactions
-
+            if interaction.event == "purchase"
         }
 
 
@@ -654,9 +699,7 @@ class RecommendationService:
             )
 
             .exclude(
-
-                id__in=seen_product_ids
-
+                id__in=purchased_product_ids
             )
 
             .select_related(
@@ -847,11 +890,14 @@ class RecommendationService:
         # ================================
         # 1) ALS Candidates
         # ================================
+
         interaction_count = len(interactions)
+
         print(
             "******** DEBUG INTERACTION COUNT ********",
             interaction_count
         )
+
         if interaction_count <= 2:
 
             als_candidate_count = 5
@@ -869,23 +915,41 @@ class RecommendationService:
             als_candidate_count = cls.CANDIDATE_COUNT
 
         # Disable ALS for low interaction users
-        if interaction_count < 10:
-            print(
-                "******** ALS SHOULD BE DISABLED ********"
-            )
-            item_indices = []
-            als_scores = []
+
+        if interaction_count < 20:
 
             print(
                 "ALS disabled - low interaction count:",
                 interaction_count
             )
 
+            item_indices = []
+            als_scores = []
+
+
         else:
+
+            print(
+                "USER IN MAPPING:",
+                user_id in cls._user_mapping
+            )
+
+            print(
+                "USER MAPPING SIZE:",
+                len(cls._user_mapping)
+            )
+
+            # ================================
+            # Existing User
+            # ================================
 
             if user_id in cls._user_mapping:
 
                 internal_user_id = cls._user_mapping[user_id]
+
+                print(
+                    "ALS: EXISTING USER MODE"
+                )
 
                 item_indices, als_scores = cls._als_model.recommend(
                     internal_user_id,
@@ -894,16 +958,32 @@ class RecommendationService:
                     filter_already_liked_items=True,
                 )
 
+
+            # ================================
+            # New User (Not in Training Data)
+            # ================================
+
             else:
 
-                item_indices, als_scores = cls._als_model.model.recommend(
-                    userid=0,
-                    user_items=user_row,
-                    N=cls.CANDIDATE_COUNT,
-                    filter_already_liked_items=True,
-                    recalculate_user=True,
+                print(
+
+                    "ALS: NEW USER MODE"
+
                 )
 
+                item_indices, als_scores = cls._als_model.recommend(
+
+                    0,
+
+                    user_row,
+
+                    item_count=als_candidate_count,
+
+                    filter_already_liked_items=True,
+
+                    new_user=True,
+
+                )
 
         for item_index, score in zip(
                 item_indices[:20],
@@ -915,6 +995,7 @@ class RecommendationService:
             )
 
             if pid:
+
                 p = Product.objects.get(
                     id=pid
                 )
@@ -1009,7 +1090,14 @@ class RecommendationService:
 
             for pid, score in similarity_candidates[:50]:
                 candidate_product_ids.add(pid)
+            print(
+                "TOTAL CANDIDATES:",
+                len(candidate_product_ids)
+            )
 
+            for pid in candidate_product_ids:
+                p = Product.objects.get(id=pid)
+                print("CAND:", p.name)
         # ================================
         # 3) Preference Candidates
         # ================================
@@ -1046,9 +1134,10 @@ class RecommendationService:
 
         }
 
-        seen_product_ids = {
+        purchased_product_ids = {
             interaction.product_id
             for interaction in interactions
+            if interaction.event == "purchase"
         }
 
         products = list(
@@ -1062,7 +1151,7 @@ class RecommendationService:
             )
 
             .exclude(
-                id__in=seen_product_ids
+                id__in=purchased_product_ids
             )
 
             .select_related(
@@ -1135,7 +1224,8 @@ class RecommendationService:
             )
 
         profile = scorer.build_user_profile(interactions)
-
+        print("!!!!!!!!!!!!!!!!!!!CatScores!!!!!!!!!!!!!!!!!!!")
+        print(profile["category_scores"])
         budget = cls.get_budget(user_id)
 
         ranked = scorer.rank(
@@ -1144,6 +1234,16 @@ class RecommendationService:
             budget=budget,
             limit=len(candidates),
         )
+
+        print("\n===== RANK DEBUG =====")
+
+        for item in ranked[:30]:
+            print(
+                item["product"].name,
+                "HYBRID:",
+                item["hybrid_score"]
+            )
+
         interaction_count = len(interactions)
 
         if interaction_count <= 2:

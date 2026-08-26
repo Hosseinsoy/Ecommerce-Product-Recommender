@@ -77,10 +77,13 @@ class HybridScorer:
 
         liked_product_ids = []
 
+        recent_interactions = sorted(
+            train_interactions,
+            key=lambda x: x.timestamp,
+            reverse=True
+        )[:20]
 
-
-        for interaction in train_interactions:
-
+        for interaction in recent_interactions:
 
             event_weight = event_weights.get(
 
@@ -123,28 +126,23 @@ class HybridScorer:
                 age_days = 0
 
             decay = math.exp(
-
-                -0.061 * age_days
-
+                -0.15 * age_days
             )
 
             effective_weight = (
-
                     event_weight
-
                     *
-
                     decay
-
                     *
-
                     (
                             1.0
                             +
                             0.25 * dwell_bonus
                     )
-
             )
+
+            if age_days <= 3:
+                effective_weight *= 5
 
 
             product = interaction.product
@@ -561,27 +559,25 @@ class HybridScorer:
 
         )
 
-
-
         return (
 
-            0.25 * category
+                0.35 * category
 
-            +
+                +
 
-            0.20 * brand
+                0.15 * brand
 
-            +
+                +
 
-            0.15 * price
+                0.10 * price
 
-            +
+                +
 
-            0.10 * budget_match
+                0.05 * budget_match
 
-            +
+                +
 
-            0.30 * similarity
+                0.35 * similarity
 
         )
 

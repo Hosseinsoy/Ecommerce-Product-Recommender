@@ -42,36 +42,49 @@ class ImplicitALSModel:
     # =====================================
 
     def recommend(
-        self,
-        user_id,
-        user_item_matrix,
-        item_count=10,
-        filter_already_liked_items=True
+            self,
+            user_id,
+            user_item_matrix,
+            item_count=10,
+            filter_already_liked_items=True,
+            new_user=False
     ):
 
         user_item_matrix = user_item_matrix.tocsr()
 
-        # اگر کل ماتریس داده شده باشد
-        if user_item_matrix.shape[0] > 1:
+        # ===============================
+        # New user
+        # ===============================
+        if new_user:
 
-            user_items = user_item_matrix[
-                user_id
-            ]
+            print("ALS: NEW USER MODE")
 
-        # اگر فقط interactionهای یک کاربر داده شده باشد
+            user_items = user_item_matrix[0]
+
+            ids, scores = self.model.recommend(
+                userid=0,
+                user_items=user_items,
+                N=item_count,
+                filter_already_liked_items=filter_already_liked_items,
+                recalculate_user=True
+            )
+
+
+        # ===============================
+        # Existing user
+        # ===============================
         else:
 
-            user_items = user_item_matrix
+            user_items = user_item_matrix[user_id]
 
-        ids, scores = self.model.recommend(
-            userid=user_id,
-            user_items=user_items,
-            N=item_count,
-            filter_already_liked_items=filter_already_liked_items
-        )
+            ids, scores = self.model.recommend(
+                userid=user_id,
+                user_items=user_items,
+                N=item_count,
+                filter_already_liked_items=filter_already_liked_items
+            )
 
         return ids, scores
-
     # =====================================
     # Save
     # =====================================

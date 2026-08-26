@@ -77,7 +77,7 @@ K = 10
 
 CANDIDATE_COUNT = 100
 
-DECAY_LAMBDA = 0.061
+DECAY_LAMBDA = 0.15
 
 
 # ==========================
@@ -650,14 +650,21 @@ for als_weight in ALS_WEIGHTS:
         # --------------------------
         # ALS candidates
         # --------------------------
-
+        if internal_user_id >= train_matrix.shape[0]:
+            print(
+                "BAD USER INDEX:",
+                internal_user_id,
+                "MAX:",
+                train_matrix.shape[0] - 1
+            )
+            continue
         item_indices, als_scores = (
 
             model.recommend(
 
                 internal_user_id,
 
-                user_items,
+                train_matrix,
 
                 item_count=CANDIDATE_COUNT,
 
