@@ -27,6 +27,8 @@ from shop.utils.wishlist import (
     get_wishlist,
     save_wishlist,
 )
+from django.core.serializers.json import DjangoJSONEncoder
+import json
 from shop.utils.search_utils import (
     normalize_query,
     tokenize,
@@ -569,6 +571,38 @@ def product_detail(request, id, slug):
         wishlist = get_wishlist(request.session)
         product_in_wishlist = product.id in wishlist
 
+    variants = product.variants.select_related(
+        "color",
+        "size"
+    )
+
+    # ==========================================
+    # Variant های موجود در سبد خرید
+    # ==========================================
+
+    cart_variant_quantities = {}
+
+    for item in cart:
+        variant = item["product"]
+        quantity = item["quantity"]
+
+        cart_variant_quantities[str(variant.id)] = quantity
+
+    product_variants = [
+        {
+            "id": variant.id,
+            "color_id": variant.color_id,
+            "size_id": variant.size_id,
+        }
+        for variant in variants
+    ]
+
+    cart_variant_ids = [
+        item["product"].id
+        for item in cart
+        if item["product"].product.id == product.id
+    ]
+
     context = {
 
         "product": product,
@@ -594,6 +628,16 @@ def product_detail(request, id, slug):
         "questions": questions,
         "product_in_cart": product_in_cart,
         "product_in_wishlist": product_in_wishlist,
+        "variants": variants,
+        "product_variants": json.dumps(
+            product_variants,
+            cls=DjangoJSONEncoder
+        ),
+        "cart_variant_quantities": cart_variant_quantities,
+        "cart_variant_ids": json.dumps(
+            cart_variant_ids,
+            cls=DjangoJSONEncoder
+        ),
     }
 
     return render(

@@ -173,11 +173,11 @@
                             <div class="product-details-right">
                                 <div class="product-attr">
                                     <p class="d-inline"><i class="fa fa-star text-warning pe-1 fa-xs"></i>{{ average_rating|floatformat:1 }} <span
-                                            class="gray-500 ps-1">(100)</span></p>
+                                            class="gray-500 ps-1">({{ rating_count }})</span></p>
                                     <span class="separator px-2"><i class="fa fa-circle gray-300"></i></span>
-                                    <p class="d-inline text-info fs-7">198 دیدگاه</p>
+                                    <p class="d-inline text-info fs-7">{{ total_comments }} دیدگاه</p>
                                     <span class="separator px-2"><i class="fa fa-circle gray-300"></i></span>
-                                    <p class="d-inline text-info fs-7">260 پرسش</p>
+                                    <p class="d-inline text-info fs-7">{{ questions|length }} پرسش</p>
                                 </div>
                                 {% if product.has_color_option %}
 
@@ -190,42 +190,33 @@
                                             </span>
                                         </p>
 
-
                                         <div class="product-attr-colors">
-
 
                                             {% for color in product.color_variants.all %}
 
-                                            <div class="d-inline">
+                                                <div class="d-inline">
 
-                                                <input
-                                                type="radio"
-                                                value="{{ color.id }}"
-                                                name="color"
-                                                id="color_{{ color.id }}"
-                                                data-color="{{ color.color }}"
-                                                {% if forloop.first %}checked{% endif %}
-                                                >
+                                                    <input
+                                                        type="radio"
+                                                        value="{{ color.id }}"
+                                                        name="color"
+                                                        id="color_{{ color.id }}"
+                                                        data-color="{{ color.color }}"
+                                                        class="color-radio"
+                                                        {% if forloop.first %}checked{% endif %}
+                                                    >
 
+                                                    <label
+                                                        for="color_{{ color.id }}"
+                                                        class="color-option border-radius-circle mx-1"
+                                                        data-color="{{ color.color }}"
+                                                        data-color-id="{{ color.id }}"
+                                                    >
+                                                    </label>
 
-                                                <label
-                                                class="border-radius-circle mx-1"
-                                                for="color_{{ color.id }}"
-                                                style="background-color: {{ color.color }}">
-
-                                                    <span
-                                                    class="color-text"
-                                                    data-color="{{ color.color }}">
-                                                        {{ color.color }}
-                                                    </span>
-
-                                                </label>
-
-                                            </div>
-
+                                                </div>
 
                                             {% endfor %}
-
 
                                         </div>
 
@@ -233,40 +224,57 @@
 
                                     {% endif %}
                             {% if product.has_size_option and product.size_variants.all %}
+
                                 <div class="product-attr mt-4">
+
                                     <p class="fs-5 fw-bold my-3">
                                         سایز انتخابی :
-                                        <span id="selectedSize"></span>
+                                        <span id="selectedSize">
+                                            {% for size in product.size_variants.all %}
+                                                {% if forloop.first %}
+                                                    {{ size.size }}
+                                                {% endif %}
+                                            {% endfor %}
+                                        </span>
                                     </p>
 
                                     <div class="product-attr-sizes">
 
                                         {% for size in product.size_variants.all %}
-                                            {% if size.size %}
-                                            <div class="d-inline">
-                                                <input
-                                                    type="radio"
-                                                    value="{{ size.id }}"
-                                                    name="size"
-                                                    id="size-{{ size.id }}"
-                                                    data-size="{{ size.size }}"
-                                                    class="d-none"
-                                                >
 
-                                                <label
-                                                    class="border border-secondary rounded-pill px-3 py-2 mx-1"
-                                                    for="size-{{ size.id }}"
-                                                >
-                                                    <span class="size-text">
-                                                        {{ size.size }}
-                                                    </span>
-                                                </label>
-                                            </div>
+                                            {% if size.size %}
+
+                                                <div class="d-inline-block size-option">
+
+                                                    <input
+                                                        type="radio"
+                                                        value="{{ size.id }}"
+                                                        name="size"
+                                                        id="size-{{ size.id }}"
+                                                        data-size="{{ size.size }}"
+                                                        class="size-radio"
+                                                        {% if forloop.first %}checked{% endif %}
+                                                    >
+
+                                                    <label
+                                                        class="size-label border border-secondary rounded-pill px-3 py-2 mx-1"
+                                                        for="size-{{ size.id }}"
+                                                    >
+                                                        <span class="size-text">
+                                                            {{ size.size }}
+                                                        </span>
+                                                    </label>
+
+                                                </div>
+
                                             {% endif %}
+
                                         {% endfor %}
 
                                     </div>
+
                                 </div>
+
                                 {% endif %}
                                 <div class="product-attr my-4">
 
@@ -497,46 +505,7 @@
 
             <div class="d-grid gap-2 mt-1 p-2">
 
-                {% if product_in_cart %}
 
-                    {% for item in cart %}
-
-                        {% if item.product.product.id == product.id %}
-
-                            <div
-                                id="product-detail-cart-control"
-                                class="product-detail-cart-quantity"
-                                data-product="{{ product.id }}"
-                                data-item-id="{{ item.product.id }}">
-
-                                <!-- کاهش / حذف - سمت چپ -->
-                                <span class="decrease product-detail-decrease c-pointer">
-                                    {% if item.quantity > 1 %}
-                                        <i class="fas fa-minus"></i>
-                                    {% else %}
-                                        <i class="far fa-trash-alt"></i>
-                                    {% endif %}
-                                </span>
-
-                                <!-- تعداد -->
-                                <span
-                                    class="fs-5 quantity"
-                                    id="quantity-{{ item.product.id }}">
-                                    {{ item.quantity }}
-                                </span>
-
-                                <!-- افزایش - سمت راست -->
-                                <span class="addition product-detail-add c-pointer">
-                                    <i class="fas fa-plus"></i>
-                                </span>
-
-                            </div>
-
-                        {% endif %}
-
-                    {% endfor %}
-
-                {% else %}
 
                     <a
                         href="javascript:void(0);"
@@ -548,7 +517,7 @@
 
                     </a>
 
-                {% endif %}
+
 
             </div>
 
@@ -1814,7 +1783,230 @@
     </section>
     <!--    Product Tabs:end-->
 </main>
+
+<style>
+
+.color-option {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    cursor: pointer;
+    border: 2px solid #000;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+/* رنگ انتخاب شده */
+.color-radio:checked + .color-option {
+    box-shadow: 0 0 0 2px #fff, 0 0 0 4px #000;
+}
+
+/* رنگ‌های روشن */
+.color-option[data-color="سفید"],
+.color-option[data-color="Classy White"],
+.color-option[data-color="کرم"],
+.color-option[data-color="بژ"],
+.color-option[data-color="Light"],
+.color-option[data-color="Natural"],
+.color-option[data-color="نود"] {
+    color: #333;
+}
+
+/* رنگ‌های خاص که با اسم فارسی CSS قابل استفاده نیستند */
+.color-option[data-color="سفید"] {
+    background-color: #ffffff;
+}
+
+.color-option[data-color="مشکی"],
+.color-option[data-color="سیاه"] {
+    background-color: #000000;
+}
+
+.color-option[data-color="آبی"] {
+    background-color: #0066cc;
+}
+
+.color-option[data-color="سبز"] {
+    background-color: #28a745;
+}
+
+.color-option[data-color="زرد"] {
+    background-color: #ffd400;
+}
+
+.color-option[data-color="کرم"] {
+    background-color: #f5deb3;
+}
+
+.color-option[data-color="قرمز"] {
+    background-color: #dc3545;
+}
+
+.color-option[data-color="نارنجی"] {
+    background-color: #ff8c00;
+}
+
+.color-option[data-color="قهوه‌ای"] {
+    background-color: #795548;
+}
+
+.color-option[data-color="خاکستری"],
+.color-option[data-color="طوسی"] {
+    background-color: #808080;
+}
+
+.color-option[data-color="سرمه‌ای"] {
+    background-color: #001f5b;
+}
+
+.color-option[data-color="طلایی"] {
+    background-color: #d4af37;
+}
+
+.color-option[data-color="نقره‌ای"] {
+    background-color: #c0c0c0;
+}
+
+.color-option[data-color="بنفش"] {
+    background-color: #800080;
+}
+
+.color-option[data-color="صورتی"] {
+    background-color: #ff69b4;
+}
+
+.color-option[data-color="شفاف"] {
+    background-color: transparent;
+    background-image:
+        linear-gradient(45deg, #ddd 25%, transparent 25%),
+        linear-gradient(-45deg, #ddd 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #ddd 75%),
+        linear-gradient(-45deg, transparent 75%, #ddd 75%);
+    background-size: 10px 10px;
+    background-position: 0 0, 0 5px, 5px -5px, -5px 0;
+}
+
+.color-option[data-color="هلویی"] {
+    background-color: #ffb07c;
+}
+
+.color-option[data-color="استیل"] {
+    background: linear-gradient(
+        135deg,
+        #eeeeee,
+        #999999,
+        #eeeeee
+    );
+}
+
+.color-option[data-color="گردویی"] {
+    background-color: #773f1a;
+}
+
+.color-option[data-color="ذغالی تیره"] {
+    background-color: #333333;
+}
+
+.color-option[data-color="ذغالی روشن"] {
+    background-color: #666666;
+}
+
+.color-option[data-color="Classy Blue"] {
+    background-color: #1f4e79;
+}
+
+.color-option[data-color="سیاه"] {
+    background-color: #000000;
+}
+
+.color-option[data-color="Dark"] {
+    background-color: #333333;
+}
+
+.color-option[data-color="Medium"] {
+    background-color: #999999;
+}
+
+.color-option[data-color="تیتانیوم طبیعی"] {
+    background-color: #aaa9a6;
+}
+
+.color-option[data-color="آبی تیتانیوم"] {
+    background-color: #4f6d8a;
+}
+
+.color-option[data-color="مشکی فضایی"] {
+    background-color: #202124;
+}
+
+.color-option[data-color="سفید-مشکی"],
+.color-option[data-color="سفید مشکی"] {
+    background: linear-gradient(
+        135deg,
+        #ffffff 50%,
+        #000000 50%
+    );
+}
+
+</style>
+<style>
+.color-radio,
+.size-radio {
+    display: none;
+}
+
+.color-label {
+    width: 38px;
+    height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: 2px solid #ddd;
+    transition: 0.2s;
+    position: relative;
+}
+
+.color-label .color-text {
+    display: none;
+}
+
+.color-radio:checked + .color-label {
+    border: 3px solid #000;
+    box-shadow: 0 0 0 2px #fff, 0 0 0 4px #000;
+}
+
+.size-label {
+    display: inline-block;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.size-radio:checked + .size-label {
+    background-color: #000;
+    color: #fff;
+    border-color: #000 !important;
+}
+.selected-color {
+    border: 3px solid #000 !important;
+}
+</style>
+
 {% endblock %}
 {% block scripts %}
+
 <script src="{% static 'js/product_comments_sort.js' %}"></script>
+<script>
+    const productVariants = {{ product_variants|safe }};
+    const cartVariantQuantities = {{ cart_variant_quantities|safe }};
+
+    console.log("PRODUCT VARIANTS:", productVariants);
+    console.log(
+        "CART VARIANT QUANTITIES:",
+        cartVariantQuantities
+    );
+</script>
+<script src="{% static 'js/variant.js' %}"></script>
 {% endblock %}

@@ -79,7 +79,14 @@ def update_quantity(request):
     if item_id:
         item_id = item_id.replace(",", "")
     action = request.POST.get("action")
+    print("AJAX ITEM ID:", item_id)
 
+    print(
+        "VARIANT EXISTS:",
+        ProductVariant.objects.filter(
+            id=item_id
+        ).exists()
+    )
     try:
 
         product = get_object_or_404(
@@ -241,17 +248,58 @@ class CartToggleView(View):
             id=product_id
         )
 
-        product_variant = product.variants.first()
+        # -----------------------------------------
+        # Variant انتخاب شده توسط کاربر
+        # -----------------------------------------
+
+        variant_id = request.POST.get("variant_id")
+        print(
+            "CART TOGGLE:",
+            "product_id =", product_id,
+            "variant_id =", variant_id
+        )
+        if not variant_id:
+
+            return JsonResponse({
+                "success": False,
+                "error": "هیچ Variant ای انتخاب نشده است."
+            })
+
+        product_variant = get_object_or_404(
+            ProductVariant,
+            id=variant_id,
+            product=product
+        )
+        print(
+            "SELECTED VARIANT:",
+            product_variant.id,
+            "COLOR =",
+            product_variant.color.color if product_variant.color else None,
+            "SIZE =",
+            product_variant.size.size if product_variant.size else None
+        )
+        # -----------------------------------------
+        # Cart
+        # -----------------------------------------
 
         cart = Cart(request)
 
-        if str(product_variant.id) in cart.cart:
+        variant_key = str(product_variant.id)
+
+        # -----------------------------------------
+        # اگر Variant داخل سبد باشد → حذف
+        # -----------------------------------------
+
+        if variant_key in cart.cart:
 
             cart.remove(product_variant)
 
             status = "removed"
-
             item_count = 0
+
+        # -----------------------------------------
+        # اگر داخل سبد نباشد → اضافه
+        # -----------------------------------------
 
         else:
 
@@ -265,11 +313,11 @@ class CartToggleView(View):
             status = "added"
 
             item_count = cart.cart[
-                str(product_variant.id)
+                variant_key
             ]["quantity"]
 
         # -----------------------------------------
-        # بدنه سبد خرید
+        # بدنه Dropdown
         # -----------------------------------------
 
         cart_body = render_to_string(
@@ -281,7 +329,7 @@ class CartToggleView(View):
         )
 
         # -----------------------------------------
-        # فوتر سبد خرید
+        # Footer
         # -----------------------------------------
 
         cart_footer = render_to_string(
@@ -293,7 +341,7 @@ class CartToggleView(View):
         )
 
         # -----------------------------------------
-        # پاسخ AJAX
+        # Response
         # -----------------------------------------
 
         return JsonResponse({
@@ -302,26 +350,20 @@ class CartToggleView(View):
 
             "status": status,
 
-            # شناسه Product
             "product_id": product.id,
 
-            # شناسه ProductVariant
-            "item_id": product_variant.id,
+            "variant_id": product_variant.id,
 
-            # تعداد همین محصول
             "item_count": item_count,
 
-            # تعداد کل آیتم‌های سبد
             "cart_count": len(cart),
 
-            # قیمت‌ها
             "products_price": cart.total_price(),
 
             "post_price": cart.post_price(),
 
             "final_price": cart.final_price(),
 
-            # HTML سبد
             "cart_body": cart_body,
 
             "cart_footer": cart_footer,

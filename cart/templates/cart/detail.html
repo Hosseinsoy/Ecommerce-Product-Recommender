@@ -59,9 +59,8 @@
 
 <div
 class="card shadow-sm border-0 mb-3 shopping-cart-item"
-data-item-id="{{ item.product.id }}"
+data-variant-id="{{ item.product.id }}"
 >
-
 
 <div class="card-body">
 
@@ -270,7 +269,7 @@ object-fit:cover;
 
 
 قیمت این محصول:
-<span id="item-total-{{ item.product.id }}">
+<span class="item-total">
     {{ item.total|intcomma }}
 </span>
 تومان
@@ -611,138 +610,107 @@ $(document).ready(function(){
 }
 
 
-    function update_quantity(item_id, action){
+    function update_quantity(item_id, action, cartItem){
 
+    $.ajax({
 
-        $.ajax({
+        type: "POST",
 
-            type:"POST",
+        url: "{% url 'cart:update_quantity' %}",
 
-            url:"{% url 'cart:update_quantity' %}",
+        data: {
+            item_id: item_id,
+            action: action,
+            csrfmiddlewaretoken: "{{ csrf_token }}"
+        },
 
-            data:{
+        success: function(data){
 
-                item_id:item_id,
-                action:action,
-                csrfmiddlewaretoken:"{{ csrf_token }}"
+            console.log(data);
 
-            },
+            if(!data.success){
 
-
-            success:function(data){
-
-
-                console.log(data);
-
-
-                if(!data.success){
-
-                    console.log(data.error);
-                    return;
-
-                }
-
-
-
-                // ======================
-                // صفحه دیتیل کارت
-                // ======================
-
-
-                $("#cart_count")
-                    .text(data.cart_count);
-
-
-
-                $("#quantity-variant-"+item_id)
-                    .text(data.item_count);
-
-
-
-                $("#item-total-"+item_id)
-                    .text(
-                        formatPrice(data.total_price)+" تومان"
-                    );
-
-
-
-                $("#cart_products_price")
-                    .text(
-                        formatPrice(data.products_price)+" تومان"
-                    );
-
-
-
-                $("#post_price")
-                    .text(
-                        formatPrice(data.post_price)+" تومان"
-                    );
-
-
-
-                $("#final_price")
-                    .text(
-                        formatPrice(data.final_price)+" تومان"
-                    );
-
-
-
-
-                // ======================
-                // آپدیت هدر
-                // ======================
-
-                update_header_cart(data);
-
-
-
-
-                // حذف کارت صفحه اصلی
-                if(data.item_count == 0){
-
-
-                    $(".shopping-cart-item[data-item-id='"+item_id+"']")
-                    .fadeOut(300,function(){
-
-                        $(this).remove();
-
-
-
-                        if(data.cart_count == 0){
-
-                            $("#cart_items")
-                            .html(
-                                "سبد خرید شما خالی است"
-                            );
-
-                        }
-
-
-                    });
-
-
-
-                }
-
-
-
-
-            },
-
-
-            error:function(xhr){
-
-                console.log(xhr.responseText);
+                console.log(data.error);
+                return;
 
             }
 
+            // ======================
+            // صفحه دیتیل کارت
+            // ======================
+
+            $("#cart_count")
+                .text(data.cart_count);
+
+            cartItem
+                .find(".item-quantity")
+                .text(data.item_count);
+
+            cartItem
+                .find(".item-total")
+                .text(
+                    formatPrice(data.total_price) + " تومان"
+                );
 
 
-        });
+            $("#cart_products_price")
+                .text(
+                    formatPrice(data.products_price) + " تومان"
+                );
 
 
+            $("#post_price")
+                .text(
+                    formatPrice(data.post_price) + " تومان"
+                );
 
-    }
+
+            $("#final_price")
+                .text(
+                    formatPrice(data.final_price) + " تومان"
+                );
+
+
+            // ======================
+            // آپدیت هدر
+            // ======================
+
+            update_header_cart(data);
+
+
+            // ======================
+            // حذف آیتم
+            // ======================
+
+            if(data.item_count == 0){
+
+                cartItem.fadeOut(300, function(){
+
+                    $(this).remove();
+
+                    if(data.cart_count == 0){
+
+                        $("#cart_items").html(
+                            "سبد خرید شما خالی است"
+                        );
+
+                    }
+
+                });
+
+            }
+
+        },
+
+        error: function(xhr){
+
+            console.log(xhr.responseText);
+
+        }
+
+    });
+
+}
 
 
 
@@ -751,184 +719,143 @@ $(document).ready(function(){
     // مهم: delegation برای المنت هایی که دوباره render میشن
 
 
+$(document).on(
+    "click",
+    "#cart_items .add_product",
+    function(){
+
+        let cartItem = $(this)
+            .closest(".shopping-cart-item");
+
+        let item_id = cartItem
+            .attr("data-variant-id");
+
+        update_quantity(
+            item_id,
+            "add",
+            cartItem
+        );
+
+    }
+);
+
+
+
+
+
+$(document).on(
+    "click",
+    "#cart_items .decrease_product",
+    function(){
+
+        let cartItem = $(this)
+            .closest(".shopping-cart-item");
+
+        let item_id = cartItem
+            .attr("data-variant-id");
+
+        update_quantity(
+            item_id,
+            "decrease",
+            cartItem
+        );
+
+    }
+);
+
+
+
+
+
     $(document).on(
-        "click",
-        ".add_product",
-        function(){
+    "click",
+    ".remove_product",
+    function(){
 
+        let cartItem = $(this)
+            .closest(".shopping-cart-item");
 
-            let item_id = $(this)
-                .closest(".shopping-cart-item")
-                .data("item-id");
+        let item_id = cartItem
+            .attr("data-variant-id");
 
 
-            update_quantity(
-                item_id,
-                "add"
-            );
+        $.ajax({
 
+            type: "POST",
 
-        }
-    );
+            url: "{% url 'cart:remove_item' %}",
 
+            data: {
 
+                item_id: item_id,
 
+                csrfmiddlewaretoken: "{{ csrf_token }}"
 
+            },
 
-    $(document).on(
-        "click",
-        ".decrease_product",
-        function(){
+            success: function(data){
 
+                console.log(data);
 
-            let item_id = $(this)
-                .closest(".shopping-cart-item")
-                .data("item-id");
 
+                $("#cart_count")
+                    .text(data.cart_count);
 
-            update_quantity(
-                item_id,
-                "decrease"
-            );
 
+                $("#cart_badge")
+                    .text(data.cart_count);
 
-        }
-    );
 
+                $("#cart_products_price")
+                    .text(
+                        formatPrice(data.products_price)
+                        + " تومان"
+                    );
 
 
+                $("#post_price")
+                    .text(
+                        formatPrice(data.post_price)
+                        + " تومان"
+                    );
 
 
-    $(document).on(
-        "click",
-        ".remove_product",
-        function(){
+                $("#final_price")
+                    .text(
+                        formatPrice(data.final_price)
+                        + " تومان"
+                    );
 
 
-            let item_id = $(this)
-                .closest(".shopping-cart-item")
-                .data("item-id");
+                update_header_cart(data);
 
 
+                cartItem.fadeOut(300, function(){
 
-            $.ajax({
-
-                type:"POST",
-
-                url:"{% url 'cart:remove_item' %}",
-
-
-                data:{
-
-
-                    item_id:item_id,
-
-                    csrfmiddlewaretoken:"{{ csrf_token }}"
-
-                },
-
-
-                success:function(data){
-
-
-
-                    console.log(data);
-
-
-
-                    // صفحه دیتیل
-
-                    $("#cart_count")
-                        .text(data.cart_count);
-
-                    $("#cart_badge")
-                        .text(data.cart_count);
-
-                    $("#cart_products_price")
-                        .text(
-                            formatPrice(data.products_price)+" تومان"
-                        );
-
-
-
-                    $("#post_price")
-                        .text(
-                            formatPrice(data.post_price)+" تومان"
-                        );
-
-
-
-                    $("#final_price")
-                        .text(
-                            formatPrice(data.final_price)+" تومان"
-                        );
-
-
-
-
-                    // هدر
-                    if (data.cart_count == 0) {
-
-                        $("#cart-dropdown-body").html(`
-                            <p class="noProductInCart text-center fs-6">
-                                محصولی در سبد خرید وجود ندارد!
-                            </p>
-                        `);
-
-                        $(".shopping-cart-box .card-footer").html("");
-
-                    } else {
-
-                        if (data.cart_body) {
-                            $("#cart-dropdown-body").html(data.cart_body);
-                        }
-
-                        if (data.cart_footer) {
-                            $(".shopping-cart-box .card-footer").html(data.cart_footer);
-                        }
-
-                    }
-
-
-
-                    $(".shopping-cart-item[data-item-id='"+item_id+"']")
-                    .fadeOut(300,function(){
-
-                        $(this).remove();
-
-                    });
-
-
+                    $(this).remove();
 
                     if(data.cart_count == 0){
 
-
-                        $("#cart_items")
-                            .html(
-                                "سبد خرید شما خالی است"
-                            );
+                        $("#cart_items").html(
+                            "سبد خرید شما خالی است"
+                        );
 
                     }
 
+                });
 
+            },
 
-                },
+            error: function(xhr){
 
+                console.log(xhr.responseText);
 
-                error:function(xhr){
+            }
 
-                    console.log(xhr.responseText);
+        });
 
-                }
-
-
-
-            });
-
-
-
-        }
-    );
+    }
+);
 
 
 
