@@ -668,6 +668,15 @@ class HybridScorer:
 
             )
 
+            print(
+                f"""
+            PRODUCT: {product.name}
+            ALS RAW: {float(als_score):.4f}
+            ALS NORMALIZED: {normalized_als:.4f}
+            CONTENT SCORE: {content:.4f}
+            HYBRID SCORE: {hybrid_score:.4f}
+            """
+            )
 
 
             ranked.append({
