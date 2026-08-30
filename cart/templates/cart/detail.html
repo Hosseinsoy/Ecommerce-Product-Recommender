@@ -526,7 +526,101 @@ class="btn-auth2 mt-4 text-center"
 
 </div>
 
+{% if cart_recommendations %}
 
+<hr class="my-5">
+
+
+<div class="container" style="direction:rtl">
+
+    <h5 class="fw-bold mb-4">
+        پیشنهادهای مناسب برای سبد خرید شما
+    </h5>
+
+
+    <div class="row g-4">
+
+
+        {% for product in cart_recommendations %}
+
+
+        <div class="col-lg-2 col-md-3 col-6">
+
+
+            <div class="card border-0 shadow-sm h-100"
+                 style="border-radius:16px; overflow:hidden;">
+
+
+                <a href="{{ product.get_absolute_url }}">
+
+                    {% if product.images.first %}
+
+                    <img
+                    src="{{ product.images.first.image_file.url }}"
+                    class="card-img-top"
+                    style="
+                    height:150px;
+                    object-fit:contain;
+                    padding:10px;
+                    "
+                    >
+
+                    {% endif %}
+
+                </a>
+
+
+
+                <div class="card-body p-3">
+
+
+                    <a href="{{ product.get_absolute_url }}"
+                       class="text-decoration-none text-dark">
+
+
+                        <div style="
+                        font-size:14px;
+                        height:45px;
+                        overflow:hidden;
+                        ">
+
+                            {{ product.name }}
+
+                        </div>
+
+
+                    </a>
+
+
+
+                    <div class="mt-2 fw-bold text-success">
+
+                        {{ product.off_price|intcomma }}
+
+                        تومان
+
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
+
+        </div>
+
+
+        {% endfor %}
+
+
+    </div>
+
+
+</div>
+
+
+{% endif %}
 </main>
 
 
@@ -907,7 +1001,25 @@ cursor:pointer;
 
 }
 
+.recommendation-card{
 
+border-radius:18px;
+
+overflow:hidden;
+
+transition:0.3s;
+
+}
+
+
+
+.recommendation-card:hover{
+
+transform:translateY(-5px);
+
+box-shadow:0 10px 25px rgba(0,0,0,0.12)!important;
+
+}
 
 .cart-actions .remove_product{
 
@@ -917,6 +1029,9 @@ border-color:#dc3545;
 
 }
 
-
+.card:hover {
+    transform: translateY(-3px);
+    transition: 0.2s;
+}
 
 </style>

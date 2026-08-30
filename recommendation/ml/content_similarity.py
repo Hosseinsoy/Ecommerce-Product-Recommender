@@ -176,3 +176,61 @@ class ContentSimilarity:
         return float(
             scores.max()
         )
+
+    # ==================================
+    # Similar products for a product
+    # ==================================
+
+    def get_similar_products(
+            self,
+            product_id,
+            top_k=20
+    ):
+
+
+        if product_id not in self.product_index:
+            return []
+
+
+        product_index = self.product_index[product_id]
+
+
+        scores = cosine_similarity(
+
+            self.matrix[product_index],
+
+            self.matrix
+
+        )[0]
+
+
+        similar_indexes = scores.argsort()[::-1]
+
+
+        results = []
+
+
+        for index in similar_indexes:
+
+
+            # خود محصول را حذف کن
+            if index == product_index:
+                continue
+
+
+            product = self.products[index]
+
+
+            results.append(
+                (
+                    product,
+                    float(scores[index])
+                )
+            )
+
+
+            if len(results) >= top_k:
+                break
+
+
+        return results

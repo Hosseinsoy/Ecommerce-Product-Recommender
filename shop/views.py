@@ -1,4 +1,6 @@
 from itertools import product, zip_longest
+
+from cart.views import get_cart_recommendations
 from recommendation.models import Interaction
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -38,6 +40,8 @@ from shop.utils.search_utils import (
 )
 from django.db.models import Q, Case, When, Value, IntegerField
 from shop.models import Category
+from recommendation.ml.content_similarity import ContentSimilarity
+from recommendation.ml.related_products import RelatedProductService
 
 User = settings.AUTH_USER_MODEL
 
@@ -336,6 +340,348 @@ class ProductListView(ListView):
 
         return context
 
+from django.db.models import Q
+from difflib import SequenceMatcher
+import re
+
+
+def normalize_text(text):
+    if not text:
+        return ""
+
+    text = text.lower()
+
+    text = re.sub(
+        r"[^a-z0-9\u0600-\u06FF]+",
+        " ",
+        text
+    )
+
+    return text.strip()
+
+
+
+import re
+import math
+from collections import Counter
+
+
+def tokenize_name(name):
+
+    words = re.findall(
+        r'\w+',
+        name.lower()
+    )
+
+    return [
+        w for w in words
+        if len(w) > 2
+    ]
+
+
+
+import re
+from collections import Counter
+from difflib import SequenceMatcher
+
+
+def normalize_text(text):
+
+    text = text.lower()
+
+    text = re.sub(
+        r'[^a-zA-Z0-9\u0600-\u06FF ]',
+        ' ',
+        text
+    )
+
+    return text.split()
+
+
+
+def name_similarity(name1, name2):
+
+    words1 = set(normalize_text(name1))
+    words2 = set(normalize_text(name2))
+
+
+    if not words1 or not words2:
+        return 0
+
+
+    common = words1.intersection(words2)
+
+
+    score = 0
+
+
+    for word in common:
+
+        # کلمات مشترک بلند ارزش بیشتری دارند
+        if len(word) >= 5:
+            score += 1
+
+        elif len(word) >= 3:
+            score += 0.5
+
+
+
+    # نسبت اشتراک
+    union = words1.union(words2)
+
+
+    return score / len(union)
+
+
+
+import re
+from collections import Counter
+
+
+def tokenize(text):
+
+    text = text.lower()
+
+    text = re.sub(
+        r'[^a-zA-Z0-9\u0600-\u06FF]+',
+        ' ',
+        text
+    )
+
+    words = text.split()
+
+    # حذف کلمات خیلی عمومی
+    stop_words = {
+        "new",
+        "pro",
+        "plus",
+        "gaming",
+        "ultimate",
+        "edition",
+        "black",
+        "white"
+    }
+
+    return set(
+        w for w in words
+        if len(w) >= 2
+        and w not in stop_words
+    )
+
+
+def product_name_score(p1, p2):
+
+    w1 = tokenize(p1.name)
+    w2 = tokenize(p2.name)
+
+
+    common = w1.intersection(w2)
+
+
+    score = 0
+
+
+    for word in common:
+
+        # مدل محصول و مشخصات وزن بالا
+        if len(word) >= 4:
+            score += 1
+
+
+    if not w1:
+        return 0
+
+
+    return score / len(w1)
+
+
+
+from difflib import SequenceMatcher
+from django.db.models import Q
+
+
+def normalize_text(text):
+    if not text:
+        return ""
+
+    return (
+        text.lower()
+        .replace("-", " ")
+        .replace("_", " ")
+    )
+
+
+def name_similarity(name1, name2):
+
+    name1 = normalize_text(name1)
+    name2 = normalize_text(name2)
+
+    return SequenceMatcher(
+        None,
+        name1,
+        name2
+    ).ratio()
+
+
+
+def keyword_similarity(name1, name2):
+
+    words1 = set(
+        normalize_text(name1).split()
+    )
+
+    words2 = set(
+        normalize_text(name2).split()
+    )
+
+    if not words1 or not words2:
+        return 0
+
+
+    common = words1.intersection(words2)
+
+    return len(common) / max(
+        len(words1),
+        len(words2)
+    )
+
+
+
+def get_related_products(product, limit=5):
+
+    if not product:
+        return []
+
+
+    products = Product.objects.filter(
+        is_available=True,
+        inventory__gt=0
+    ).exclude(
+        id=product.id
+    ).select_related(
+        "category",
+        "brand"
+    ).prefetch_related(
+        "features",
+        "color_variants",
+        "size_variants",
+    )
+
+
+    scored_products = []
+
+
+    for item in products:
+
+
+        score = 0
+
+
+        # -----------------------------
+        # Name similarity (main factor)
+        # -----------------------------
+
+        name_score = name_similarity(
+            product.name,
+            item.name
+        )
+
+        keyword_score = keyword_similarity(
+            product.name,
+            item.name
+        )
+
+
+        score += (
+            name_score * 50
+        )
+
+
+        score += (
+            keyword_score * 35
+        )
+
+
+
+        # -----------------------------
+        # Same category
+        # -----------------------------
+
+        if (
+            product.category_id
+            and
+            product.category_id == item.category_id
+        ):
+
+            score += 25
+
+
+
+        # -----------------------------
+        # Same brand
+        # -----------------------------
+
+        if (
+            product.brand_id
+            and
+            product.brand_id == item.brand_id
+        ):
+
+            score += 10
+
+
+
+        # -----------------------------
+        # Content similarity
+        # -----------------------------
+
+        try:
+
+            RecommendationService.load_models()
+            RecommendationService.load_content_model()
+
+
+            content_score = (
+                RecommendationService
+                ._content_model
+                .similarity(
+                    item.id,
+                    [product.id]
+                )
+            )
+
+
+            score += (
+                content_score * 20
+            )
+
+        except Exception:
+
+            pass
+
+
+
+        scored_products.append(
+            (
+                item,
+                score
+            )
+        )
+
+
+
+    scored_products.sort(
+        key=lambda x:x[1],
+        reverse=True
+    )
+
+
+
+    return [
+        product
+        for product, score in scored_products[:limit]
+    ]
+
 
 def product_detail(request, id, slug):
 
@@ -347,6 +693,26 @@ def product_detail(request, id, slug):
         id=id,
         slug=slug
     )
+
+    related_products = get_related_products(product, limit=5)
+
+    recommended_products = RecommendationService.recommend_for_product(
+        product,
+        limit=15
+    )
+
+    # حذف محصولاتی که قبلاً در محصولات مشابه نمایش داده شده‌اند
+    related_ids = {
+        p.id
+        for p in related_products
+    }
+
+    recommended_products = [
+                               p
+                               for p in recommended_products
+                               if p.id not in related_ids
+                           ][:5]
+
     # -----------------------------------------
     # ثبت Interaction مشاهده محصول
     # -----------------------------------------
@@ -378,22 +744,11 @@ def product_detail(request, id, slug):
 
     categories = Category.objects.all()
 
-    related_products = (
-        Product.objects
-        .filter(
-            name__startswith=product.name.split(' ')[0]
-        )
-        .exclude(id=id)
-    )
 
     product_orders = product.orders.all()
 
-    recommended_products = []
 
-    for order in product_orders:
-        for p in order.order.items.all():
-            if id != p.product.id:
-                recommended_products.append(p.product)
+
 
     # -----------------------------------------
     # مرتب‌سازی کامنت‌ها
@@ -607,8 +962,7 @@ def product_detail(request, id, slug):
 
         "product": product,
         "categories": categories,
-        "related_products": related_products,
-        "recommended_products": recommended_products,
+
 
         "comments": comments,
 
@@ -638,6 +992,8 @@ def product_detail(request, id, slug):
             cart_variant_ids,
             cls=DjangoJSONEncoder
         ),
+        "related_products": related_products,
+        "recommended_products": recommended_products,
     }
 
     return render(

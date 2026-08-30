@@ -643,11 +643,244 @@
         <!--            Slider:end-->
     </div>
     <!--    Product Attr:end-->
+<div class="container mt-5" dir="rtl">
+
+    <h5 class="fw-bold mb-4">
+        محصولات مشابه
+    </h5>
+
+
+    <div class="products-list related-products">
+
+        {% for product in related_products %}
+
+            <div class="product-item">
+
+                <div class="image">
+
+                    <a href="{{ product.get_absolute_url }}">
+
+                        {% with product.images.first as image %}
+
+                            {% if image %}
+
+                                <img src="{{ image.image_file.url }}"
+                                     alt="{{ product.name }}">
+
+                            {% endif %}
+
+                        {% endwith %}
+
+                    </a>
+
+                </div>
+
+
+
+                <div class="title theme-color">
+
+                    <a href="{{ product.get_absolute_url }}"
+                       class="text-decoration-none text-reset">
+
+                        {{ product.name }}
+
+                    </a>
+
+                </div>
+
+
+
+                <div class="description">
+
+                    {{ product.description|truncatechars:50 }}
+
+                </div>
+
+
+
+                <div class="price text-dark mt-2">
+
+                    {% if product.off > 0 %}
+
+                        <div class="text-danger fw-bold">
+
+                            {{ product.off_price|intcomma }} تومان
+
+                        </div>
+
+
+                    {% else %}
+
+                        <div class="fw-bold">
+
+                            {{ product.price|intcomma }} تومان
+
+                        </div>
+
+
+                    {% endif %}
+
+                </div>
+
+
+            </div>
+
+
+        {% endfor %}
+
+    </div>
+
+</div>
+<div class="container mt-5" dir="rtl">
+
+    <h5 class="fw-bold mb-4">
+        محصولات پیشنهادی برای شما
+    </h5>
+
+
+    <div class="products-list related-products">
+
+        {% for product in recommended_products %}
+
+            <div class="product-item">
+
+
+                <div class="image">
+
+                    <a href="{{ product.get_absolute_url }}">
+
+                        {% with product.images.first as image %}
+
+                            {% if image %}
+
+                                <img src="{{ image.image_file.url }}"
+                                     alt="{{ product.name }}">
+
+                            {% else %}
+
+                                <img src="{% static 'assets/img/no-image.png' %}"
+                                     alt="{{ product.name }}">
+
+                            {% endif %}
+
+                        {% endwith %}
+
+                    </a>
+
+
+                    {% if product.is_flash_sale %}
+
+                        <span class="badge">
+                            پیشنهاد ویژه
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+
+
+                <div class="title theme-color">
+
+                    <a href="{{ product.get_absolute_url }}"
+                       class="text-decoration-none text-reset">
+
+                        {{ product.name }}
+
+                    </a>
+
+                </div>
+
+
+
+                <div class="description">
+
+                    {{ product.description|truncatechars:50 }}
+
+                </div>
+
+
+
+                <div class="details">
+
+
+
+
+
+
+                    <div class="price text-dark">
+
+
+                        {% if product.is_available %}
+
+
+                            {% if product.off > 0 %}
+
+
+                                <div class="text-danger fw-bold">
+
+                                    {{ product.off_price|intcomma }} تومان
+
+                                </div>
+
+
+
+
+
+
+
+
+                            {% else %}
+
+
+                                <div class="fw-bold">
+
+                                    {{ product.price|intcomma }} تومان
+
+                                </div>
+
+
+                            {% endif %}
+
+
+
+                        {% else %}
+
+
+                            <div class="text-danger fw-bold">
+
+                                ناموجود
+
+                            </div>
+
+
+                        {% endif %}
+
+
+                    </div>
+
+
+                </div>
+
+
+
+            </div>
+
+
+        {% endfor %}
+
+
+    </div>
+
+</div>
+<br><br>
+
 <section class="product-sellers">
 
     <h2 class="fs-5 mb-3">
         <span>فروشندگان</span> این کالا
     </h2>
+
 
 
         <div class="product-sellers-item">
@@ -832,6 +1065,7 @@
 
 
     </section>
+
 <!--    Product Tabs:start-->
     <section class="product-tabs mt-5">
         <ul class="nav nav-tabs">
@@ -1950,6 +2184,109 @@
     );
 }
 
+.related-products {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 20px;
+}
+
+
+.related-products .product-item {
+
+    background: #fff;
+    border-radius: 16px;
+    padding: 12px;
+    border: 1px solid #eee;
+    transition: .2s;
+
+}
+
+
+.related-products .product-item:hover {
+
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0,0,0,.08);
+
+}
+
+
+
+.related-products .image {
+
+    width:100%;
+    height:180px;
+    overflow:hidden;
+    border-radius:12px;
+
+}
+
+
+.related-products .image img {
+
+    width:100%;
+    height:100%;
+    object-fit:contain;
+
+}
+
+
+
+.related-products .title {
+
+    font-size:14px;
+    font-weight:600;
+    margin-top:12px;
+    height:42px;
+    overflow:hidden;
+
+}
+
+
+
+.related-products .description {
+
+    font-size:12px;
+    color:#777;
+    height:38px;
+    overflow:hidden;
+    margin-top:8px;
+
+}
+
+
+
+@media(max-width:1200px){
+
+    .related-products {
+
+        grid-template-columns:repeat(4,1fr);
+
+    }
+
+}
+
+
+@media(max-width:992px){
+
+    .related-products {
+
+        grid-template-columns:repeat(3,1fr);
+
+    }
+
+}
+
+
+@media(max-width:576px){
+
+    .related-products {
+
+        grid-template-columns:repeat(2,1fr);
+
+    }
+
+}
+
 </style>
 <style>
 .color-radio,
@@ -1991,6 +2328,33 @@
 }
 .selected-color {
     border: 3px solid #000 !important;
+}
+
+.recommended-products {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 20px;
+}
+
+
+@media(max-width:1200px){
+    .recommended-products {
+        grid-template-columns: repeat(4,1fr);
+    }
+}
+
+
+@media(max-width:992px){
+    .recommended-products {
+        grid-template-columns: repeat(3,1fr);
+    }
+}
+
+
+@media(max-width:768px){
+    .recommended-products {
+        grid-template-columns: repeat(2,1fr);
+    }
 }
 </style>
 

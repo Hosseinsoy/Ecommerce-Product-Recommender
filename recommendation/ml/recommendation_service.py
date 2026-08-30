@@ -1392,7 +1392,113 @@ class RecommendationService:
             )
         return final_products
 
+    @classmethod
+    def recommend_for_product(
+            cls,
+            product,
+            limit=12
+    ):
 
+        if not product:
+            return []
+
+        cls.load_models()
+        cls.load_content_model()
+
+        # ----------------------------
+        # ساخت پروفایل مصنوعی
+        # انگار کاربر به این محصول علاقه دارد
+        # ----------------------------
+
+        class FakeInteraction:
+
+            def __init__(self, product):
+                self.product = product
+                self.product_id = product.id
+                self.event = "view"
+                self.timestamp = timezone.now()
+                self.dwell_time = 120
+
+        interactions = [
+            FakeInteraction(product)
+        ]
+
+        scorer = HybridScorer(
+            content_model=cls._content_model
+        )
+
+        profile = scorer.build_user_profile(
+            interactions
+        )
+
+        # ----------------------------
+        # Candidate Generation
+        # ----------------------------
+
+        candidates = []
+
+        products = Product.objects.filter(
+            is_available=True,
+            inventory__gt=0
+        ).exclude(
+            id=product.id
+        ).select_related(
+            "category",
+            "brand",
+        ).prefetch_related(
+            "features",
+            "color_variants",
+            "size_variants",
+        )
+
+        for p in products:
+
+            similarity = scorer.similarity_score(
+                p,
+                profile
+            )
+
+            content_score = scorer.content_score(
+                p,
+                profile,
+                0
+            )
+
+            final_score = (
+                    0.6 * similarity
+                    +
+                    0.4 * content_score
+            )
+
+            if final_score > 0:
+                candidates.append(
+                    {
+                        "product": p,
+                        "score": final_score
+                    }
+                )
+
+        # ----------------------------
+        # Sort
+        # ----------------------------
+
+        candidates.sort(
+            key=lambda x: x["score"],
+            reverse=True
+        )
+
+        print("\n===== PRODUCT RECOMMEND DEBUG =====")
+
+        for item in candidates[:20]:
+            print(
+                item["product"].name,
+                item["score"]
+            )
+
+        return [
+            item["product"]
+            for item in candidates[:limit]
+        ]
 
     # =====================================
     # Generic Fallback

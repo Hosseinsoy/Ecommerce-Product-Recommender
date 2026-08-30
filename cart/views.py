@@ -6,6 +6,8 @@ from django.views.decorators.http import require_POST
 from shop.models import Product, ProductVariant
 from recommendation.models import Interaction
 from cart.cart import Cart
+from recommendation.ml.cart_recommender import CartRecommender
+from recommendation.ml.recommendation_service import RecommendationService
 from sms import send_sms
 
 
@@ -26,6 +28,39 @@ def record_cart_interaction(
         product=product,
         event="cart",
         source="direct",
+    )
+
+
+def get_cart_recommendations(request, limit=5):
+
+    cart = Cart(request)
+
+    cart_products = []
+
+
+    for item in cart:
+
+        cart_products.append(
+            item["product"].product
+        )
+
+
+    if not cart_products:
+        return []
+
+
+    RecommendationService.load_models()
+    RecommendationService.load_content_model()
+
+
+    recommender = CartRecommender(
+        RecommendationService._content_model
+    )
+
+
+    return recommender.recommend_from_cart(
+        cart_products,
+        limit
     )
 
 
@@ -68,9 +103,24 @@ def add_to_cart(request, product_id):
 
 
 def cart_detail(request):
-    cart = Cart(request)
-    return render(request, 'cart/detail.html', {'cart': cart})
 
+    cart = Cart(request)
+
+
+    cart_recommendations = get_cart_recommendations(
+        request,
+        limit=6
+    )
+
+
+    return render(
+        request,
+        'cart/detail.html',
+        {
+            'cart': cart,
+            'cart_recommendations': cart_recommendations,
+        }
+    )
 
 @require_POST
 def update_quantity(request):
@@ -215,6 +265,9 @@ def update_quantity(request):
 @require_POST
 def remove_item(request):
     item_id = request.POST.get('item_id')
+
+    if item_id:
+        item_id = item_id.replace(",", "")
     try:
         product = get_object_or_404(ProductVariant, id=item_id)
         cart = Cart(request)
@@ -253,23 +306,29 @@ class CartToggleView(View):
         # -----------------------------------------
 
         variant_id = request.POST.get("variant_id")
-        print(
-            "CART TOGGLE:",
-            "product_id =", product_id,
-            "variant_id =", variant_id
-        )
-        if not variant_id:
 
-            return JsonResponse({
-                "success": False,
-                "error": "هیچ Variant ای انتخاب نشده است."
-            })
+        if variant_id:
 
-        product_variant = get_object_or_404(
-            ProductVariant,
-            id=variant_id,
-            product=product
-        )
+            product_variant = get_object_or_404(
+                ProductVariant,
+                id=variant_id,
+                product=product
+            )
+
+        else:
+
+            product_variant = (
+                ProductVariant.objects
+                .filter(product=product)
+                .first()
+            )
+
+            if not product_variant:
+                return JsonResponse({
+                    "success": False,
+                    "error": "این محصول Variant ندارد."
+                })
+
         print(
             "SELECTED VARIANT:",
             product_variant.id,
