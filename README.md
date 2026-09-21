@@ -41,12 +41,13 @@ The recommendation system analyzes user interactions with products, including vi
 ## Recommendation System
 
 The recommendation system uses a hybrid approach that combines:
-The recommendation system is integrated into multiple parts of the e-commerce platform, including the homepage, product details, and shopping cart, providing personalized product suggestions based on user behavior and product context.
 
 - Collaborative filtering
 - Content-based filtering
 - User behavior analysis
 - User preferences
+
+The recommendation system is integrated into multiple parts of the e-commerce platform, including the homepage, product details, and shopping cart, providing personalized product suggestions based on user behavior and product context.
 
 Different interaction types are assigned different weights based on their relevance, allowing the system to distinguish between browsing and stronger purchase-related signals.
 
