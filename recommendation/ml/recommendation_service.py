@@ -383,15 +383,6 @@ class RecommendationService:
                 id=product_id
             ).first()
 
-            if product:
-                print(
-                    "CHECK PRODUCT:",
-                    product.name,
-                    "| CAT:",
-                    product.category.name,
-                    "| IN MAPPING:",
-                    product_id in cls._item_mapping
-                )
             if product_id not in cls._item_mapping:
                 continue
 
@@ -477,27 +468,7 @@ class RecommendationService:
             )
 
             row_data.append(weight)
-        print("==============================")
-        print("USER ROW DEBUG")
-        print("==============================")
 
-        print("USER:", user_id)
-
-        print("ITEM COUNT:", len(item_weights))
-
-        for pid, weight in item_weights.items():
-
-            product = Product.objects.filter(
-                id=pid
-            ).first()
-
-            if product and product.category.name == "حیوانات خانگی":
-                print(
-                    "PET:",
-                    product.name,
-                    "WEIGHT:",
-                    weight
-                )
         return sparse.csr_matrix(
             (
                 row_data,
@@ -893,10 +864,7 @@ class RecommendationService:
 
         interaction_count = len(interactions)
 
-        print(
-            "******** DEBUG INTERACTION COUNT ********",
-            interaction_count
-        )
+
 
         if interaction_count <= 2:
 
@@ -928,16 +896,6 @@ class RecommendationService:
 
 
         else:
-
-            print(
-                "USER IN MAPPING:",
-                user_id in cls._user_mapping
-            )
-
-            print(
-                "USER MAPPING SIZE:",
-                len(cls._user_mapping)
-            )
 
             # ================================
             # Existing User
@@ -1000,10 +958,7 @@ class RecommendationService:
                     id=pid
                 )
 
-                print(
-                    p.name,
-                    score
-                )
+
 
                 if score > 0.15:
                     candidate_product_ids.add(pid)
@@ -1090,14 +1045,7 @@ class RecommendationService:
 
             for pid, score in similarity_candidates[:50]:
                 candidate_product_ids.add(pid)
-            print(
-                "TOTAL CANDIDATES:",
-                len(candidate_product_ids)
-            )
 
-            for pid in candidate_product_ids:
-                p = Product.objects.get(id=pid)
-                print("CAND:", p.name)
         # ================================
         # 3) Preference Candidates
         # ================================
@@ -1170,12 +1118,7 @@ class RecommendationService:
         candidates = []
 
         for product in products:
-            print(
-                "CANDIDATE:",
-                product.name,
-                "ALS SCORE:",
-                als_score_map.get(product.id, 0)
-            )
+
             # اگر interaction کم است ALS را صفر کن
             if interaction_count <= 20:
 
@@ -1207,7 +1150,7 @@ class RecommendationService:
         # Hybrid Ranking
         # ---------------------------------
 
-        if interaction_count <= 10:
+        if interaction_count <= 20:
 
             scorer = HybridScorer(
                 als_weight=0.0,
@@ -1224,8 +1167,7 @@ class RecommendationService:
             )
 
         profile = scorer.build_user_profile(interactions)
-        print("!!!!!!!!!!!!!!!!!!!CatScores!!!!!!!!!!!!!!!!!!!")
-        print(profile["category_scores"])
+
         budget = cls.get_budget(user_id)
 
         ranked = scorer.rank(
@@ -1235,28 +1177,9 @@ class RecommendationService:
             limit=len(candidates),
         )
 
-        print("\n===== RANK DEBUG =====")
 
-        for item in ranked[:30]:
-            print(
-                item["product"].name,
-                "HYBRID:",
-                item["hybrid_score"]
-            )
 
-        interaction_count = len(interactions)
 
-        if interaction_count <= 2:
-
-            behavior_limit = 2
-
-        elif interaction_count <= 5:
-
-            behavior_limit = 5
-
-        else:
-
-            behavior_limit = limit
         # ---------------------------------
         # Dynamic Mixing
         # ---------------------------------
@@ -1266,7 +1189,6 @@ class RecommendationService:
         behavior_weight, preference_weight = cls.get_dynamic_weights(
             interaction_count
         )
-        print("\n===== FINAL SCORE DEBUG =====")
         # امتیازدهی preference جدا
         for item in ranked:
 
@@ -1279,13 +1201,7 @@ class RecommendationService:
                 )
 
             item["preference_score"] = preference_score
-            print(
-                item["product"].name,
-                "hybrid:",
-                item["hybrid_score"],
-                "pref:",
-                item["preference_score"]
-            )
+
 
 
 
@@ -1336,16 +1252,7 @@ class RecommendationService:
         ]
 
         # Merge نهایی
-        # Merge نهایی با نسبت واقعی
-        print("\n===== PREF PRODUCTS DEBUG =====")
 
-        for p in preference_products[:20]:
-            print(p.name)
-
-        print("\n===== BEHAVIOR PRODUCTS DEBUG =====")
-
-        for p in behavior_products:
-            print(p.name)
         final_products = []
 
         behavior_index = 0
@@ -1373,23 +1280,7 @@ class RecommendationService:
 
             if product not in final_products:
                 final_products.append(product)
-        print("\n===== PREF SELECTED =====")
 
-        for p in preference_products:
-            if "Nintendo" in p.name:
-                print("NINTENDO FROM PREF:", p.name)
-
-        print("\n===== BEHAVIOR SELECTED =====")
-
-        for p in behavior_products:
-            if "Nintendo" in p.name:
-                print("NINTENDO FROM BEHAVIOR:", p.name)
-        print("\n===== FINAL PRODUCTS =====")
-
-        for p in final_products:
-            print(
-                p.name
-            )
         return final_products
 
     @classmethod

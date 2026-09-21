@@ -1,0 +1,285 @@
+
+[admin.LogEntry]
+  id: type=AutoField, primary_key=True, null=False, blank=True, unique=True
+  action_time: type=DateTimeField, primary_key=False, null=False, blank=False, unique=False
+  user: type=ForeignKey, primary_key=False, null=False, blank=False, unique=False, related_model=account.ShopUser
+  content_type: type=ForeignKey, primary_key=False, null=True, blank=True, unique=False, related_model=contenttypes.ContentType
+  object_id: type=TextField, primary_key=False, null=True, blank=True, unique=False
+  object_repr: type=CharField, primary_key=False, null=False, blank=False, unique=False
+  action_flag: type=PositiveSmallIntegerField, primary_key=False, null=False, blank=False, unique=False
+  change_message: type=TextField, primary_key=False, null=False, blank=True, unique=False
+
+[account.ShopSeller]
+  id: type=BigAutoField, primary_key=True, null=False, blank=True, unique=True
+  password: type=CharField, primary_key=False, null=False, blank=False, unique=False
+  last_login: type=DateTimeField, primary_key=False, null=True, blank=True, unique=False
+  is_superuser: type=BooleanField, primary_key=False, null=False, blank=False, unique=False
+  logo: type=ImageField, primary_key=False, null=True, blank=True, unique=False
+  phone: type=CharField, primary_key=False, null=False, blank=False, unique=True
+  email: type=EmailField, primary_key=False, null=True, blank=True, unique=True
+  first_name: type=CharField, primary_key=False, null=False, blank=False, unique=False
+  last_name: type=CharField, primary_key=False, null=False, blank=False, unique=False
+  shop_name: type=CharField, primary_key=False, null=False, blank=False, unique=False
+  shop_email: type=EmailField, primary_key=False, null=True, blank=True, unique=False
+  shop_phone: type=CharField, primary_key=False, null=False, blank=False, unique=True
+  shop_address: type=CharField, primary_key=False, null=False, blank=False, unique=False
+  is_active: type=BooleanField, primary_key=False, null=False, blank=False, unique=False
+  is_staff: type=BooleanField, primary_key=False, null=False, blank=False, unique=False
+  date_joined: type=DateTimeField, primary_key=False, null=False, blank=False, unique=False
+  groups: type=ManyToManyField, primary_key=False, null=False, blank=True, unique=False, related_model=auth.Group
+  user_permissions: type=ManyToManyField, primary_key=False, null=False, blank=True, unique=False, related_model=auth.Permission
+
+[account.ShopUser]
+  id: type=BigAutoField, primary_key=True, null=False, blank=True, unique=True
+  password: type=CharField, primary_key=False, null=False, blank=False, unique=False
+  last_login: type=DateTimeField, primary_key=False, null=True, blank=True, unique=False
+  is_superuser: type=BooleanField, primary_key=False, null=False, blank=False, unique=False
+  phone: type=CharField, primary_key=False, null=False, blank=False, unique=True
+  email: type=EmailField, primary_key=False, null=True, blank=True, unique=True
+  first_name: type=CharField, primary_key=False, null=False, blank=False, unique=False
+  last_name: type=CharField, primary_key=False, null=False, blank=False, unique=False
+  is_active: type=BooleanField, primary_key=False, null=False, blank=False, unique=False
+  is_staff: type=BooleanField, primary_key=False, null=False, blank=False, unique=False
+  date_joined: type=DateTimeField, primary_key=False, null=False, blank=False, unique=False
+  saved_products: type=ManyToManyField, primary_key=False, null=False, blank=False, unique=False, related_model=shop.Product
+  groups: type=ManyToManyField, primary_key=False, null=False, blank=True, unique=False, related_model=auth.Group
+  user_permissions: type=ManyToManyField, primary_key=False, null=False, blank=True, unique=False, related_model=auth.Permission
+
+[account.UserAddress]
+  id: type=BigAutoField, primary_key=True, null=False, blank=True, unique=True
+  user: type=ForeignKey, primary_key=False, null=False, blank=False, unique=False, related_model=account.ShopUser
+  province: type=CharField, primary_key=False, null=False, blank=False, unique=False
+  city: type=CharField, primary_key=False, null=False, blank=False, unique=False
+  address: type=TextField, primary_key=False, null=False, blank=False, unique=False
+  house_number: type=CharField, primary_key=False, null=False, blank=False, unique=False
+  postal_code: type=CharField, primary_key=False, null=False, blank=False, unique=False
+  is_default: type=BooleanField, primary_key=False, null=False, blank=False, unique=False
+
+[account.Province]
+  id: type=BigAutoField, primary_key=True, null=False, blank=True, unique=True
+  name: type=CharField, primary_key=False, null=False, blank=False, unique=False
+
+[account.City]
+  id: type=BigAutoField, primary_key=True, null=False, blank=True, unique=True
+  name: type=CharField, primary_key=False, null=False, blank=False, unique=False
+  province: type=ForeignKey, primary_key=False, null=False, blank=False, unique=False, related_model=account.Province
+
+[auth.Permission]
+  id: type=AutoField, primary_key=True, null=False, blank=True, unique=True
+  name: type=CharField, primary_key=False, null=False, blank=False, unique=False
+  content_type: type=ForeignKey, primary_key=False, null=False, blank=False, unique=False, related_model=contenttypes.ContentType
+  codename: type=CharField, primary_key=False, null=False, blank=False, unique=False
+
+[auth.Group]
+  id: type=AutoField, primary_key=True, null=False, blank=True, unique=True
+  name: type=CharField, primary_key=False, null=False, blank=False, unique=True
+  permissions: type=ManyToManyField, primary_key=False, null=False, blank=True, unique=False, related_model=auth.Permission
+
+[contenttypes.ContentType]
+  id: type=AutoField, primary_key=True, null=False, blank=True, unique=True
+  app_label: type=CharField, primary_key=False, null=False, blank=False, unique=False
+  model: type=CharField, primary_key=False, null=False, blank=False, unique=False
+
+[sessions.Session]
+  session_key: type=CharField, primary_key=True, null=False, blank=False, unique=True
+  session_data: type=TextField, primary_key=False, null=False, blank=False, unique=False
+  expire_date: type=DateTimeField, primary_key=False, null=False, blank=False, unique=False
+
+[shop.Category]
+  id: type=BigAutoField, primary_key=True, null=False, blank=True, unique=True
+  name: type=CharField, primary_key=False, null=False, blank=False, unique=False
+  slug: type=SlugField, primary_key=False, null=False, blank=False, unique=True
+  image_file: type=ImageField, primary_key=False, null=False, blank=False, unique=False
+
+[shop.Brand]
+  id: type=BigAutoField, primary_key=True, null=False, blank=True, unique=True
+  name: type=CharField, primary_key=False, null=False, blank=False, unique=True
+  slug: type=SlugField, primary_key=False, null=False, blank=True, unique=True
+  logo: type=ImageField, primary_key=False, null=True, blank=True, unique=False
+  description: type=TextField, primary_key=False, null=False, blank=True, unique=False
+  is_active: type=BooleanField, primary_key=False, null=False, blank=False, unique=False
+  sales_count: type=PositiveIntegerField, primary_key=False, null=False, blank=False, unique=False
+  created: type=DateTimeField, primary_key=False, null=False, blank=True, unique=False
+
+[shop.Product]
+  id: type=BigAutoField, primary_key=True, null=False, blank=True, unique=True
+  brand: type=ForeignKey, primary_key=False, null=True, blank=True, unique=False, related_model=shop.Brand
+  category: type=ForeignKey, primary_key=False, null=False, blank=False, unique=False, related_model=shop.Category
+  name: type=CharField, primary_key=False, null=False, blank=False, unique=False
+  description: type=TextField, primary_key=False, null=False, blank=False, unique=False
+  inventory: type=PositiveIntegerField, primary_key=False, null=False, blank=False, unique=False
+  is_available: type=BooleanField, primary_key=False, null=False, blank=False, unique=False
+  weight: type=PositiveIntegerField, primary_key=False, null=False, blank=False, unique=False
+  price: type=PositiveIntegerField, primary_key=False, null=False, blank=False, unique=False
+  off: type=PositiveIntegerField, primary_key=False, null=False, blank=False, unique=False
+  off_price: type=PositiveIntegerField, primary_key=False, null=False, blank=False, unique=False
+  created: type=jDateTimeField, primary_key=False, null=False, blank=True, unique=False
+  updated: type=jDateTimeField, primary_key=False, null=False, blank=True, unique=False
+  slug: type=SlugField, primary_key=False, null=False, blank=False, unique=True
+  has_size_option: type=BooleanField, primary_key=False, null=False, blank=False, unique=False
+  has_color_option: type=BooleanField, primary_key=False, null=False, blank=False, unique=False
+  flash_sale_start: type=DateTimeField, primary_key=False, null=True, blank=True, unique=False
+  flash_sale_end: type=DateTimeField, primary_key=False, null=True, blank=True, unique=False
+
+[shop.ProductSeller]
+  id: type=BigAutoField, primary_key=True, null=False, blank=True, unique=True
+  product: type=ForeignKey, primary_key=False, null=False, blank=False, unique=False, related_model=shop.Product
+  seller: type=ForeignKey, primary_key=False, null=False, blank=False, unique=False, related_model=account.ShopSeller
+  price: type=PositiveIntegerField, primary_key=False, null=False, blank=False, unique=False
+  inventory: type=PositiveIntegerField, primary_key=False, null=False, blank=False, unique=False
+  warranty: type=CharField, primary_key=False, null=True, blank=True, unique=False
+  satisfaction: type=PositiveIntegerField, primary_key=False, null=False, blank=False, unique=False
+  performance: type=CharField, primary_key=False, null=False, blank=False, unique=False
+  shipping_type: type=CharField, primary_key=False, null=False, blank=False, unique=False
+
+[shop.ProductVariant]
+  id: type=BigAutoField, primary_key=True, null=False, blank=True, unique=True
+  product: type=ForeignKey, primary_key=False, null=False, blank=False, unique=False, related_model=shop.Product
+  size: type=ForeignKey, primary_key=False, null=True, blank=True, unique=False, related_model=shop.ProductSizeVariant
+  color: type=ForeignKey, primary_key=False, null=True, blank=True, unique=False, related_model=shop.ProductColorVariant
+
+[shop.ProductSizeVariant]
+  id: type=BigAutoField, primary_key=True, null=False, blank=True, unique=True
+  product: type=ForeignKey, primary_key=False, null=False, blank=False, unique=False, related_model=shop.Product
+  size: type=CharField, primary_key=False, null=True, blank=True, unique=False
+
+[shop.ProductColorVariant]
+  id: type=BigAutoField, primary_key=True, null=False, blank=True, unique=True
+  product: type=ForeignKey, primary_key=False, null=False, blank=False, unique=False, related_model=shop.Product
+  color: type=CharField, primary_key=False, null=True, blank=True, unique=False
+
+[shop.ProductFeature]
+  id: type=BigAutoField, primary_key=True, null=False, blank=True, unique=True
+  name: type=CharField, primary_key=False, null=False, blank=False, unique=False
+  value: type=CharField, primary_key=False, null=False, blank=False, unique=False
+  product: type=ForeignKey, primary_key=False, null=False, blank=False, unique=False, related_model=shop.Product
+
+[shop.Image]
+  id: type=BigAutoField, primary_key=True, null=False, blank=True, unique=True
+  product: type=ForeignKey, primary_key=False, null=False, blank=False, unique=False, related_model=shop.Product
+  create_date: type=jDateTimeField, primary_key=False, null=False, blank=True, unique=False
+  image_file: type=ImageField, primary_key=False, null=False, blank=False, unique=False
+  title: type=CharField, primary_key=False, null=True, blank=True, unique=False
+  description: type=TextField, primary_key=False, null=True, blank=True, unique=False
+
+[shop.DiscountCode]
+  id: type=BigAutoField, primary_key=True, null=False, blank=True, unique=True
+  code: type=CharField, primary_key=False, null=False, blank=False, unique=False
+  type: type=CharField, primary_key=False, null=False, blank=False, unique=False
+  value: type=PositiveIntegerField, primary_key=False, null=False, blank=False, unique=False
+
+[shop.ProductComment]
+  id: type=BigAutoField, primary_key=True, null=False, blank=True, unique=True
+  product: type=ForeignKey, primary_key=False, null=False, blank=False, unique=False, related_model=shop.Product
+  user: type=ForeignKey, primary_key=False, null=False, blank=False, unique=False, related_model=account.ShopUser
+  title: type=CharField, primary_key=False, null=False, blank=False, unique=False
+  body: type=TextField, primary_key=False, null=False, blank=False, unique=False
+  score: type=PositiveIntegerField, primary_key=False, null=False, blank=False, unique=False
+  is_recommended: type=BooleanField, primary_key=False, null=False, blank=False, unique=False
+  likes: type=PositiveIntegerField, primary_key=False, null=False, blank=False, unique=False
+  dislikes: type=PositiveIntegerField, primary_key=False, null=False, blank=False, unique=False
+  is_buyer: type=BooleanField, primary_key=False, null=False, blank=False, unique=False
+  created: type=DateTimeField, primary_key=False, null=False, blank=True, unique=False
+  updated: type=DateTimeField, primary_key=False, null=False, blank=True, unique=False
+  is_active: type=BooleanField, primary_key=False, null=False, blank=False, unique=False
+  positive_points: type=TextField, primary_key=False, null=True, blank=True, unique=False
+  negative_points: type=TextField, primary_key=False, null=True, blank=True, unique=False
+  points: type=ManyToManyField, primary_key=False, null=False, blank=True, unique=False, related_model=shop.CommentPoint
+
+[shop.CommentPoint]
+  id: type=BigAutoField, primary_key=True, null=False, blank=True, unique=True
+  title: type=CharField, primary_key=False, null=False, blank=False, unique=False
+
+[shop.ProductCommentPoint]
+  id: type=BigAutoField, primary_key=True, null=False, blank=True, unique=True
+  comment: type=ForeignKey, primary_key=False, null=False, blank=False, unique=False, related_model=shop.ProductComment
+  point: type=ForeignKey, primary_key=False, null=False, blank=False, unique=False, related_model=shop.CommentPoint
+  point_type: type=CharField, primary_key=False, null=False, blank=False, unique=False
+
+[shop.ProductQuestion]
+  id: type=BigAutoField, primary_key=True, null=False, blank=True, unique=True
+  product: type=ForeignKey, primary_key=False, null=False, blank=False, unique=False, related_model=shop.Product
+  user: type=ForeignKey, primary_key=False, null=False, blank=False, unique=False, related_model=account.ShopUser
+  body: type=TextField, primary_key=False, null=False, blank=False, unique=False
+  likes: type=PositiveIntegerField, primary_key=False, null=False, blank=False, unique=False
+  dislikes: type=PositiveIntegerField, primary_key=False, null=False, blank=False, unique=False
+  created: type=DateTimeField, primary_key=False, null=False, blank=True, unique=False
+  is_active: type=BooleanField, primary_key=False, null=False, blank=False, unique=False
+
+[shop.ProductAnswer]
+  id: type=BigAutoField, primary_key=True, null=False, blank=True, unique=True
+  question: type=ForeignKey, primary_key=False, null=False, blank=False, unique=False, related_model=shop.ProductQuestion
+  user: type=ForeignKey, primary_key=False, null=False, blank=False, unique=False, related_model=account.ShopUser
+  body: type=TextField, primary_key=False, null=False, blank=False, unique=False
+  is_seller: type=BooleanField, primary_key=False, null=False, blank=False, unique=False
+  created: type=DateTimeField, primary_key=False, null=False, blank=True, unique=False
+  is_active: type=BooleanField, primary_key=False, null=False, blank=False, unique=False
+
+[shop.SearchQuery]
+  id: type=BigAutoField, primary_key=True, null=False, blank=True, unique=True
+  user: type=ForeignKey, primary_key=False, null=False, blank=False, unique=False, related_model=account.ShopUser
+  query: type=CharField, primary_key=False, null=False, blank=False, unique=False
+  timestamp: type=DateTimeField, primary_key=False, null=False, blank=False, unique=False
+  results_count: type=PositiveIntegerField, primary_key=False, null=False, blank=False, unique=False
+
+[order.Order]
+  id: type=BigAutoField, primary_key=True, null=False, blank=True, unique=True
+  status: type=CharField, primary_key=False, null=False, blank=False, unique=False
+  user: type=ForeignKey, primary_key=False, null=False, blank=False, unique=False, related_model=account.ShopUser
+  name: type=CharField, primary_key=False, null=False, blank=False, unique=False
+  address: type=CharField, primary_key=False, null=False, blank=False, unique=False
+  phone: type=CharField, primary_key=False, null=False, blank=False, unique=False
+  created: type=DateTimeField, primary_key=False, null=False, blank=True, unique=False
+  updated: type=DateTimeField, primary_key=False, null=False, blank=True, unique=False
+  final_cost: type=PositiveIntegerField, primary_key=False, null=False, blank=False, unique=False
+  paid: type=BooleanField, primary_key=False, null=False, blank=False, unique=False
+  discount_code: type=ForeignKey, primary_key=False, null=True, blank=True, unique=False, related_model=shop.DiscountCode
+  delivery_time: type=DateTimeField, primary_key=False, null=True, blank=True, unique=False
+
+[order.OrderItem]
+  id: type=BigAutoField, primary_key=True, null=False, blank=True, unique=True
+  order: type=ForeignKey, primary_key=False, null=False, blank=False, unique=False, related_model=order.Order
+  product: type=ForeignKey, primary_key=False, null=False, blank=False, unique=False, related_model=shop.Product
+  size: type=CharField, primary_key=False, null=True, blank=True, unique=False
+  color: type=CharField, primary_key=False, null=True, blank=True, unique=False
+  price: type=PositiveIntegerField, primary_key=False, null=False, blank=False, unique=False
+  quantity: type=PositiveIntegerField, primary_key=False, null=False, blank=False, unique=False
+  weight: type=PositiveIntegerField, primary_key=False, null=False, blank=False, unique=False
+
+[order.ReturnOrder]
+  id: type=BigAutoField, primary_key=True, null=False, blank=True, unique=True
+  order: type=ForeignKey, primary_key=False, null=False, blank=False, unique=False, related_model=order.Order
+  cost: type=CharField, primary_key=False, null=False, blank=False, unique=False
+  accepted: type=BooleanField, primary_key=False, null=False, blank=False, unique=False
+  created: type=jDateTimeField, primary_key=False, null=False, blank=True, unique=False
+
+[order.ReturnProduct]
+  id: type=BigAutoField, primary_key=True, null=False, blank=True, unique=True
+  return_order: type=ForeignKey, primary_key=False, null=False, blank=False, unique=False, related_model=order.ReturnOrder
+  product: type=ForeignKey, primary_key=False, null=False, blank=False, unique=False, related_model=shop.Product
+  quantity: type=PositiveIntegerField, primary_key=False, null=False, blank=False, unique=False
+  explanation: type=TextField, primary_key=False, null=False, blank=False, unique=False
+  photo: type=ImageField, primary_key=False, null=False, blank=False, unique=False
+
+[recommendation.Interaction]
+  id: type=BigAutoField, primary_key=True, null=False, blank=True, unique=True
+  user: type=ForeignKey, primary_key=False, null=False, blank=False, unique=False, related_model=account.ShopUser
+  product: type=ForeignKey, primary_key=False, null=False, blank=False, unique=False, related_model=shop.Product
+  search_query: type=ForeignKey, primary_key=False, null=True, blank=True, unique=False, related_model=shop.SearchQuery
+  session_id: type=UUIDField, primary_key=False, null=False, blank=False, unique=False
+  source: type=CharField, primary_key=False, null=False, blank=False, unique=False
+  event: type=CharField, primary_key=False, null=False, blank=False, unique=False
+  interaction_score: type=FloatField, primary_key=False, null=False, blank=False, unique=False
+  timestamp: type=DateTimeField, primary_key=False, null=False, blank=False, unique=False
+  dwell_time: type=PositiveIntegerField, primary_key=False, null=True, blank=True, unique=False
+  metadata: type=JSONField, primary_key=False, null=False, blank=True, unique=False
+
+[recommendation.UserPreference]
+  id: type=BigAutoField, primary_key=True, null=False, blank=True, unique=True
+  user: type=OneToOneField, primary_key=False, null=False, blank=False, unique=True, related_model=account.ShopUser
+  max_monthly_budget: type=PositiveIntegerField, primary_key=False, null=False, blank=False, unique=False
+  age: type=PositiveIntegerField, primary_key=False, null=True, blank=True, unique=False
+  created: type=DateTimeField, primary_key=False, null=False, blank=True, unique=False
+  updated: type=DateTimeField, primary_key=False, null=False, blank=True, unique=False
+  favorite_categories: type=ManyToManyField, primary_key=False, null=False, blank=True, unique=False, related_model=shop.Category
+  favorite_brands: type=ManyToManyField, primary_key=False, null=False, blank=True, unique=False, related_model=shop.Brand

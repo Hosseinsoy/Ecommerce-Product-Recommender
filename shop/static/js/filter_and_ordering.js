@@ -80,7 +80,6 @@ $(document).ready(function () {
 
     }
 
-    console.log("INITIAL SEARCH QUERY:", searchQuery);
 
     function updateUrl(page = 1) {
 
@@ -206,21 +205,14 @@ $(document).ready(function () {
             $("#flexSwitchCheckDefault").is(":checked")
             ? 1
             : 0;
-            console.log("ONLY AVAILABLE:", only_available);
-            console.log("CURRENT SEARCH:", searchQuery);
+
 
 
         updateUrl(page);
 
 
 
-        console.log("LOAD PRODUCTS START");
-        console.log("URL:", ajaxUrl);
 
-        console.log(
-            "SEARCH QUERY:",
-            new URLSearchParams(window.location.search).get("q")
-        );
 
         $.ajax({
 
@@ -256,10 +248,7 @@ $(document).ready(function () {
             success: function (response) {
 
 
-                console.log(
-                    "AJAX RESPONSE COUNT:",
-                    response.count
-                );
+
 
 
                 $("#products-container")
@@ -440,12 +429,7 @@ $(document).ready(function () {
         ".checkbox-brand",
         function(){
 
-            console.log("BRAND CHANGED");
 
-            console.log(
-                "BRAND ID:",
-                $(this).val()
-            );
 
 
             loadProducts(1);
@@ -598,9 +582,9 @@ $(document).on(
         const btn = $(this);
 
 
-        const productId =
-            btn.data("product");
-
+        const productId = String(
+            btn.attr("data-product")
+        ).replace(/,/g, "");
 
 
         $.ajax({

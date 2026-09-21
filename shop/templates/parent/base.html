@@ -222,7 +222,9 @@ $(document).on("click", ".wishlist-btn", function (e) {
     e.preventDefault();
 
     const btn = $(this);
-    const productId = btn.data("product");
+    const productId = String(
+        btn.attr("data-product")
+    ).replace(/,/g, "");
 
     $.ajax({
 
