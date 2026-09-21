@@ -24,7 +24,7 @@ The recommendation system analyzes user interactions with products, including vi
 
 ### Home Page
 
-![Home Page](docs/screenshots/home.png)
+![Home Page](https://raw.githubusercontent.com/Hosseinsoy/Ecommerce-Product-Recommender/main/docs/screenshots/home.png)
 
 ### Product Details
 
